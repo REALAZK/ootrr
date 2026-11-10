@@ -1,0 +1,12 @@
+[package]
+name = "ootrr-core"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ruzstd = "0.9.1"

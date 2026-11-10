@@ -1,0 +1,20 @@
+{
+  "id": "full_shuffle",
+  "name": "Full shuffle",
+  "tip": "Every kind of check is shuffled and keys can be in any dungeon. Long and demanding.",
+  "order": 30,
+  "settings": {
+    "shuffle_chests": "all",
+    "shuffle_pots": "all",
+    "shuffle_crates": "all",
+    "shuffle_scrubs": "regular",
+    "shuffle_freestanding_items": "all",
+    "shuffle_smallkeys": "any_dungeon",
+    "shuffle_bosskeys": "any_dungeon",
+    "shuffle_ganon_bosskey": "medallions",
+    "ganon_bosskey_medallions": 6,
+    "shuffle_mapcompass": "any_dungeon",
+    "bridge": "dungeons",
+    "bridge_rewards": 9
+  }
+}

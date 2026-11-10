@@ -1,0 +1,966 @@
+{
+  "format": 1,
+  "source": "Event/EventFlow",
+  "roles": {
+    "give": "the event hands the item to the player",
+    "sell": "the event offers the item in a shop",
+    "take": "the event removes the item from the player",
+    "pouch": "pouch add or remove with a count that is not a literal",
+    "flag": "the event sets an Item_ game data flag to true"
+  },
+  "flows": [
+    {
+      "file": "Animal_Cow.bfevfl",
+      "flow": "Animal_Cow",
+      "actors": [],
+      "events": [
+        {"event": "Event4", "index": 6, "role": "give", "via": "Dm_SY_GetInEvent:GetInEventInBottle", "param": "ActorName", "item": "Item_Bottle_Milk"},
+        {"event": "Event74", "index": 45, "role": "give", "via": "Dm_SY_GetInEvent:GetInEventInBottle", "param": "ActorName", "item": "Item_Bottle_Milk"},
+        {"event": "Event114", "index": 107, "role": "give", "via": "Dm_SY_GetInEvent:GetInEventInBottle", "param": "ActorName", "item": "Item_Bottle_Milk"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Fire_Get.110.bfevfl",
+      "flow": "Dm_Awake_Fire_Get",
+      "actors": ["Item_Medal_Fire"],
+      "events": [
+        {"event": "Event13", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Fire"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Fire_Get.bfevfl",
+      "flow": "Dm_Awake_Fire_Get",
+      "actors": ["Item_Medal_Fire"],
+      "events": [
+        {"event": "Event13", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Fire"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Forest_Get.110.bfevfl",
+      "flow": "Dm_Awake_Forest_Get",
+      "actors": ["Item_Medal_Forest"],
+      "events": [
+        {"event": "Event13", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Forest"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Forest_Get.bfevfl",
+      "flow": "Dm_Awake_Forest_Get",
+      "actors": ["Item_Medal_Forest"],
+      "events": [
+        {"event": "Event13", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Forest"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Shadow_Get.110.bfevfl",
+      "flow": "Dm_Awake_Shadow_Get",
+      "actors": ["Item_Medal_Shadow"],
+      "events": [
+        {"event": "Event3", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Shadow"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Shadow_Get.bfevfl",
+      "flow": "Dm_Awake_Shadow_Get",
+      "actors": ["Item_Medal_Shadow"],
+      "events": [
+        {"event": "Event3", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Shadow"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Spirit_Get.110.bfevfl",
+      "flow": "Dm_Awake_Spirit_Get",
+      "actors": ["Item_Medal_Spirit"],
+      "events": [
+        {"event": "Event14", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Spirit"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Spirit_Get.bfevfl",
+      "flow": "Dm_Awake_Spirit_Get",
+      "actors": ["Item_Medal_Spirit"],
+      "events": [
+        {"event": "Event14", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Spirit"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Water_Get.110.bfevfl",
+      "flow": "Dm_Awake_Water_Get",
+      "actors": ["Item_Medal_Water"],
+      "events": [
+        {"event": "Event13", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Water"}
+      ]
+    },
+    {
+      "file": "Dm_Awake_Water_Get.bfevfl",
+      "flow": "Dm_Awake_Water_Get",
+      "actors": ["Item_Medal_Water"],
+      "events": [
+        {"event": "Event13", "index": 22, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Water"}
+      ]
+    },
+    {
+      "file": "Dm_DeathMtTrail_0025.bfevfl",
+      "flow": "Dm_DeathMtTrail_0025",
+      "actors": ["Item_Stone_Fire"],
+      "events": [
+        {"event": "Event26", "index": 9, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Stone_Fire"}
+      ]
+    },
+    {
+      "file": "Dm_DeathMtTrail_0050.bfevfl",
+      "flow": "Dm_DeathMtTrail_0050",
+      "actors": ["Item_ClaimCheck", "Item_EyeDrop"],
+      "events": [
+        {"event": "Event21", "index": 5, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotLookatObjectTurnOff", "param": "ActorName", "item": "Item_ClaimCheck"},
+        {"event": "Event58", "index": 14, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_EyeDrop"}
+      ]
+    },
+    {
+      "file": "Dm_FairyFountain_Courage.bfevfl",
+      "flow": "Dm_FairyFountain_Courage",
+      "actors": [],
+      "events": [
+        {"event": "Event144", "index": 75, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_GreatFairyCourge", "param": "ActorName", "item": "Item_FairyBless_DefenseDouble"}
+      ]
+    },
+    {
+      "file": "Dm_FairyFountain_Din.bfevfl",
+      "flow": "Dm_FairyFountain_Din",
+      "actors": [],
+      "events": [
+        {"event": "Event212", "index": 308, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_GreatFairyDin", "param": "ActorName", "item": "Item_DinFire"}
+      ]
+    },
+    {
+      "file": "Dm_FairyFountain_Frore.bfevfl",
+      "flow": "Dm_FairyFountain_Frore",
+      "actors": [],
+      "events": [
+        {"event": "Event174", "index": 107, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Demo_NotLookatObjectEntry", "param": "ActorName", "item": "Item_FaroreWind"}
+      ]
+    },
+    {
+      "file": "Dm_FairyFountain_Nayru.bfevfl",
+      "flow": "Dm_FairyFountain_Nayru",
+      "actors": [],
+      "events": [
+        {"event": "Event163", "index": 98, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Demo_NotLookatObjectEntry", "param": "ActorName", "item": "Item_NayruLove"}
+      ]
+    },
+    {
+      "file": "Dm_FairyFountain_Power.bfevfl",
+      "flow": "Dm_FairyFountain_Power",
+      "actors": [],
+      "events": [
+        {"event": "Event141", "index": 108, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Demo_NotLookatObjectEntry", "param": "ActorName", "item": "Item_FairyBless_MP"}
+      ]
+    },
+    {
+      "file": "Dm_FairyFountain_Wisdom.bfevfl",
+      "flow": "Dm_FairyFountain_Wisdom",
+      "actors": [],
+      "events": [
+        {"event": "Event144", "index": 72, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_GreatFairyWisdom", "param": "ActorName", "item": "Item_FairyBless_MPDouble"}
+      ]
+    },
+    {
+      "file": "Dm_FinalBattle_0010.bfevfl",
+      "flow": "Dm_FinalBattle_0010",
+      "actors": ["Weapon_Sword_Master"],
+      "events": [
+        {"event": "Event173", "index": 132, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Weapon_Sword_Master"}
+      ]
+    },
+    {
+      "file": "Dm_Gerudo_0025.bfevfl",
+      "flow": "Dm_Gerudo_0025",
+      "actors": [],
+      "events": [
+        {"event": "Event294", "index": 120, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotLookatObjectTurnOff", "param": "ActorName", "item": "Item_Token_Gerudo"}
+      ]
+    },
+    {
+      "file": "Dm_Goron_0030.bfevfl",
+      "flow": "Dm_Goron_0030",
+      "actors": ["Item_Gauntlet_Goron"],
+      "events": [
+        {"event": "Event127", "index": 128, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Goron", "param": "ActorName", "item": "Item_Gauntlet_Goron"}
+      ]
+    },
+    {
+      "file": "Dm_HrlCastle_0020.110.bfevfl",
+      "flow": "Dm_HrlCastle_0020",
+      "actors": ["Item_AlarmCucco"],
+      "events": [
+        {"event": "Event69", "index": 137, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_AlarmCucco"}
+      ]
+    },
+    {
+      "file": "Dm_HrlCastle_0020.bfevfl",
+      "flow": "Dm_HrlCastle_0020",
+      "actors": ["Item_AlarmCucco"],
+      "events": [
+        {"event": "Event69", "index": 137, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_AlarmCucco"}
+      ]
+    },
+    {
+      "file": "Dm_HrlCastle_0050.bfevfl",
+      "flow": "Dm_HrlCastle_0050",
+      "actors": ["Item_ZeldaLetter"],
+      "events": [
+        {"event": "Event59", "index": 238, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Zeldaletter", "param": "ActorName", "item": "Item_ZeldaLetter"}
+      ]
+    },
+    {
+      "file": "Dm_InsideJabu_Jabu_0030.110.bfevfl",
+      "flow": "Dm_InsideJabu_Jabu_0030",
+      "actors": [],
+      "events": [
+        {"event": "Event181", "index": 79, "role": "give", "via": "GetPouchContent:DisplayRutoGetByActorName", "param": "ActorName", "item": "Item_Stone_Water"}
+      ]
+    },
+    {
+      "file": "Dm_InsideJabu_Jabu_0030.bfevfl",
+      "flow": "Dm_InsideJabu_Jabu_0030",
+      "actors": [],
+      "events": [
+        {"event": "Event181", "index": 79, "role": "give", "via": "GetPouchContent:DisplayRutoGetByActorName", "param": "ActorName", "item": "Item_Stone_Water"}
+      ]
+    },
+    {
+      "file": "Dm_Kokiri_0130.bfevfl",
+      "flow": "Dm_Kokiri_0130",
+      "actors": ["Item_Stone_Forest"],
+      "events": [
+        {"event": "Event22", "index": 0, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Stone_Forest"}
+      ]
+    },
+    {
+      "file": "Dm_Kokiri_0155.bfevfl",
+      "flow": "Dm_Kokiri_0155",
+      "actors": ["Item_Ocarina_Fairy"],
+      "events": [
+        {"event": "Event68", "index": 51, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Ocarina_Fairy"},
+        {"event": "Event77", "index": 52, "role": "give", "via": "GetPouchContent:DisplayGetByActorName", "param": "ActorName", "item": "Item_Ocarina_Fairy"}
+      ]
+    },
+    {
+      "file": "Dm_LostWood_0040.bfevfl",
+      "flow": "Dm_LostWood_0040",
+      "actors": ["Item_BulletBag_Medium", "Item_BulletBag_Large"],
+      "events": [
+        {"event": "Event17", "index": 84, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotLookatObjectTurnOff", "param": "ActorName", "item": "Item_BulletBag_Large"},
+        {"event": "Event30", "index": 85, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotLookatObjectTurnOff", "param": "ActorName", "item": "Item_BulletBag_Medium"},
+        {"event": "Event37", "index": 86, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotLookatObjectTurnOff", "param": "ActorName", "item": "TBox_Rupee_Green"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Epona.bfevfl",
+      "flow": "Dm_MelodyGet_Epona",
+      "actors": [],
+      "events": [
+        {"event": "Event11", "index": 50, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_EponaSong"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Fire.bfevfl",
+      "flow": "Dm_MelodyGet_Fire",
+      "actors": [],
+      "events": [
+        {"event": "Event192", "index": 208, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_FireBolero"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Forest.bfevfl",
+      "flow": "Dm_MelodyGet_Forest",
+      "actors": [],
+      "events": [
+        {"event": "Event22", "index": 11, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_ForestMinuet"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Saria.bfevfl",
+      "flow": "Dm_MelodyGet_Saria",
+      "actors": [],
+      "events": [
+        {"event": "Event109", "index": 20, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_SariaSong"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Shadow.bfevfl",
+      "flow": "Dm_MelodyGet_Shadow",
+      "actors": [],
+      "events": [
+        {"event": "Event21", "index": 15, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_ShadowNocturne"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Shine.bfevfl",
+      "flow": "Dm_MelodyGet_Shine",
+      "actors": [],
+      "events": [
+        {"event": "Event53", "index": 249, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_LightPrelude"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Spilit.bfevfl",
+      "flow": "Dm_MelodyGet_Spilit",
+      "actors": [],
+      "events": [
+        {"event": "Event17", "index": 11, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_SpiritRequiem"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Storm.bfevfl",
+      "flow": "Dm_MelodyGet_Storm",
+      "actors": [],
+      "events": [
+        {"event": "Event29", "index": 21, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_StormSong"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Sun_03.bfevfl",
+      "flow": "Dm_MelodyGet_Sun_03",
+      "actors": [],
+      "events": [
+        {"event": "Event34", "index": 30, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_SunSong"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Time.bfevfl",
+      "flow": "Dm_MelodyGet_Time",
+      "actors": ["Item_Ocarina_Time"],
+      "events": [
+        {"event": "Event4", "index": 93, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_TimeSong"},
+        {"event": "Event70", "index": 106, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Ocarina_Time"},
+        {"event": "Event229", "index": 255, "role": "give", "via": "GetPouchContent:DisplayGetByActorName", "param": "ActorName", "item": "Item_Ocarina_Time"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Water.bfevfl",
+      "flow": "Dm_MelodyGet_Water",
+      "actors": [],
+      "events": [
+        {"event": "Event29", "index": 120, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_WaterSerenade"}
+      ]
+    },
+    {
+      "file": "Dm_MelodyGet_Zelda.bfevfl",
+      "flow": "Dm_MelodyGet_Zelda",
+      "actors": [],
+      "events": [
+        {"event": "Event111", "index": 66, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_ZeldaLullaby"}
+      ]
+    },
+    {
+      "file": "Dm_SY_Ocarina.bfevfl",
+      "flow": "Dm_SY_Ocarina",
+      "actors": [],
+      "events": [
+        {"event": "Event59", "index": 26, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_ZeldaLullaby"},
+        {"event": "Event60", "index": 27, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_EponaSong"},
+        {"event": "Event61", "index": 28, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_SariaSong"},
+        {"event": "Event62", "index": 29, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_SunSong"},
+        {"event": "Event63", "index": 30, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_TimeSong"},
+        {"event": "Event64", "index": 31, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_StormSong"},
+        {"event": "Event65", "index": 32, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_ForestMinuet"},
+        {"event": "Event67", "index": 34, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_FireBolero"},
+        {"event": "Event68", "index": 35, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_WaterSerenade"},
+        {"event": "Event69", "index": 36, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_SpiritRequiem"},
+        {"event": "Event70", "index": 37, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_ShadowNocturne"},
+        {"event": "Event71", "index": 38, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_LightPrelude"},
+        {"event": "Event81", "index": 77, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Melody_ScarecrowSong"}
+      ]
+    },
+    {
+      "file": "Dm_SY_Ocarina_SariaSong.bfevfl",
+      "flow": "Dm_SY_Ocarina_SariaSong",
+      "actors": [],
+      "events": [
+        {"event": "Event86", "index": 77, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Story_HaveRead"},
+        {"event": "Event57", "index": 119, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Story"},
+        {"event": "Event143", "index": 120, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Place"},
+        {"event": "Event100", "index": 125, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Time"},
+        {"event": "Event103", "index": 130, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Place"},
+        {"event": "Event169", "index": 149, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Story"},
+        {"event": "Event59", "index": 150, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Time"},
+        {"event": "Event171", "index": 152, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Story"},
+        {"event": "Event137", "index": 163, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Story"},
+        {"event": "Event175", "index": 170, "role": "flag", "via": "GameDataActor.EventTriggerSetGameDataBool", "param": "GameDataName", "item": "Item_Melody_SariaSong_Story"}
+      ]
+    },
+    {
+      "file": "Dm_SageRoom_0005.bfevfl",
+      "flow": "Dm_SageRoom_0005",
+      "actors": ["Item_Medal_Light"],
+      "events": [
+        {"event": "Event48", "index": 182, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Medal_Light"}
+      ]
+    },
+    {
+      "file": "Dm_TimeTemple_0030.bfevfl",
+      "flow": "Dm_TimeTemple_0030",
+      "actors": [],
+      "events": [
+        {"event": "Event117", "index": 60, "role": "give", "via": "GetPouchContent:DisplayGetByActorName", "param": "ActorName", "item": "Weapon_Sword_Master"}
+      ]
+    },
+    {
+      "file": "Dm_TimeTemple_0130.bfevfl",
+      "flow": "Dm_TimeTemple_0130",
+      "actors": ["Item_Arrow_Light"],
+      "events": [
+        {"event": "Event85", "index": 8, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Arrow_Light"}
+      ]
+    },
+    {
+      "file": "Dm_ZoraFountain_0030.bfevfl",
+      "flow": "Dm_ZoraFountain_0030",
+      "actors": ["Item_Stone_Water"],
+      "events": [
+        {"event": "Event3", "index": 0, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Stone_Water"}
+      ]
+    },
+    {
+      "file": "DoorOfTime.bfevfl",
+      "flow": "DoorOfTime",
+      "actors": [],
+      "events": [
+        {"event": "Event115", "index": 57, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Weapon_Sword_Master"}
+      ]
+    },
+    {
+      "file": "Enemy_Scrub_Business_Common.bfevfl",
+      "flow": "Enemy_Scrub_Business_Common",
+      "actors": [],
+      "events": [
+        {"event": "Event61", "index": 30, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_Seed_Bottle", "param": "DisplayActor", "item": "Item_Bottle_RedPotion"},
+        {"event": "Event85", "index": 32, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_Seed_Bottle", "param": "DisplayActor", "item": "Item_Bottle_GreenPotion"},
+        {"event": "Event87", "index": 33, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_Seed_Bottle", "param": "DisplayActor", "item": "Item_Bottle_Bug"},
+        {"event": "Event293", "index": 155, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Obj_Heart_Piece"},
+        {"event": "Event317", "index": 165, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_StickBag_Large"},
+        {"event": "Event322", "index": 167, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_StickBag_Medium"},
+        {"event": "Event318", "index": 168, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_NutBag_Large"},
+        {"event": "Event326", "index": 170, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_NutBag_Medium"},
+        {"event": "Event555", "index": 325, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_StickBag_Medium"},
+        {"event": "Event645", "index": 386, "role": "sell", "via": ":SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Obj_Heart_Piece"},
+        {"event": "Event5", "index": 444, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_2DShop", "param": "ActorName", "item": "Item_Bottle"}
+      ]
+    },
+    {
+      "file": "Enemy_Scrub_Business_Dream.bfevfl",
+      "flow": "Enemy_Scrub_Business_Dream",
+      "actors": [],
+      "events": [
+        {"event": "Event5", "index": 2, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_Seed_Bottle", "param": "DisplayActor", "item": "Item_Bottle_Bug"},
+        {"event": "Event37", "index": 37, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_Longshot"},
+        {"event": "Event46", "index": 41, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_Sword_Biggoron"},
+        {"event": "Event48", "index": 43, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_Arrow_Fire"},
+        {"event": "Event51", "index": 46, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_Arrow_Ice"},
+        {"event": "Event52", "index": 47, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_DinFire"},
+        {"event": "Event54", "index": 49, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_GlassTruth"},
+        {"event": "Event61", "index": 53, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_NayruLove"},
+        {"event": "Event63", "index": 55, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_HoverBoot"},
+        {"event": "Event69", "index": 61, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "param": "ActorName", "item": "Item_HeavyBoot"},
+        {"event": "Event78", "index": 291, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_2DShop", "param": "ActorName", "item": "Item_Bottle"}
+      ]
+    },
+    {
+      "file": "Enemy_Scrub_Business_Seed.bfevfl",
+      "flow": "Enemy_Scrub_Business_Seed",
+      "actors": [],
+      "events": [
+        {"event": "Event109", "index": 35, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_Seed_Bottle", "param": "DisplayActor", "item": "Item_Bottle_RedPotion"},
+        {"event": "Event110", "index": 36, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_Seed_Bottle", "param": "DisplayActor", "item": "Item_Bottle_GreenPotion"},
+        {"event": "Event9", "index": 37, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_ScrubBusinessSeed"},
+        {"event": "Event59", "index": 86, "role": "sell", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_Seed_Bottle", "param": "DisplayActor", "item": "Item_Bottle_Bug"},
+        {"event": "Event135", "index": 128, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_ScrubBusinessSeed"},
+        {"event": "Event130", "index": 130, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_ScrubBusinessSeed"}
+      ]
+    },
+    {
+      "file": "Field_PlantMagicBean.bfevfl",
+      "flow": "Field_PlantMagicBean",
+      "actors": [],
+      "events": [
+        {"event": "Event15", "index": 12, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_MagicBean"},
+        {"event": "Event73", "index": 34, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_MagicBean"}
+      ]
+    },
+    {
+      "file": "GatheringTokenGold.bfevfl",
+      "flow": "GatheringTokenGold",
+      "actors": [],
+      "events": [
+        {"event": "Event398", "index": 245, "role": "give", "via": ":TakenReward_Common_Event", "param": "TakenRewardActor", "item": "Item_Wallet_Medium"},
+        {"event": "Event75", "index": 246, "role": "give", "via": ":TakenReward_Common_Event", "param": "TakenRewardActor", "item": "Item_AgonyStone"},
+        {"event": "Event194", "index": 247, "role": "give", "via": ":TakenReward_Common_Event", "param": "TakenRewardActor", "item": "Item_Wallet_Large"},
+        {"event": "Event200", "index": 248, "role": "give", "via": ":TakenReward_Common_Event", "param": "TakenRewardActor", "item": "Item_BombchuBundle_Large"},
+        {"event": "Event219", "index": 249, "role": "give", "via": ":TakenReward_Common_Event", "param": "TakenRewardActor", "item": "Obj_Heart_Piece"},
+        {"event": "Event215", "index": 250, "role": "give", "via": ":TakenReward_Common_Event_200Rupee", "param": "TakenRewardActor", "item": "Obj_Rupee_Gold"},
+        {"event": "Event471", "index": 573, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Obj_Rupee_Gold"}
+      ]
+    },
+    {
+      "file": "Goto_HyruleCastle.bfevfl",
+      "flow": "Goto_HyruleCastle",
+      "actors": [],
+      "events": [
+        {"event": "Event55", "index": 24, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_WeirdEgg"},
+        {"event": "Event35", "index": 149, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Item_WeirdEgg"},
+        {"event": "Event205", "index": 169, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Pouch_Amiibo"},
+        {"event": "Event20", "index": 198, "role": "give", "via": "GetInEvent_EggHatche:GetInEvent_EggHatche", "param": "ActorName", "item": "Item_AlarmCucco"}
+      ]
+    },
+    {
+      "file": "LostWood_ScrubForestStageElder_SkullMaskFirst.bfevfl",
+      "flow": "LostWood_ScrubForestStageElder_SkullMaskFirst",
+      "actors": [],
+      "events": [
+        {"event": "Event29", "index": 28, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Item_StickBag_Medium"},
+        {"event": "Event32", "index": 29, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Item_StickBag_Large"}
+      ]
+    },
+    {
+      "file": "LostWood_ScrubForestStageElder_TrueMaskFirst.bfevfl",
+      "flow": "LostWood_ScrubForestStageElder_TrueMaskFirst",
+      "actors": [],
+      "events": [
+        {"event": "Event2", "index": 28, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Item_NutBag_Medium"},
+        {"event": "Event31", "index": 29, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Item_NutBag_Large"}
+      ]
+    },
+    {
+      "file": "MiniGame_BombchuBowling.bfevfl",
+      "flow": "MiniGame_BombchuBowling",
+      "actors": [],
+      "events": [
+        {"event": "Event81", "index": 293, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Rupee_Red"},
+        {"event": "Event143", "index": 296, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Heart_Piece"},
+        {"event": "Event304", "index": 297, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_BombBag_Medium"},
+        {"event": "Event306", "index": 298, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_BombBag_Large"},
+        {"event": "Event309", "index": 299, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_BombchuBundle_Medium"}
+      ]
+    },
+    {
+      "file": "MiniGame_Diving.bfevfl",
+      "flow": "MiniGame_Diving",
+      "actors": [],
+      "events": [
+        {"event": "Event15", "index": 315, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc", "param": "ActorName", "item": "Obj_Rupee_Red"},
+        {"event": "Event21", "index": 316, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc", "param": "ActorName", "item": "Item_Scale_Silver"}
+      ]
+    },
+    {
+      "file": "MiniGame_Fishing.bfevfl",
+      "flow": "MiniGame_Fishing",
+      "actors": ["Item_Scale_Gold", "Obj_Heart_Piece"],
+      "events": [
+        {"event": "Event567", "index": 191, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_FishingOnly", "param": "ReceiveItem", "item": "Item_FishingRod"},
+        {"event": "Event573", "index": 482, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Heart_Piece"},
+        {"event": "Event579", "index": 483, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_Scale_Gold"},
+        {"event": "Event821", "index": 489, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Obj_Heart_Piece"},
+        {"event": "Event822", "index": 490, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Item_Scale_Gold"},
+        {"event": "Event374", "index": 655, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent", "param": "ActorName", "item": "Obj_Rupee_Purple"},
+        {"event": "Event378", "index": 656, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent", "param": "ActorName", "item": "Obj_Rupee_Purple"},
+        {"event": "Event382", "index": 657, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent", "param": "ActorName", "item": "Obj_Rupee_Blue"},
+        {"event": "Event383", "index": 658, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent", "param": "ActorName", "item": "Obj_Rupee_Red"},
+        {"event": "Event384", "index": 659, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent", "param": "ActorName", "item": "Obj_Rupee_Red"},
+        {"event": "Event385", "index": 660, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent", "param": "ActorName", "item": "Obj_Rupee_Purple"}
+      ]
+    },
+    {
+      "file": "MiniGame_FrogTenors.bfevfl",
+      "flow": "MiniGame_FrogTenors",
+      "actors": [],
+      "events": [
+        {"event": "Event384", "index": 247, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc", "param": "ActorName", "item": "Obj_Heart_Piece"}
+      ]
+    },
+    {
+      "file": "MiniGame_HitTarget.bfevfl",
+      "flow": "MiniGame_HitTarget",
+      "actors": [],
+      "events": [
+        {"event": "Event8", "index": 290, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Rupee_Red"},
+        {"event": "Event378", "index": 291, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_BulletBag_Large"},
+        {"event": "Event241", "index": 292, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_BulletBag_Medium"},
+        {"event": "Event242", "index": 293, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_Quiver_Large"},
+        {"event": "Event381", "index": 294, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_Quiver_Medium"},
+        {"event": "Event382", "index": 295, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Rupee_Purple"}
+      ]
+    },
+    {
+      "file": "MiniGame_HorseRace.110.bfevfl",
+      "flow": "MiniGame_HorseRace",
+      "actors": [],
+      "events": [
+        {"event": "Event93", "index": 327, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Obj_Rupee_Red"}
+      ]
+    },
+    {
+      "file": "MiniGame_HorseRace.bfevfl",
+      "flow": "MiniGame_HorseRace",
+      "actors": [],
+      "events": [
+        {"event": "Event93", "index": 327, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Obj_Rupee_Red"}
+      ]
+    },
+    {
+      "file": "MiniGame_SequentialChoiceTreasure.bfevfl",
+      "flow": "MiniGame_SequentialChoiceTreasure",
+      "actors": [],
+      "events": [
+        {"event": "Event67", "index": 207, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_DisplayGet_NoDisplay", "param": "ReceiveItem", "item": "Obj_MiniGame_SmallKey"}
+      ]
+    },
+    {
+      "file": "Minigame_CatchCucco.bfevfl",
+      "flow": "Minigame_CatchCucco",
+      "actors": [],
+      "events": [
+        {"event": "Event181", "index": 124, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_Bottle"},
+        {"event": "Event62", "index": 125, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Rupee_Red"}
+      ]
+    },
+    {
+      "file": "Minigame_FindOutCucco.bfevfl",
+      "flow": "Minigame_FindOutCucco",
+      "actors": [],
+      "events": [
+        {"event": "Event304", "index": 190, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_EmptyBottle", "param": "ReceiveItem", "item": "Item_Bottle_Milk"},
+        {"event": "Event244", "index": 261, "role": "give", "via": "Dm_SY_GetInEvent:GetInEventInBottle", "param": "ActorName", "item": "Item_Bottle_Milk"},
+        {"event": "Event23", "index": 262, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_Bottle_Milk"}
+      ]
+    },
+    {
+      "file": "Minigame_HorsebackArchery.bfevfl",
+      "flow": "Minigame_HorsebackArchery",
+      "actors": [],
+      "events": [
+        {"event": "Event317", "index": 310, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_PosCamera", "param": "ActorName", "item": "Obj_Rupee_Purple"},
+        {"event": "Event319", "index": 311, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_PosCamera", "param": "ActorName", "item": "Item_Quiver_Large"},
+        {"event": "Event320", "index": 312, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_PosCamera", "param": "ActorName", "item": "Item_Quiver_Medium"},
+        {"event": "Event322", "index": 313, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_PosCamera", "param": "ActorName", "item": "Obj_Heart_Piece"}
+      ]
+    },
+    {
+      "file": "Npc_Bonooru.bfevfl",
+      "flow": "Npc_Bonooru",
+      "actors": [],
+      "events": [
+        {"event": "Event159", "index": 145, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_Melody_ScarecrowSong"}
+      ]
+    },
+    {
+      "file": "Npc_Goron_006_Child.bfevfl",
+      "flow": "Npc_Goron_006_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event58", "index": 72, "role": "give", "via": ":NpcCommon_HandOver_NpcToPlayer_NoDisplay_BombBag", "param": "ReveiveItem", "item": "Item_BombBag_Medium"},
+        {"event": "Event92", "index": 73, "role": "give", "via": ":NpcCommon_HandOver_NpcToPlayer_NoDisplay_BombBag", "param": "ReveiveItem", "item": "Item_BombBag_Large"}
+      ]
+    },
+    {
+      "file": "Npc_Goron_Biggoron_Adult.bfevfl",
+      "flow": "Npc_Goron_Biggoron_Adult",
+      "actors": ["Item_Sword_Biggoron"],
+      "events": [
+        {"event": "Event26", "index": 9, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_BrokenSword"},
+        {"event": "Event123", "index": 95, "role": "give", "via": "Dm_SY_GetInEvent:GetInEventItemSwordBiggoron", "param": "ActorName", "item": "Item_Sword_Biggoron"},
+        {"event": "Event96", "index": 112, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Weapon_Sword_Giant"},
+        {"event": "Event106", "index": 119, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Weapon_Sword_BrokenGiant"},
+        {"event": "Event232", "index": 266, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurnForPosCamera_BigGoron", "param": "ActorName", "item": "Item_Prescription"}
+      ]
+    },
+    {
+      "file": "Npc_Goron_Medigoron_Adult.bfevfl",
+      "flow": "Npc_Goron_Medigoron_Adult",
+      "actors": ["Item_Sword_Giant"],
+      "events": [
+        {"event": "Event11", "index": 6, "role": "sell", "via": "SimpleShop:SimpleShopRoot_Npc_Goron_Medigoron_Adult", "param": "DisplayItemActor", "item": "Item_Sword_Giant"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_001_Adult.bfevfl",
+      "flow": "Npc_Hylia_001_Adult",
+      "actors": [],
+      "events": [
+        {"event": "Event4", "index": 14, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent", "param": "ActorName", "item": "Obj_Heart_Piece"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_012_Adult.bfevfl",
+      "flow": "Npc_Hylia_012_Adult",
+      "actors": [],
+      "events": [
+        {"event": "Event51", "index": 16, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_PoacherSaw"},
+        {"event": "Event58", "index": 113, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_BrokenSword"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_017_Adult.bfevfl",
+      "flow": "Npc_Hylia_017_Adult",
+      "actors": ["Item_CojiroCucco"],
+      "events": [
+        {"event": "Event25", "index": 19, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_CojiroCucco"},
+        {"event": "Event56", "index": 38, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_OddMushroom"},
+        {"event": "Event100", "index": 72, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_OddMushroom"},
+        {"event": "Event116", "index": 83, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_OddMushroom"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_020_Shop_Child.bfevfl",
+      "flow": "Npc_Hylia_020_Shop_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event172", "index": 138, "role": "give", "via": "Dm_SY_GetInEvent:GetInEventInEquipedBottle", "param": "ActorName", "item": "Item_Bottle_RedPotion"},
+        {"event": "Event171", "index": 162, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_FixedCamera_WarpLink", "param": "ActorName", "item": "Item_Bottle"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_023_Shop_Child.bfevfl",
+      "flow": "Npc_Hylia_023_Shop_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event51", "index": 92, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Mask", "param": "ActorName", "item": "Item_Mask_Truth"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_045_Adult.bfevfl",
+      "flow": "Npc_Hylia_045_Adult",
+      "actors": [],
+      "events": [
+        {"event": "Event21", "index": 7, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_EyeballFrog"},
+        {"event": "Event137", "index": 54, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_EyeDrop"},
+        {"event": "Event26", "index": 182, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_EyeDrop"},
+        {"event": "Event27", "index": 183, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_EyeDrop"},
+        {"event": "Event45", "index": 184, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_EyeDrop"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_045_Child.bfevfl",
+      "flow": "Npc_Hylia_045_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event113", "index": 55, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Heart_Piece"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_047_Child.bfevfl",
+      "flow": "Npc_Hylia_047_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event3", "index": 0, "role": "sell", "via": "SimpleShop:SimpleShopRoot_3Choices", "param": "ActorName", "item": "Item_MagicBean"},
+        {"event": "Event33", "index": 24, "role": "sell", "via": "SimpleShop:SimpleShopRoot_3Choices", "param": "ActorName", "item": "Item_MagicBean"},
+        {"event": "Event7", "index": 25, "role": "sell", "via": "SimpleShop:SimpleShopRoot_3Choices", "param": "ActorName", "item": "Item_MagicBean"},
+        {"event": "Event11", "index": 26, "role": "sell", "via": "SimpleShop:SimpleShopRoot_3Choices", "param": "ActorName", "item": "Item_MagicBean"},
+        {"event": "Event15", "index": 27, "role": "sell", "via": "SimpleShop:SimpleShopRoot_3Choices", "param": "ActorName", "item": "Item_MagicBean"},
+        {"event": "Event35", "index": 28, "role": "sell", "via": "SimpleShop:SimpleShopRoot_3Choices", "param": "ActorName", "item": "Item_MagicBean"},
+        {"event": "Event55", "index": 51, "role": "sell", "via": "SimpleShop:SimpleShopRoot_3Choices", "param": "ActorName", "item": "Item_MagicBean"},
+        {"event": "Event56", "index": 52, "role": "sell", "via": "SimpleShop:SimpleShopRoot_3Choices", "param": "ActorName", "item": "Item_MagicBean"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_048_BottleShop.bfevfl",
+      "flow": "Npc_Hylia_048_BottleShop",
+      "actors": [],
+      "events": [
+        {"event": "Event329", "index": 319, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Poeshop", "param": "ActorName", "item": "Item_Bottle"},
+        {"event": "Event330", "index": 320, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Poeshop", "param": "ActorName", "item": "Obj_Rupee_Gold"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_049_Adult.bfevfl",
+      "flow": "Npc_Hylia_049_Adult",
+      "actors": [],
+      "events": [
+        {"event": "Event77", "index": 36, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_PocketCucco"},
+        {"event": "Event234", "index": 194, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_CojiroCucco"},
+        {"event": "Event264", "index": 223, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_PocketEgg"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_053_Adult.bfevfl",
+      "flow": "Npc_Hylia_053_Adult",
+      "actors": [],
+      "events": [
+        {"event": "Event54", "index": 36, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_OddMushroom"},
+        {"event": "Event167", "index": 127, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_OddPowder"},
+        {"event": "Event12", "index": 152, "role": "give", "via": "Dm_SY_GetInEvent:GetInEventInBottle_BlueBottleShop", "param": "ActorName", "item": "Item_Bottle_BluePotion"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_Dampe_001.110.bfevfl",
+      "flow": "Npc_Hylia_Dampe_001",
+      "actors": [],
+      "events": [
+        {"event": "Event628", "index": 602, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc_Dampe", "param": "ActorName", "item": "Obj_Heart_Piece"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_Dampe_001.bfevfl",
+      "flow": "Npc_Hylia_Dampe_001",
+      "actors": [],
+      "events": [
+        {"event": "Event628", "index": 602, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc_Dampe", "param": "ActorName", "item": "Obj_Heart_Piece"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_RunningMan_Adult.bfevfl",
+      "flow": "Npc_Hylia_RunningMan_Adult",
+      "actors": [],
+      "events": [
+        {"event": "Event125", "index": 189, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurnForPosCamera", "param": "ActorName", "item": "Obj_Rupee_Purple"},
+        {"event": "Event133", "index": 190, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurnForPosCamera", "param": "ActorName", "item": "Obj_Rupee_Red"}
+      ]
+    },
+    {
+      "file": "Npc_Hylia_Soldier_003.bfevfl",
+      "flow": "Npc_Hylia_Soldier_003",
+      "actors": [],
+      "events": [
+        {"event": "Event57", "index": 22, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_ZeldaLetter"}
+      ]
+    },
+    {
+      "file": "Npc_Kokiri_001_Shop_Child.bfevfl",
+      "flow": "Npc_Kokiri_001_Shop_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event116", "index": 109, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Mask", "param": "ActorName", "item": "Obj_Shield_Deku"},
+        {"event": "Event117", "index": 110, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Mask", "param": "ActorName", "item": "Obj_Shield_Deku"}
+      ]
+    },
+    {
+      "file": "Npc_Kokiri_005_Child.bfevfl",
+      "flow": "Npc_Kokiri_005_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event92", "index": 122, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Obj_Rupee_Blue"}
+      ]
+    },
+    {
+      "file": "Npc_Kokiri_008_Child.bfevfl",
+      "flow": "Npc_Kokiri_008_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event224", "index": 218, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Obj_Rupee_Blue"}
+      ]
+    },
+    {
+      "file": "Npc_Kokiri_Fado_Adult.bfevfl",
+      "flow": "Npc_Kokiri_Fado_Adult",
+      "actors": [],
+      "events": [
+        {"event": "Event63", "index": 48, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_OddPowder"},
+        {"event": "Event123", "index": 122, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_Fado", "param": "ActorName", "item": "Item_PoacherSaw"}
+      ]
+    },
+    {
+      "file": "Npc_SkullKid_Child.bfevfl",
+      "flow": "Npc_SkullKid_Child",
+      "actors": [],
+      "events": [
+        {"event": "Event71", "index": 62, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc", "param": "ActorName", "item": "Obj_Heart_Piece"}
+      ]
+    },
+    {
+      "file": "Npc_SkullKid_Child_02.bfevfl",
+      "flow": "Npc_SkullKid_Child_02",
+      "actors": [],
+      "events": [
+        {"event": "Event22", "index": 201, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc", "param": "ActorName", "item": "Obj_Rupee_Blue"},
+        {"event": "Event23", "index": 202, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc", "param": "ActorName", "item": "Obj_Rupee_Red"},
+        {"event": "Event24", "index": 203, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc", "param": "ActorName", "item": "Obj_Heart_Piece"},
+        {"event": "Event154", "index": 204, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_NotNpc", "param": "ActorName", "item": "Obj_Rupee_Blue"}
+      ]
+    },
+    {
+      "file": "Npc_Zora_011_Shop_Adult.bfevfl",
+      "flow": "Npc_Zora_011_Shop_Adult",
+      "actors": [],
+      "events": [
+        {"event": "Event2", "index": 64, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Mask", "param": "ActorName", "item": "Obj_Armor_Zora"}
+      ]
+    },
+    {
+      "file": "Npc_Zora_KingZora_adult.bfevfl",
+      "flow": "Npc_Zora_KingZora_adult",
+      "actors": [],
+      "events": [
+        {"event": "Event84", "index": 20, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Prescription"},
+        {"event": "Event47", "index": 59, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_EyeballFrog"},
+        {"event": "Event131", "index": 174, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_PosCamera", "param": "ActorName", "item": "Item_EyeballFrog"},
+        {"event": "Event87", "index": 175, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_PosCamera", "param": "ActorName", "item": "Item_EyeballFrog"}
+      ]
+    },
+    {
+      "file": "SageOfFire.bfevfl",
+      "flow": "SageOfFire",
+      "actors": [],
+      "events": [
+        {"event": "Event18", "index": 177, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn", "param": "ActorName", "item": "Obj_Armor_Goron"}
+      ]
+    },
+    {
+      "file": "SageOfWater.bfevfl",
+      "flow": "SageOfWater",
+      "actors": [],
+      "events": [
+        {"event": "Event242", "index": 252, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_NotTurn_PosCamera", "param": "ActorName", "item": "Obj_Armor_Zora"}
+      ]
+    },
+    {
+      "file": "SimpleShop.bfevfl",
+      "flow": "SimpleShop",
+      "actors": [],
+      "events": [
+        {"event": "Event115", "index": 37, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Weapon_Sword_BrokenGiant"},
+        {"event": "Event182", "index": 63, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Item_MagicBean"}
+      ]
+    },
+    {
+      "file": "SubEvent_AllBossBattle.bfevfl",
+      "flow": "SubEvent_AllBossBattle",
+      "actors": [],
+      "events": [
+        {"event": "Event381", "index": 80, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_Arrow_Light"},
+        {"event": "Event187", "index": 177, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Weapon_Shield_Mirror"},
+        {"event": "Event188", "index": 178, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Weapon_Boomerang"},
+        {"event": "Event189", "index": 179, "role": "give", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Weapon_Hammer"},
+        {"event": "Event190", "index": 191, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_SetLocator", "param": "ActorName", "item": "Item_Arrow_Light"},
+        {"event": "Event191", "index": 192, "role": "give", "via": "Dm_SY_GetInEvent:GetInEvent_Animation", "param": "ActorName", "item": "Item_Arrow_Light"}
+      ]
+    },
+    {
+      "file": "SubEvent_FindRichard.bfevfl",
+      "flow": "SubEvent_FindRichard",
+      "actors": [],
+      "events": [
+        {"event": "Event73", "index": 34, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Rupee_Blue"},
+        {"event": "Event16", "index": 35, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Heart_Piece"}
+      ]
+    },
+    {
+      "file": "SubEvent_GetSwordBigGoron.bfevfl",
+      "flow": "SubEvent_GetSwordBigGoron",
+      "actors": [],
+      "events": [
+        {"event": "Event5", "index": 0, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_PocketEgg"},
+        {"event": "Event69", "index": 54, "role": "take", "via": "PouchSystemActor.EventTriggerAddOrRemovePouchContent", "param": "Actor", "item": "Item_PocketEgg"},
+        {"event": "Event82", "index": 55, "role": "give", "via": "GetPouchContent:GetPouchContentByActorName", "param": "ActorName", "item": "Item_PocketCucco"},
+        {"event": "Event113", "index": 132, "role": "give", "via": "GetInEvent_EggHatche:GetInEvent_EggHatche", "param": "ActorName", "item": "Item_PocketCucco"}
+      ]
+    },
+    {
+      "file": "SubEvent_MaskSalesman.bfevfl",
+      "flow": "SubEvent_MaskSalesman",
+      "actors": [],
+      "events": [
+        {"event": "Event365", "index": 281, "role": "give", "via": "NpcCommon:NpcCommon_HandOver_NpcToPlayer_NoDisplay", "param": "ReveiveItem", "item": "Obj_Rupee_Gold"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,3276 @@
+{
+  "format": 1,
+  "note": "Identifiers only. verdict per chest from the event flow. strip_event lists chest actor hashes whose GetEventName can be removed, keep_event lists hashes that can take a new Drop__DropActor while the event stays.",
+  "snapshot": {
+    "locations_json": "383400 bytes sha256 cd9dbde7d00ef4f1",
+    "slice_json": "9952 bytes sha256 f606162936c86411"
+  },
+  "chest_verdicts": {
+    "keep_event": 8,
+    "keep_vanilla": 12,
+    "strip_safe": 34
+  },
+  "strip_event": [
+    "14911602953212243797",
+    "16654774376625985726",
+    "10012167258643363548",
+    "8291119063305855945",
+    "17531994809974271603",
+    "12161709650443144121",
+    "3688520809244472975",
+    "12083259659219538030",
+    "16713240760352215634",
+    "14060099092170010696",
+    "5306318520835485827",
+    "6948525240950728236",
+    "3174893090599461927",
+    "11082303891540711688",
+    "17657623307936361670",
+    "9284193025315608699",
+    "8579518566955184384",
+    "821372075822700622",
+    "16757992849254467386",
+    "4555665598794293658",
+    "9725242744547055868",
+    "10831981390482426294",
+    "12786193094758345086",
+    "9221365632831348137",
+    "14535080241831873137",
+    "1733372171176975157",
+    "13528903653876646082",
+    "16272168033146555902",
+    "15633505270333176438",
+    "10378828369334876242",
+    "16424266294822218796",
+    "16384925224245172970",
+    "18059711820131847165"
+  ],
+  "strip_event_untested": [
+    "3510516276638146208"
+  ],
+  "keep_event": [
+    "2490063409521505179",
+    "1941083939696166170",
+    "234006393181394602",
+    "4322670163630771947",
+    "5534919361313859554",
+    "16041366920820397198",
+    "6859289214373847284",
+    "5527401621172639818"
+  ],
+  "strip_but_set_flags": [],
+  "keep_vanilla": [
+    "6781536951709667179",
+    "16881481538337649070",
+    "1775586642693927992",
+    "5350594583391365806",
+    "6478285350658826847",
+    "12763522142548402103",
+    "18239509117326156183",
+    "7390716194495618474",
+    "9591654059707200528",
+    "12114077686306649660",
+    "13633455645485504369",
+    "15659683110284072977"
+  ],
+  "unresolved": [],
+  "test_batch": [
+    {
+      "location": "Deku Tree Slingshot Chest",
+      "area": "InsideTheDekuTree",
+      "hash": "821372075822700622",
+      "translate": [
+        -54.39,
+        111.96,
+        12.21
+      ],
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "new_item": "TBox_Rupee_Red",
+      "set_drop_flag": "no-event",
+      "expect": "the chest opens with the normal chest demo and gives the new item, and none of [navi:474] happens"
+    },
+    {
+      "location": "KF Midos Top Left Chest",
+      "area": "KokiriForest",
+      "hash": "12786193094758345086",
+      "translate": [
+        -53.2,
+        112.26,
+        -42.1
+      ],
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "new_item": "TBox_Rupee_Red",
+      "set_drop_flag": "no-event",
+      "expect": "the chest opens with the normal chest demo and gives the new item, and none of [flag:KokiriForest_TreasureBox_NaviChatOff=true, flag:NaviHint_Shield_Hylian_PlayedEventFlow=true, flag:HavePlayedEvent.NaviHint_Shield_Hylian=true, flag:HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop=true] happens"
+    },
+    {
+      "location": "Jabu Jabus Belly Compass Chest",
+      "area": "InsideJabuJabuBelly",
+      "hash": "3510516276638146208",
+      "translate": [
+        25.52,
+        92.29,
+        -175.93
+      ],
+      "verdict": "strip_safe",
+      "confidence": "guess",
+      "new_item": "TBox_Rupee_Red",
+      "set_drop_flag": "no-event",
+      "expect": "the chest opens with the normal chest demo and gives the new item, and none of [demo:InsideJabuJabuBelly_GetCompass, flag:InsideJabuJabuBelly_Room12_TBoxDemo=true, guest:Npc_Zora_Ruto_Child_001] happens"
+    },
+    {
+      "location": "Jabu Jabus Belly Boomerang Chest",
+      "area": "InsideJabuJabuBelly",
+      "hash": "5527401621172639818",
+      "translate": [
+        -31.3,
+        92.39,
+        -131.91
+      ],
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "new_item": "TBox_Rupee_Red",
+      "set_drop_flag": "",
+      "expect": "the chest gives the new item and the event still runs, so [InsideJabuJabuBelly_Room09_TBoxDemo=true] still happens (InsideJabuJabuBelly_Room09_TBoxDemo read by Banc/InsideJabuJabuBelly/InsideJabuJabuBelly_Dynamic.bcett.byml.zs (an NPC air wall is present only while the flag is false))"
+    },
+    {
+      "location": "Market Treasure Chest Game Room 1 Bottom",
+      "area": "Market",
+      "hash": "12114077686306649660",
+      "translate": [
+        -85.92,
+        97.88,
+        15.65
+      ],
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "new_item": "TBox_Rupee_Red",
+      "set_drop_flag": "",
+      "expect": "probe: flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenMissTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_MissGame=true, Market_Minigame_ChoiceTreasure_MissReplayTalk=true, UI_MapMenuIsUnvisibleByLsPush=true, UI_MapMenuIsUnvisibleByLsPush=false, Market_MiniGame_ChoiceTreasure_NumOfHit=0, Market_MiniGame_ChoiceTreasure_MissGame=false, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested"
+    },
+    {
+      "location": "Ice Cavern Iron Boots Chest",
+      "area": "IceCavern",
+      "hash": "6859289214373847284",
+      "translate": [
+        -46.22,
+        109.71,
+        42.53
+      ],
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "new_item": "TBox_Rupee_Red",
+      "set_drop_flag": "",
+      "expect": "the chest gives the new item and the event still runs, so [Dm_MelodyGet_Water, Dm_SY_Ocarina:LearningOcarinaPlayAutoForSeek, Dm_SY_Ocarina:LearningOcarinaFollowExample, Dm_SY_Ocarina:LearningOcarinaPlayExample, SageOfWater_GetWaterSerenade=true, AllSage_MeetSheik_And_Gone=true, AllSage_MeetSheikCount+=1] still happens (AllSage_MeetSheikCount read by Event/EventFlow/Dm_MelodyGet_Fire.bfevfl.zs (the other Sheik song demos branch on the counter) | AllSage_MeetSheikCount read by Event/EventFlow/Dm_MelodyGet_Forest.bfevfl.zs (the other Sheik song demos branch on the counter) | AllSage_MeetSheikCount read by Event/EventFlow/Dm_MelodyGet_Shine.bfevfl.zs (the other Sheik song demos branch on the counter) | AllSage_MeetSheikCount read by Event/EventFlow/Dm_MelodyGet_Spilit.bfevfl.zs (the other Sheik song demos branch on the counter) | SageOfWater_IsAfter_Step04_Exp read by Event/EventFlow/Dm_SY_BancChangeArrive.bfevfl.zs (consumer not reviewed) | SageOfWater_IsAfter_Step04_Exp read by Pack/Actor/Npc_Zora_KingZora_adult.pack.zs (consumer not reviewed) | SageOfWater_IsAfter_Step05_Exp read by Event/EventFlow/Dm_SY_BancChangeArrive.bfevfl.zs (consumer not reviewed) | song Dm_SY_Ocarina:LearningOcarinaPlayAutoForSeek | song Dm_SY_Ocarina:LearningOcarinaFollowExample | song Dm_SY_Ocarina:LearningOcarinaPlayExample)"
+    }
+  ],
+  "events": [
+    {
+      "event": "BottomOfTheWell_GetCompass",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_BottomOfTheWell_Compass",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_BottomOfTheWell_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "BottomOfTheWell_GetGlassTruth",
+      "flow": "BottomOfTheWell",
+      "entry": "BottomOfTheWell_GetGlassTruth",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow BottomOfTheWell:BottomOfTheWell_GetGlassTruth plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [
+        "IsGet.Item_Melody_ShadowNocturne"
+      ],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "InitTalk:InitTalk_NaviPlayerFront"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "DodongoCavern_GetCompass",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_DoDoGon_Compass",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_DoDoGon_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "DodongoCavern_GetMap",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_DoDoGon_Map",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_DoDoGon_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "FireTemple_GetCompass",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_FireTemple_Compass",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_FireTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "FireTemple_GetHammer",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_FireTemple_GetHammer",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_FireTemple_GetHammer plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:479"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:479"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "FireTemple_GetMap",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_FireTemple_Map",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_FireTemple_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "ForesetTemple_GetBossKey",
+      "flow": "ForestTemple_Gimmick",
+      "entry": "TreasureBoxDM_NaviChat_ForestTemple_BossKey",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 5,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow ForestTemple_Gimmick:TreasureBoxDM_NaviChat_ForestTemple_BossKey plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:361"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:361"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "ForesetTemple_GetCompass",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_ForestTemple_Compass",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_ForestTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "ForesetTemple_GetMap",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_ForestTemple_Map",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_ForestTemple_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "ForestTemple_GetBow",
+      "flow": "SageOfForest",
+      "entry": "TreasureBoxDM_NaviChat_Bow",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow SageOfForest:TreasureBoxDM_NaviChat_Bow plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:476"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:476"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "Get_StoneOfFire_GetBombBag",
+      "flow": "Get_StoneOfFire",
+      "entry": "Get_StoneOfFire_GetBombBag",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Get_StoneOfFire:Get_StoneOfFire_GetBombBag plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:495"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:495"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "Get_StoneOfForest_GetSword",
+      "flow": "Get_StoneOfForest",
+      "entry": "GetSword",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "verified",
+      "why": "flow Get_StoneOfForest:GetSword plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [
+        "Dm_Kokiri_0063"
+      ],
+      "flags_set": [],
+      "flags_read": [
+        "HaveTalked_Special.Npc_Kokiri_Mido_Child_Talk_Event30",
+        "KokiriForest_Npc_Kokiri_Mido_Child_Blocker",
+        "IsGet.Weapon_Shield_Deku"
+      ],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:75",
+        "navi:437"
+      ],
+      "item_grants": [],
+      "equips": [
+        "Weapon_Sword_Kokiri"
+      ],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:75",
+        "navi:437",
+        "demo:Dm_Kokiri_0063",
+        "equip:Weapon_Sword_Kokiri"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "InsideGanonCastle_Get_Gauntlet_Gold",
+      "flow": "Defeat_Ganon",
+      "entry": "InsideGanonCastle_Dungeon_Get_Gauntlet_Gold",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Defeat_Ganon:InsideGanonCastle_Dungeon_Get_Gauntlet_Gold plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [
+        "Dm_InsideGanonCastle_0006"
+      ],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:496"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:496",
+        "demo:Dm_InsideGanonCastle_0006"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "InsideJabuJabuBelly_TreasureBoxWithRuto09",
+      "flow": "InsideJabuJabuBelly_FocusGimmick",
+      "entry": "TreasureBox_WithRuto_Room09",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow InsideJabuJabuBelly_FocusGimmick:TreasureBox_WithRuto_Room09 plays the generic chest demo and sets InsideJabuJabuBelly_Room09_TBoxDemo=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [
+        "InsideJabuJabuBelly_Room09_TBoxDemo=true"
+      ],
+      "flags_read": [
+        "InsideJabuJabuBelly_Room09_TBoxNearRuto"
+      ],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:475"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [
+        "Npc_Zora_Ruto_Child_001"
+      ],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [
+        "navi:475"
+      ],
+      "needs": [
+        "InsideJabuJabuBelly_Room09_TBoxDemo read by Banc/InsideJabuJabuBelly/InsideJabuJabuBelly_Dynamic.bcett.byml.zs (an NPC air wall is present only while the flag is false)"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "InsideJabuJabuBelly_Room09_TBoxDemo",
+          "file": "Logic/InsideJabuJabuBelly_Level_Room_09_Prefab_f99d.logic.module.ainb",
+          "path": "",
+          "class": "cosmetic",
+          "note": "Ruto sensor area is deleted once the demo ran"
+        },
+        {
+          "token": "InsideJabuJabuBelly_Room09_TBoxDemo",
+          "file": "Banc/InsideJabuJabuBelly/InsideJabuJabuBelly_Dynamic.bcett.byml.zs",
+          "path": "FldObj_AirWall_Npc:Actors.Presence.FlagName",
+          "class": "gating",
+          "note": "an NPC air wall is present only while the flag is false"
+        }
+      ]
+    },
+    {
+      "event": "InsideJabuJabuBelly_TreasureBoxWithRuto12",
+      "flow": "InsideJabuJabuBelly_FocusGimmick",
+      "entry": "TreasureBox_WithRuto_Room12",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "guess",
+      "why": "flow InsideJabuJabuBelly_FocusGimmick:TreasureBox_WithRuto_Room12 plays the generic chest demo and sets InsideJabuJabuBelly_Room12_TBoxDemo=true, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [
+        "InsideJabuJabuBelly_GetCompass"
+      ],
+      "flags_set": [
+        "InsideJabuJabuBelly_Room12_TBoxDemo=true"
+      ],
+      "flags_read": [
+        "InsideJabuJabuBelly_Room12_TBoxNearRuto"
+      ],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [
+        "Npc_Zora_Ruto_Child_001"
+      ],
+      "calls": [],
+      "lost_if_stripped": [
+        "demo:InsideJabuJabuBelly_GetCompass",
+        "flag:InsideJabuJabuBelly_Room12_TBoxDemo=true",
+        "guest:Npc_Zora_Ruto_Child_001"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "InsideJabuJabuBelly_Room12_TBoxDemo",
+          "file": "Logic/InsideJabuJabuBelly_Level_Room_12_Prefab_f4c5.logic.module.ainb",
+          "path": "",
+          "class": "cosmetic",
+          "note": "Ruto sensor area is deleted once the demo ran"
+        }
+      ]
+    },
+    {
+      "event": "InsideTheDekuTree_GetCompass",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_Deku_Compass",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_Deku_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:345"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:345"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "InsideTheDekuTree_GetMap",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_Deku_Map",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_Deku_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:354"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:354"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "InsideTheDekuTree_GetSlingShot",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_Deku_GetSlingShot",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_Deku_GetSlingShot plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:474"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:474"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "KokiriForest_TreasureBox_NaviChatOff",
+      "flow": "Dm_SY_TreasureboxSmall",
+      "entry": "Success_MidoHouse",
+      "component": "FellingInGameFlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 4,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Dm_SY_TreasureboxSmall:Success_MidoHouse plays the generic chest demo and sets KokiriForest_TreasureBox_NaviChatOff=true, NaviHint_Shield_Hylian_PlayedEventFlow=true, HavePlayedEvent.NaviHint_Shield_Hylian=true, HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop=true, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [
+        "KokiriForest_TreasureBox_NaviChatOff=true",
+        "NaviHint_Shield_Hylian_PlayedEventFlow=true",
+        "HavePlayedEvent.NaviHint_Shield_Hylian=true",
+        "HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop=true"
+      ],
+      "flags_read": [
+        "SageOfForest_IsAfter_Ready_Exp",
+        "HavePlayedEvent.NaviHint_Shield_Hylian",
+        "HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop"
+      ],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "Dm_SY_Get:CheckHeart",
+        "ActionGuide:ActionGuide",
+        "NaviHint:NaviHint_Shield_Hylian_PlayCheck",
+        "InitTalk:InitTalk_NaviPlayerSide",
+        "ActionGuide:OpenActionGuideSceen",
+        "Dm_SY_Get:Navi_GetBig",
+        "Dm_SY_Get:IsCameraHit",
+        "Dm_SY_Get:Dm_SY_Get_Camera",
+        "GetPouchContent:DisplayGetByActorName",
+        "GetPouchContent:GetPouchContentByActorNameForShowPickUpWindow",
+        "GetPouchContent:GetPouchContentByActorNameForTreasureBox"
+      ],
+      "lost_if_stripped": [
+        "flag:KokiriForest_TreasureBox_NaviChatOff=true",
+        "flag:NaviHint_Shield_Hylian_PlayedEventFlow=true",
+        "flag:HavePlayedEvent.NaviHint_Shield_Hylian=true",
+        "flag:HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop=true"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "HavePlayedEvent.NaviHint_Shield_Hylian",
+          "file": "Event/EventFlow/AllSage.bfevfl.zs",
+          "path": "",
+          "class": "cosmetic",
+          "note": "Navi hint tracking"
+        },
+        {
+          "token": "HavePlayedEvent.NaviHint_Shield_Hylian",
+          "file": "Event/ResidentEventList/Default.engine__event__ResidentEventList.bgyml",
+          "path": "",
+          "class": "cosmetic",
+          "note": "resident event listing"
+        },
+        {
+          "token": "KokiriForest_TreasureBox_NaviChatOff",
+          "file": "Pack/NaviBallonMess.pack.zs",
+          "path": "",
+          "class": "cosmetic",
+          "note": "Navi balloon message condition"
+        },
+        {
+          "token": "NaviHint_Shield_Hylian_PlayedEventFlow",
+          "file": "Sequence/AfterEvent.module.ainb",
+          "path": "",
+          "class": "cosmetic",
+          "note": "Navi hint tracking read by the generic event sequence"
+        },
+        {
+          "token": "NaviHint_Shield_Hylian_PlayedEventFlow",
+          "file": "Sequence/MenuToEvent.module.ainb",
+          "path": "",
+          "class": "cosmetic",
+          "note": "Navi hint tracking read by the generic event sequence"
+        }
+      ]
+    },
+    {
+      "event": "MiniGame_ChoiceTreasure_OpenClearTreasureBox",
+      "flow": "MiniGame_SequentialChoiceTreasure",
+      "entry": "MiniGame_SequentialChoiceTreasure_OpenClearTreasureBox",
+      "component": "ObstacleHideEvent",
+      "flow_has_110_variant": false,
+      "chests": 2,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenClearTreasureBox has no chest demo and sets MiniGame_ChoiceTreasure_TalkedAboutRules=false, MiniGame_ChoiceTreasure_ElapsedTime, MiniGame_ChoiceTreasure_IsClear=true, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": false,
+      "demos": [],
+      "flags_set": [
+        "MiniGame_ChoiceTreasure_TalkedAboutRules=false",
+        "MiniGame_ChoiceTreasure_ElapsedTime",
+        "MiniGame_ChoiceTreasure_IsClear=true",
+        "MiniGame_SmallKeyNum=0",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox=false",
+        "MiniGame_ChoiceTreasure_GimickRegeneration=true",
+        "MiniGame_ChoiceTreasure_GimickRegeneration=false"
+      ],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "NaviEventCommon:NaviWarp_PlayerHomePos_Choice",
+        "Dm_SY_Treasurebox:SuccessForMiniGame"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [
+        "MiniGame_ChoiceTreasure_GimickRegeneration read by Logic/MiniGame_SequentialChoiceTreasure_2643.logic.module.ainb (minigame room logic regenerates the chests)",
+        "MiniGame_ChoiceTreasure_IsClear read by Logic/MiniGame_SequentialChoiceTreasure_cbde.logic.module.ainb (minigame room logic)",
+        "MiniGame_ChoiceTreasure_IsClear read by Banc/Market/Market_Child_Static.bcett.byml.zs (heart piece anchor reads the clear flag)",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox read by Pack/Actor/Obj_HrlCity_Shop_TBox_A_01.pack.zs (the minigame chest actor reads it)",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox read by Pack/Actor/Obj_HrlCity_Shop_TBox_A_02.pack.zs (the minigame chest actor reads it)",
+        "MiniGame_SmallKeyNum read by Logic/MiniGame_ChainLockedDoor_cce0.logic.module.ainb (chain lock door counts the key flag)",
+        "MiniGame_SmallKeyNum read by Pack/Actor/Obj_HrlCity_Shop_DoorChainLock_A_01.pack.zs (chain lock door actor pack)"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "MiniGame_ChoiceTreasure_GimickRegeneration",
+          "file": "Logic/MiniGame_SequentialChoiceTreasure_2643.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "minigame room logic regenerates the chests"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_IsClear",
+          "file": "Logic/MiniGame_SequentialChoiceTreasure_cbde.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "minigame room logic"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_IsClear",
+          "file": "Banc/Market/Market_Child_Static.bcett.byml.zs",
+          "path": "HeartPieceAnchor:Actors.Dynamic.HeartPieceAnchor_GameDataPath",
+          "class": "gating",
+          "note": "heart piece anchor reads the clear flag"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_OpenedEitherBox",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_TBox_A_01.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the minigame chest actor reads it"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_OpenedEitherBox",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_TBox_A_02.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the minigame chest actor reads it"
+        },
+        {
+          "token": "MiniGame_SmallKeyNum",
+          "file": "Logic/MiniGame_ChainLockedDoor_cce0.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "chain lock door counts the key flag"
+        },
+        {
+          "token": "MiniGame_SmallKeyNum",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_DoorChainLock_A_01.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "chain lock door actor pack"
+        }
+      ]
+    },
+    {
+      "event": "MiniGame_ChoiceTreasure_OpenHitTreasureBox",
+      "flow": "MiniGame_SequentialChoiceTreasure",
+      "entry": "MiniGame_SequentialChoiceTreasure_OpenHitTreasureBox",
+      "component": "MiniGame_ChoiceTreasure",
+      "flow_has_110_variant": false,
+      "chests": 4,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenHitTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_NumOfHit+=1, MiniGame_SmallKeyNum+=1, UI_RequestSmallKeyCountUpDemo=true, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": false,
+      "demos": [],
+      "flags_set": [
+        "Market_MiniGame_ChoiceTreasure_NumOfHit+=1",
+        "MiniGame_SmallKeyNum+=1",
+        "UI_RequestSmallKeyCountUpDemo=true",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox=true"
+      ],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "Dm_SY_TreasureboxSmall:SuccessForMiniGame"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [
+        "MiniGame_ChoiceTreasure_OpenedEitherBox read by Pack/Actor/Obj_HrlCity_Shop_TBox_A_01.pack.zs (the minigame chest actor reads it)",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox read by Pack/Actor/Obj_HrlCity_Shop_TBox_A_02.pack.zs (the minigame chest actor reads it)",
+        "MiniGame_SmallKeyNum read by Logic/MiniGame_ChainLockedDoor_cce0.logic.module.ainb (chain lock door counts the key flag)",
+        "MiniGame_SmallKeyNum read by Pack/Actor/Obj_HrlCity_Shop_DoorChainLock_A_01.pack.zs (chain lock door actor pack)"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "Market_MiniGame_ChoiceTreasure_NumOfHit",
+          "file": "Event/EventFlow/GetPouchContent.bfevfl.zs",
+          "path": "",
+          "class": "cosmetic",
+          "note": "picks the get message variant"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_OpenedEitherBox",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_TBox_A_01.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the minigame chest actor reads it"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_OpenedEitherBox",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_TBox_A_02.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the minigame chest actor reads it"
+        },
+        {
+          "token": "MiniGame_SmallKeyNum",
+          "file": "Logic/MiniGame_ChainLockedDoor_cce0.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "chain lock door counts the key flag"
+        },
+        {
+          "token": "MiniGame_SmallKeyNum",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_DoorChainLock_A_01.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "chain lock door actor pack"
+        }
+      ]
+    },
+    {
+      "event": "MiniGame_ChoiceTreasure_OpenLastHitTreasureBox",
+      "flow": "MiniGame_SequentialChoiceTreasure",
+      "entry": "MiniGame_SequentialChoiceTreasure_OpenLastHitTreasureBox",
+      "component": "MiniGame_ChoiceTreasure",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenLastHitTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_NumOfHit+=1, MiniGame_SmallKeyNum+=1, UI_RequestSmallKeyCountUpDemo=true, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": false,
+      "demos": [],
+      "flags_set": [
+        "Market_MiniGame_ChoiceTreasure_NumOfHit+=1",
+        "MiniGame_SmallKeyNum+=1",
+        "UI_RequestSmallKeyCountUpDemo=true",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox=true"
+      ],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "Dm_SY_TreasureboxSmall:SuccessForMiniGame"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [
+        "MiniGame_ChoiceTreasure_OpenedEitherBox read by Pack/Actor/Obj_HrlCity_Shop_TBox_A_01.pack.zs (the minigame chest actor reads it)",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox read by Pack/Actor/Obj_HrlCity_Shop_TBox_A_02.pack.zs (the minigame chest actor reads it)",
+        "MiniGame_SmallKeyNum read by Logic/MiniGame_ChainLockedDoor_cce0.logic.module.ainb (chain lock door counts the key flag)",
+        "MiniGame_SmallKeyNum read by Pack/Actor/Obj_HrlCity_Shop_DoorChainLock_A_01.pack.zs (chain lock door actor pack)"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "Market_MiniGame_ChoiceTreasure_NumOfHit",
+          "file": "Event/EventFlow/GetPouchContent.bfevfl.zs",
+          "path": "",
+          "class": "cosmetic",
+          "note": "picks the get message variant"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_OpenedEitherBox",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_TBox_A_01.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the minigame chest actor reads it"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_OpenedEitherBox",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_TBox_A_02.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the minigame chest actor reads it"
+        },
+        {
+          "token": "MiniGame_SmallKeyNum",
+          "file": "Logic/MiniGame_ChainLockedDoor_cce0.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "chain lock door counts the key flag"
+        },
+        {
+          "token": "MiniGame_SmallKeyNum",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_DoorChainLock_A_01.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "chain lock door actor pack"
+        }
+      ]
+    },
+    {
+      "event": "MiniGame_ChoiceTreasure_OpenMissTreasureBox",
+      "flow": "MiniGame_SequentialChoiceTreasure",
+      "entry": "MiniGame_SequentialChoiceTreasure_OpenMissTreasureBox",
+      "component": "MiniGame_ChoiceTreasure",
+      "flow_has_110_variant": false,
+      "chests": 5,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenMissTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_MissGame=true, Market_Minigame_ChoiceTreasure_MissReplayTalk=true, UI_MapMenuIsUnvisibleByLsPush=true, UI_MapMenuIsUnvisibleByLsPush=false, Market_MiniGame_ChoiceTreasure_NumOfHit=0, Market_MiniGame_ChoiceTreasure_MissGame=false, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": false,
+      "demos": [],
+      "flags_set": [
+        "Market_MiniGame_ChoiceTreasure_MissGame=true",
+        "Market_Minigame_ChoiceTreasure_MissReplayTalk=true",
+        "UI_MapMenuIsUnvisibleByLsPush=true",
+        "UI_MapMenuIsUnvisibleByLsPush=false",
+        "Market_MiniGame_ChoiceTreasure_NumOfHit=0",
+        "Market_MiniGame_ChoiceTreasure_MissGame=false",
+        "MiniGame_SmallKeyNum=0",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox=false",
+        "MiniGame_ChoiceTreasure_GimickRegeneration=true",
+        "MiniGame_ChoiceTreasure_GimickRegeneration=false",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox=true"
+      ],
+      "flags_read": [
+        "Market_MiniGame_ChoiceTreasure_NumOfHit"
+      ],
+      "challenge_steps": [
+        "MiniGame_SequentialChoiceTreasure:Playing"
+      ],
+      "dialog": [],
+      "item_grants": [
+        "give:Obj_MiniGame_SmallKey"
+      ],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "InitTalk:InitTalk_OnEvent",
+        "NpcCommon:NpcCommon_Receive_PlayerToNpc",
+        "NpcCommon:NpcCommon_HandOver_NpcToPlayer_DisplayGet_NoDisplay",
+        "NaviEventCommon:NaviWarp_PlayerHomePos_Choice",
+        "Dm_SY_TreasureboxSmall:SuccessForMiniGame"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [
+        "MiniGame_ChoiceTreasure_GimickRegeneration read by Logic/MiniGame_SequentialChoiceTreasure_2643.logic.module.ainb (minigame room logic regenerates the chests)",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox read by Pack/Actor/Obj_HrlCity_Shop_TBox_A_01.pack.zs (the minigame chest actor reads it)",
+        "MiniGame_ChoiceTreasure_OpenedEitherBox read by Pack/Actor/Obj_HrlCity_Shop_TBox_A_02.pack.zs (the minigame chest actor reads it)",
+        "MiniGame_SmallKeyNum read by Logic/MiniGame_ChainLockedDoor_cce0.logic.module.ainb (chain lock door counts the key flag)",
+        "MiniGame_SmallKeyNum read by Pack/Actor/Obj_HrlCity_Shop_DoorChainLock_A_01.pack.zs (chain lock door actor pack)"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "Market_MiniGame_ChoiceTreasure_NumOfHit",
+          "file": "Event/EventFlow/GetPouchContent.bfevfl.zs",
+          "path": "",
+          "class": "cosmetic",
+          "note": "picks the get message variant"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_GimickRegeneration",
+          "file": "Logic/MiniGame_SequentialChoiceTreasure_2643.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "minigame room logic regenerates the chests"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_OpenedEitherBox",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_TBox_A_01.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the minigame chest actor reads it"
+        },
+        {
+          "token": "MiniGame_ChoiceTreasure_OpenedEitherBox",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_TBox_A_02.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the minigame chest actor reads it"
+        },
+        {
+          "token": "MiniGame_SmallKeyNum",
+          "file": "Logic/MiniGame_ChainLockedDoor_cce0.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "chain lock door counts the key flag"
+        },
+        {
+          "token": "MiniGame_SmallKeyNum",
+          "file": "Pack/Actor/Obj_HrlCity_Shop_DoorChainLock_A_01.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "chain lock door actor pack"
+        },
+        {
+          "token": "UI_MapMenuIsUnvisibleByLsPush",
+          "file": "Sequence/Event.module.ainb",
+          "path": "",
+          "class": "cosmetic",
+          "note": "map menu hide toggle during the minigame"
+        }
+      ]
+    },
+    {
+      "event": "MiniGame_DampeRace_OpenGoalTBox",
+      "flow": "MiniGame_DampeRace",
+      "entry": "MiniGame_DampeRace_OpenGoalTBox",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 4,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_DampeRace:MiniGame_DampeRace_OpenGoalTBox plays the generic chest demo and sets Minigame_DampeRace_TreasureBoxState=OpenedRupeeLow, Minigame_DampeRace_TreasureBoxState=OpenedRupee, Minigame_DampeRace_TreasureBoxState=OpenedHeartPiece, Minigame_DampeRace_TreasureBoxState=OpenedHookShot, NaviRepeat_Minigame_DampeRace_End=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [
+        "Minigame_DampeRace_TreasureBoxState=OpenedRupeeLow",
+        "Minigame_DampeRace_TreasureBoxState=OpenedRupee",
+        "Minigame_DampeRace_TreasureBoxState=OpenedHeartPiece",
+        "Minigame_DampeRace_TreasureBoxState=OpenedHookShot",
+        "NaviRepeat_Minigame_DampeRace_End=true"
+      ],
+      "flags_read": [
+        "Minigame_DampeRace_TreasureBoxState",
+        "MiniGame_DampeRace_IsClearLeastOnce"
+      ],
+      "challenge_steps": [
+        "MiniGame_DampeRace:RetryCheck"
+      ],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "Common_Camera_Pln:CameraDoF_Default",
+        "NaviEventCommon:EventTalk_Navi_WithPlayerTalk",
+        "NaviChat:NaviEmotionChange"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [
+        "HavePlayedEvent.MiniGame_DampeRace_OpenGoalTBox read by Logic/UnderTheGrave_Prefab_6971.logic.module.ainb (grave logic reads that the goal chest was opened)",
+        "Minigame_DampeRace_TreasureBoxState read by Logic/UnderTheGrave_Prefab_6971.logic.module.ainb (grave logic picks which goal chest appears)"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "HavePlayedEvent.MiniGame_DampeRace_OpenGoalTBox",
+          "file": "Logic/UnderTheGrave_Prefab_6971.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "grave logic reads that the goal chest was opened"
+        },
+        {
+          "token": "Minigame_DampeRace_TreasureBoxState",
+          "file": "Logic/UnderTheGrave_Prefab_6971.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "grave logic picks which goal chest appears"
+        }
+      ]
+    },
+    {
+      "event": "SageOfShdawo_GetHoverBoots",
+      "flow": "SageOfShadow",
+      "entry": "SageOfShdawo_GetHoverBoots",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow SageOfShadow:SageOfShdawo_GetHoverBoots plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:228"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:228"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "SageOfSpirit_GetShield",
+      "flow": "SageOfSpirit",
+      "entry": "SageOfSpirit_GetShield",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow SageOfSpirit:SageOfSpirit_GetShield plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "SageOfSpirit_NaboorIsTakenAway",
+      "flow": "SageOfSpirit",
+      "entry": "SageOfSpirit_NaboorIsTakenAway",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow SageOfSpirit:SageOfSpirit_NaboorIsTakenAway plays the generic chest demo and sets HavePlayedEvent.NaviTips_Gauntlet_01=false, HavePlayedEvent.NaviTips_Gauntlet_03=false, NaviChat_Serious_Time=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": true,
+      "demos": [
+        "Dm_DesertColossus_0030"
+      ],
+      "flags_set": [
+        "HavePlayedEvent.NaviTips_Gauntlet_01=false",
+        "HavePlayedEvent.NaviTips_Gauntlet_03=false",
+        "NaviChat_Serious_Time=true"
+      ],
+      "flags_read": [],
+      "challenge_steps": [
+        "SageOfSpirit:Step07"
+      ],
+      "dialog": [
+        "navi:197"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "Common_Camera_Pln:CameraDoF_Default",
+        "NaviChat:NaviChat_Serious"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [
+        "navi:197"
+      ],
+      "needs": [
+        "HavePlayedEvent.Dm_DesertColossus_0030 read by Event/EventFlow/Dm_SY_Ocarina.bfevfl.zs (ocarina flow branches on the demo)",
+        "HavePlayedEvent.Dm_DesertColossus_0030 read by Logic/Market_Child_Prefab_a927.logic.module.ainb (Market logic module reads the demo flag)"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "HavePlayedEvent.Dm_DesertColossus_0030",
+          "file": "Event/EventFlow/Dm_SY_Ocarina.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "ocarina flow branches on the demo"
+        },
+        {
+          "token": "HavePlayedEvent.Dm_DesertColossus_0030",
+          "file": "Logic/Market_Child_Prefab_a927.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "Market logic module reads the demo flag"
+        },
+        {
+          "token": "HavePlayedEvent.NaviTips_Gauntlet_01",
+          "file": "Logic/GerudoTrainingGround_Level_Room_03_Prefab_6cd4.logic.module.ainb",
+          "path": "",
+          "class": "cosmetic",
+          "note": "Navi tip trigger"
+        },
+        {
+          "token": "NaviChat_Serious_Time",
+          "file": "Pack/Actor/Npc_Navi.pack.zs",
+          "path": "",
+          "class": "cosmetic",
+          "note": "Navi chat timer"
+        }
+      ]
+    },
+    {
+      "event": "SageOfWater_MelodyGet_Water",
+      "flow": "SageOfWater",
+      "entry": "IceCavern_WaterSerenade",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow SageOfWater:IceCavern_WaterSerenade plays the generic chest demo and sets SageOfWater_GetWaterSerenade=true, AllSage_MeetSheik_And_Gone=true, AllSage_MeetSheikCount+=1, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": true,
+      "demos": [
+        "Dm_MelodyGet_Water"
+      ],
+      "flags_set": [
+        "SageOfWater_GetWaterSerenade=true",
+        "AllSage_MeetSheik_And_Gone=true",
+        "AllSage_MeetSheikCount+=1"
+      ],
+      "flags_read": [
+        "SageOfWater_KingZora_adult_Talk_Event198",
+        "IsGet.Item_Melody_ForestMinuet",
+        "IsGet.Item_Melody_FireBolero",
+        "IsGet.Item_Melody_SpiritRequiem",
+        "AllSage_AwakeSage_Fire_Or_Forest",
+        "AllSage_MeetSheikCount"
+      ],
+      "challenge_steps": [
+        "SageOfWater:Step04",
+        "SageOfWater:Step05"
+      ],
+      "dialog": [],
+      "item_grants": [
+        "give:Item_Melody_WaterSerenade",
+        "give:Item_Melody_LightPrelude",
+        "give:Item_Melody_ShadowNocturne",
+        "give:Item_Melody_SpiritRequiem",
+        "give:Item_Melody_FireBolero",
+        "give:Item_Melody_ForestMinuet"
+      ],
+      "equips": [],
+      "songs": [
+        "Dm_SY_Ocarina:LearningOcarinaPlayAutoForSeek",
+        "Dm_SY_Ocarina:LearningOcarinaFollowExample",
+        "Dm_SY_Ocarina:LearningOcarinaPlayExample"
+      ],
+      "guests": [
+        "Dm_Item_Sheik_Harp"
+      ],
+      "calls": [
+        "Dm_SY_Ocarina:LearningOcarinaPlayAutoForSeek",
+        "AllSage:MeetSheik_And_Gone",
+        "SageOfWater:Dm_MelodyGet_WaterAfter",
+        "Common_Camera_Pln:CameraDoF_Default",
+        "NaviEventCommon:InitTalk_NaviPlayerFront",
+        "NaviEventCommon:EventTalk_Navi_WithPlayerTalk",
+        "NaviChat:NaviEmotionChange_NoTime",
+        "GetPouchContent:GetPouchContentByActorName",
+        "Dm_SY_Ocarina:LearningOcarinaFollowExample",
+        "Dm_SY_Ocarina:LearningOcarinaPlayExample"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [
+        "AllSage_MeetSheikCount read by Event/EventFlow/Dm_MelodyGet_Fire.bfevfl.zs (the other Sheik song demos branch on the counter)",
+        "AllSage_MeetSheikCount read by Event/EventFlow/Dm_MelodyGet_Forest.bfevfl.zs (the other Sheik song demos branch on the counter)",
+        "AllSage_MeetSheikCount read by Event/EventFlow/Dm_MelodyGet_Shine.bfevfl.zs (the other Sheik song demos branch on the counter)",
+        "AllSage_MeetSheikCount read by Event/EventFlow/Dm_MelodyGet_Spilit.bfevfl.zs (the other Sheik song demos branch on the counter)",
+        "SageOfWater_IsAfter_Step04_Exp read by Event/EventFlow/Dm_SY_BancChangeArrive.bfevfl.zs (consumer not reviewed)",
+        "SageOfWater_IsAfter_Step04_Exp read by Pack/Actor/Npc_Zora_KingZora_adult.pack.zs (consumer not reviewed)",
+        "SageOfWater_IsAfter_Step05_Exp read by Event/EventFlow/Dm_SY_BancChangeArrive.bfevfl.zs (consumer not reviewed)",
+        "song Dm_SY_Ocarina:LearningOcarinaPlayAutoForSeek",
+        "song Dm_SY_Ocarina:LearningOcarinaFollowExample",
+        "song Dm_SY_Ocarina:LearningOcarinaPlayExample"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "AllSage_MeetSheikCount",
+          "file": "Event/EventFlow/Dm_MelodyGet_Fire.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the other Sheik song demos branch on the counter"
+        },
+        {
+          "token": "AllSage_MeetSheikCount",
+          "file": "Event/EventFlow/Dm_MelodyGet_Forest.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the other Sheik song demos branch on the counter"
+        },
+        {
+          "token": "AllSage_MeetSheikCount",
+          "file": "Event/EventFlow/Dm_MelodyGet_Shine.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the other Sheik song demos branch on the counter"
+        },
+        {
+          "token": "AllSage_MeetSheikCount",
+          "file": "Event/EventFlow/Dm_MelodyGet_Spilit.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "the other Sheik song demos branch on the counter"
+        },
+        {
+          "token": "SageOfWater_IsAfter_Step04_Exp",
+          "file": "Event/EventFlow/Dm_SY_BancChangeArrive.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "consumer not reviewed"
+        },
+        {
+          "token": "SageOfWater_IsAfter_Step04_Exp",
+          "file": "Pack/Actor/Npc_Zora_KingZora_adult.pack.zs",
+          "path": "",
+          "class": "gating",
+          "note": "consumer not reviewed"
+        },
+        {
+          "token": "SageOfWater_IsAfter_Step05_Exp",
+          "file": "Event/EventFlow/Dm_SY_BancChangeArrive.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "consumer not reviewed"
+        }
+      ]
+    },
+    {
+      "event": "ShadowTemple_GetCompass",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_ShadowTemple_Compass",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_ShadowTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "ShadowTemple_GetMap",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_ShadowTemple_Map",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_ShadowTemple_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "SpiritTemple_GetCompass",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_SpiritTemple_Compass",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_SpiritTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "SubEvent_GetIceArrow_OpenTBox",
+      "flow": "SubEvent_GetIceArrow",
+      "entry": "SubEvent_GetIceArrow_OpenTBox",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow SubEvent_GetIceArrow:SubEvent_GetIceArrow_OpenTBox plays the generic chest demo and sets no flags, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [
+        "SubEvent_GetIceArrow:Complete"
+      ],
+      "dialog": [
+        "navi:478"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [
+        "NaviChat:NaviEmotionChange"
+      ],
+      "lost_if_stripped": [],
+      "stale_if_kept": [
+        "navi:478"
+      ],
+      "needs": [
+        "SubEvent_GetIceArrow_IsCompleted_Exp read by Event/EventFlow/Npc_Gerudo_009.bfevfl.zs (consumer not reviewed)",
+        "SubEvent_GetIceArrow_IsCompleted_Exp read by Event/EventFlow/SageOfSpirit.bfevfl.zs (consumer not reviewed)",
+        "SubEvent_GetIceArrow_IsCompleted_Exp read by Logic/GerudoFortress_Common_c105.logic.module.ainb (consumer not reviewed)"
+      ],
+      "missing": [],
+      "consumers": [
+        {
+          "token": "SubEvent_GetIceArrow_IsCompleted_Exp",
+          "file": "Event/EventFlow/Npc_Gerudo_004.bfevfl.zs",
+          "path": "",
+          "class": "cosmetic",
+          "note": "gatekeeper balloon and dialogue branches only"
+        },
+        {
+          "token": "SubEvent_GetIceArrow_IsCompleted_Exp",
+          "file": "Event/EventFlow/Npc_Gerudo_009.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "consumer not reviewed"
+        },
+        {
+          "token": "SubEvent_GetIceArrow_IsCompleted_Exp",
+          "file": "Event/EventFlow/SageOfSpirit.bfevfl.zs",
+          "path": "",
+          "class": "gating",
+          "note": "consumer not reviewed"
+        },
+        {
+          "token": "SubEvent_GetIceArrow_IsCompleted_Exp",
+          "file": "Logic/GerudoFortress_Common_c105.logic.module.ainb",
+          "path": "",
+          "class": "gating",
+          "note": "consumer not reviewed"
+        }
+      ]
+    },
+    {
+      "event": "WaterTemple_GetCompass",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_WaterTemple_Compass",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_WaterTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "WaterTemple_GetMap",
+      "flow": "NaviChat",
+      "entry": "TreasureBoxDM_NaviChat_WaterTemple_Map",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_WaterTemple_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    },
+    {
+      "event": "WaterTemple_Room07_LongHook_FocusOnGimmick",
+      "flow": "SageOfWater_FocusGimmick",
+      "entry": "WaterTemple_Room07_LongHook",
+      "component": "FlowchartEvent",
+      "flow_has_110_variant": false,
+      "chests": 1,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow SageOfWater_FocusGimmick:WaterTemple_Room07_LongHook plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "chest_demo": true,
+      "demos": [],
+      "flags_set": [],
+      "flags_read": [],
+      "challenge_steps": [],
+      "dialog": [
+        "navi:480"
+      ],
+      "item_grants": [],
+      "equips": [],
+      "songs": [],
+      "guests": [],
+      "calls": [],
+      "lost_if_stripped": [
+        "navi:480"
+      ],
+      "stale_if_kept": [],
+      "needs": [],
+      "missing": [],
+      "consumers": []
+    }
+  ],
+  "chests": [
+    {
+      "hash": "14911602953212243797",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "BottomOfTheWell",
+      "files": [
+        "Banc/BottomOfTheWell/BottomOfTheWell_Dynamic.bcett.byml.zs"
+      ],
+      "translate": [
+        -12.39,
+        100.12,
+        -10.96
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "BottomOfTheWell_GetCompass",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_BottomOfTheWell_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "1"
+      },
+      "location": "Bottom of the Well Compass Chest",
+      "area": "Bottom of the Well",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Bottom of the Well)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "16654774376625985726",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "BottomOfTheWell",
+      "files": [
+        "Banc/BottomOfTheWell/BottomOfTheWell_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -0.05,
+        92.42,
+        -110.27
+      ],
+      "drop": "Item_GlassTruth",
+      "event": "BottomOfTheWell_GetGlassTruth",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow BottomOfTheWell:BottomOfTheWell_GetGlassTruth plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "8"
+      },
+      "location": "Bottom of the Well Lens of Truth Chest",
+      "area": "Bottom of the Well",
+      "catalog_conf": "item",
+      "catalog_item": "Item_GlassTruth",
+      "vanilla": "Lens of Truth",
+      "slice_state": "event"
+    },
+    {
+      "hash": "10012167258643363548",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "DesertColossus",
+      "files": [
+        "Banc/DesertColossus/DesertColossus_Adult_Static.bcett.byml.zs",
+        "Banc/DesertColossus/DesertColossus_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -168.63,
+        113.25,
+        -8.63
+      ],
+      "drop": "Item_Shield_Mirror",
+      "event": "SageOfSpirit_GetShield",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow SageOfSpirit:SageOfSpirit_GetShield plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {},
+      "location": "Spirit Temple Mirror Shield Chest",
+      "area": "Spirit Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Shield_Mirror",
+      "vanilla": "Mirror Shield",
+      "slice_state": "event"
+    },
+    {
+      "hash": "2490063409521505179",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "DesertColossus",
+      "files": [
+        "Banc/DesertColossus/DesertColossus_Adult_Static.bcett.byml.zs",
+        "Banc/DesertColossus/DesertColossus_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -168.64,
+        113.25,
+        29.55
+      ],
+      "drop": "Item_Gauntlet_Silver",
+      "event": "SageOfSpirit_NaboorIsTakenAway",
+      "copies_agree": true,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow SageOfSpirit:SageOfSpirit_NaboorIsTakenAway plays the generic chest demo and sets HavePlayedEvent.NaviTips_Gauntlet_01=false, HavePlayedEvent.NaviTips_Gauntlet_03=false, NaviChat_Serious_Time=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "dynamic_extra": {},
+      "location": "Spirit Temple Silver Gauntlets Chest",
+      "area": "Spirit Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Gauntlet_Silver",
+      "vanilla": "Progressive Strength Upgrade",
+      "slice_state": "event"
+    },
+    {
+      "hash": "8291119063305855945",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "DodongoCavern",
+      "files": [
+        "Banc/DodongoCavern/DodongoCavern_Dynamic.bcett.byml.zs"
+      ],
+      "translate": [
+        -26.5,
+        100.25,
+        -38.0
+      ],
+      "drop": "Item_Dungeon_Map",
+      "event": "DodongoCavern_GetMap",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_DoDoGon_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "1"
+      },
+      "location": "Dodongos Cavern Map Chest",
+      "area": "Dodongo's Cavern",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Map",
+      "vanilla": "Map (Dodongos Cavern)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "17531994809974271603",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "DodongoCavern",
+      "files": [
+        "Banc/DodongoCavern/DodongoCavern_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -49.0,
+        103.62,
+        7.5
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "DodongoCavern_GetCompass",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_DoDoGon_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "11"
+      },
+      "location": "Dodongos Cavern Compass Chest",
+      "area": "Dodongo's Cavern",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Dodongos Cavern)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "12161709650443144121",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "DodongoCavern",
+      "files": [
+        "Banc/DodongoCavern/DodongoCavern_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        39.0,
+        115.72,
+        -23.0
+      ],
+      "drop": "Item_BombBag_Small",
+      "event": "Get_StoneOfFire_GetBombBag",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Get_StoneOfFire:Get_StoneOfFire_GetBombBag plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "13"
+      },
+      "location": "Dodongos Cavern Bomb Bag Chest",
+      "area": "Dodongo's Cavern",
+      "catalog_conf": "item",
+      "catalog_item": "Item_BombBag_Small",
+      "vanilla": "Bomb Bag",
+      "slice_state": "event"
+    },
+    {
+      "hash": "3688520809244472975",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "FireTemple",
+      "files": [
+        "Banc/FireTemple/FireTemple_Dynamic.bcett.byml.zs"
+      ],
+      "translate": [
+        58.23,
+        147.08,
+        40.55
+      ],
+      "drop": "Item_Dungeon_Map",
+      "event": "FireTemple_GetCompass",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_FireTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "5"
+      },
+      "location": "Fire Temple Map Chest",
+      "area": "Fire Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Map",
+      "vanilla": "Map (Fire Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "12083259659219538030",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "FireTemple",
+      "files": [
+        "Banc/FireTemple/FireTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -31.77,
+        196.1,
+        -12.71
+      ],
+      "drop": "Item_Hammer",
+      "event": "FireTemple_GetHammer",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_FireTemple_GetHammer plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "13"
+      },
+      "location": "Fire Temple Megaton Hammer Chest",
+      "area": "Fire Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Hammer",
+      "vanilla": "Megaton Hammer",
+      "slice_state": "event"
+    },
+    {
+      "hash": "16713240760352215634",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "FireTemple",
+      "files": [
+        "Banc/FireTemple/FireTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        34.14,
+        147.07,
+        -5.75
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "FireTemple_GetMap",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_FireTemple_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "16"
+      },
+      "location": "Fire Temple Compass Chest",
+      "area": "Fire Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Fire Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "14060099092170010696",
+      "gyaml": "Obj_TBox_A_03",
+      "folder": "FireTemple",
+      "files": [
+        "Banc/FireTemple/FireTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -5.06,
+        100.9,
+        -8.7
+      ],
+      "drop": "Item_Dungeon_BossKey",
+      "event": "ForesetTemple_GetBossKey",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow ForestTemple_Gimmick:TreasureBoxDM_NaviChat_ForestTemple_BossKey plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "17"
+      },
+      "location": "Fire Temple Boss Key Chest",
+      "area": "Fire Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_BossKey",
+      "vanilla": "Boss Key (Fire Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "5306318520835485827",
+      "gyaml": "Obj_TBox_A_03_NoBake",
+      "folder": "ForestTemple",
+      "files": [
+        "Banc/ForestTemple/ForestTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -49.46,
+        129.5,
+        -63.71
+      ],
+      "drop": "Item_Dungeon_BossKey",
+      "event": "ForesetTemple_GetBossKey",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow ForestTemple_Gimmick:TreasureBoxDM_NaviChat_ForestTemple_BossKey plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {},
+      "location": "Forest Temple Boss Key Chest",
+      "area": "Forest Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_BossKey",
+      "vanilla": "Boss Key (Forest Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "6948525240950728236",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "ForestTemple",
+      "files": [
+        "Banc/ForestTemple/ForestTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        17.08,
+        114.82,
+        -63.62
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "ForesetTemple_GetCompass",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_ForestTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "18"
+      },
+      "location": "Forest Temple Blue Poe Chest",
+      "area": "Forest Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Forest Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "3174893090599461927",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "ForestTemple",
+      "files": [
+        "Banc/ForestTemple/ForestTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        38.75,
+        101.41,
+        -35.75
+      ],
+      "drop": "Item_Dungeon_Map",
+      "event": "ForesetTemple_GetMap",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_ForestTemple_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "14"
+      },
+      "location": "Forest Temple Map Chest",
+      "area": "Forest Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Map",
+      "vanilla": "Map (Forest Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "11082303891540711688",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "ForestTemple",
+      "files": [
+        "Banc/ForestTemple/ForestTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        0.2,
+        114.76,
+        -68.5
+      ],
+      "drop": "Item_Range_Bow",
+      "event": "ForestTemple_GetBow",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow SageOfForest:TreasureBoxDM_NaviChat_Bow plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "17"
+      },
+      "location": "Forest Temple Bow Chest",
+      "area": "Forest Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Range_Bow",
+      "vanilla": "Bow",
+      "slice_state": "event"
+    },
+    {
+      "hash": "1941083939696166170",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "GerudoTrainingGround",
+      "files": [
+        "Banc/GerudoTrainingGround/GerudoTrainingGround_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -1.86,
+        98.03,
+        -48.0
+      ],
+      "drop": "Item_Arrow_Ice",
+      "event": "SubEvent_GetIceArrow_OpenTBox",
+      "copies_agree": true,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow SubEvent_GetIceArrow:SubEvent_GetIceArrow_OpenTBox plays the generic chest demo and sets no flags, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "8"
+      },
+      "location": "Gerudo Training Ground Maze Path Final Chest",
+      "area": "Gerudo Training Ground",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Arrow_Ice",
+      "vanilla": "Ice Arrows",
+      "slice_state": "event"
+    },
+    {
+      "hash": "234006393181394602",
+      "gyaml": "Obj_TBox_A_01_NoBake",
+      "folder": "Graveyard",
+      "files": [
+        "Banc/Graveyard/Graveyard_Adult_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -5.99,
+        82.53,
+        77.63
+      ],
+      "drop": "TBox_Rupee_Red",
+      "event": "MiniGame_DampeRace_OpenGoalTBox",
+      "copies_agree": true,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_DampeRace:MiniGame_DampeRace_OpenGoalTBox plays the generic chest demo and sets Minigame_DampeRace_TreasureBoxState=OpenedRupeeLow, Minigame_DampeRace_TreasureBoxState=OpenedRupee, Minigame_DampeRace_TreasureBoxState=OpenedHeartPiece, Minigame_DampeRace_TreasureBoxState=OpenedHookShot, NaviRepeat_Minigame_DampeRace_End=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "dynamic_extra": {},
+      "location": null
+    },
+    {
+      "hash": "4322670163630771947",
+      "gyaml": "Obj_TBox_A_01_NoBake",
+      "folder": "Graveyard",
+      "files": [
+        "Banc/Graveyard/Graveyard_Adult_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -5.99,
+        82.53,
+        77.62
+      ],
+      "drop": "TBox_Rupee_Blue",
+      "event": "MiniGame_DampeRace_OpenGoalTBox",
+      "copies_agree": true,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_DampeRace:MiniGame_DampeRace_OpenGoalTBox plays the generic chest demo and sets Minigame_DampeRace_TreasureBoxState=OpenedRupeeLow, Minigame_DampeRace_TreasureBoxState=OpenedRupee, Minigame_DampeRace_TreasureBoxState=OpenedHeartPiece, Minigame_DampeRace_TreasureBoxState=OpenedHookShot, NaviRepeat_Minigame_DampeRace_End=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "dynamic_extra": {},
+      "location": null
+    },
+    {
+      "hash": "5534919361313859554",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "Graveyard",
+      "files": [
+        "Banc/Graveyard/Graveyard_Adult_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -6.03,
+        82.53,
+        77.66
+      ],
+      "drop": "Obj_Heart_Piece",
+      "event": "MiniGame_DampeRace_OpenGoalTBox",
+      "copies_agree": true,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_DampeRace:MiniGame_DampeRace_OpenGoalTBox plays the generic chest demo and sets Minigame_DampeRace_TreasureBoxState=OpenedRupeeLow, Minigame_DampeRace_TreasureBoxState=OpenedRupee, Minigame_DampeRace_TreasureBoxState=OpenedHeartPiece, Minigame_DampeRace_TreasureBoxState=OpenedHookShot, NaviRepeat_Minigame_DampeRace_End=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "dynamic_extra": {},
+      "location": "Graveyard Dampe Race Freestanding PoH",
+      "area": "Graveyard",
+      "catalog_conf": "item",
+      "catalog_item": "Obj_Heart_Piece",
+      "vanilla": "Piece of Heart",
+      "slice_state": ""
+    },
+    {
+      "hash": "16041366920820397198",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "Graveyard",
+      "files": [
+        "Banc/Graveyard/Graveyard_Adult_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -6.03,
+        82.54,
+        77.66
+      ],
+      "drop": "Item_Hookshot",
+      "event": "MiniGame_DampeRace_OpenGoalTBox",
+      "copies_agree": true,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow MiniGame_DampeRace:MiniGame_DampeRace_OpenGoalTBox plays the generic chest demo and sets Minigame_DampeRace_TreasureBoxState=OpenedRupeeLow, Minigame_DampeRace_TreasureBoxState=OpenedRupee, Minigame_DampeRace_TreasureBoxState=OpenedHeartPiece, Minigame_DampeRace_TreasureBoxState=OpenedHookShot, NaviRepeat_Minigame_DampeRace_End=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "dynamic_extra": {},
+      "location": "Graveyard Dampe Race Hookshot Chest",
+      "area": "Graveyard",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Hookshot",
+      "vanilla": "Progressive Hookshot",
+      "slice_state": "event"
+    },
+    {
+      "hash": "6859289214373847284",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "IceCavern",
+      "files": [
+        "Banc/IceCavern/IceCavern_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -46.22,
+        109.71,
+        42.53
+      ],
+      "drop": "Item_HeavyBoot",
+      "event": "SageOfWater_MelodyGet_Water",
+      "copies_agree": true,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow SageOfWater:IceCavern_WaterSerenade plays the generic chest demo and sets SageOfWater_GetWaterSerenade=true, AllSage_MeetSheik_And_Gone=true, AllSage_MeetSheikCount+=1, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "10"
+      },
+      "location": "Ice Cavern Iron Boots Chest",
+      "area": "Ice Cavern",
+      "catalog_conf": "item",
+      "catalog_item": "Item_HeavyBoot",
+      "vanilla": "Iron Boots",
+      "slice_state": "event"
+    },
+    {
+      "hash": "17657623307936361670",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "InsideGanonCastle",
+      "files": [
+        "Banc/InsideGanonCastle/InsideGanonCastle_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        48.29,
+        104.01,
+        -105.3
+      ],
+      "drop": "Item_Gauntlet_Gold",
+      "event": "InsideGanonCastle_Get_Gauntlet_Gold",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Defeat_Ganon:InsideGanonCastle_Dungeon_Get_Gauntlet_Gold plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "8"
+      },
+      "location": "Ganons Castle Shadow Trial Golden Gauntlets Chest",
+      "area": "Ganon's Castle",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Gauntlet_Gold",
+      "vanilla": "Progressive Strength Upgrade",
+      "slice_state": "event"
+    },
+    {
+      "hash": "5527401621172639818",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "InsideJabuJabuBelly",
+      "files": [
+        "Banc/InsideJabuJabuBelly/InsideJabuJabuBelly_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -31.3,
+        92.39,
+        -131.91
+      ],
+      "drop": "Item_Boomerang",
+      "event": "InsideJabuJabuBelly_TreasureBoxWithRuto09",
+      "copies_agree": true,
+      "verdict": "keep_event",
+      "confidence": "guess",
+      "why": "flow InsideJabuJabuBelly_FocusGimmick:TreasureBox_WithRuto_Room09 plays the generic chest demo and sets InsideJabuJabuBelly_Room09_TBoxDemo=true, and its state is read elsewhere, so the event must still run or its flags must be set another way",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "9"
+      },
+      "location": "Jabu Jabus Belly Boomerang Chest",
+      "area": "Jabu Jabu's Belly",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Boomerang",
+      "vanilla": "Boomerang",
+      "slice_state": "event"
+    },
+    {
+      "hash": "3510516276638146208",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "InsideJabuJabuBelly",
+      "files": [
+        "Banc/InsideJabuJabuBelly/InsideJabuJabuBelly_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        25.52,
+        92.29,
+        -175.93
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "InsideJabuJabuBelly_TreasureBoxWithRuto12",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "guess",
+      "why": "flow InsideJabuJabuBelly_FocusGimmick:TreasureBox_WithRuto_Room12 plays the generic chest demo and sets InsideJabuJabuBelly_Room12_TBoxDemo=true, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "12"
+      },
+      "location": "Jabu Jabus Belly Compass Chest",
+      "area": "Jabu Jabu's Belly",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Jabu Jabus Belly)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "9284193025315608699",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "InsideTheDekuTree",
+      "files": [
+        "Banc/InsideTheDekuTree/InsideTheDekuTree_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -48.29,
+        120.37,
+        0.0
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "InsideTheDekuTree_GetCompass",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_Deku_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "3"
+      },
+      "location": "Deku Tree Compass Chest",
+      "area": "Deku Tree",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Deku Tree)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "8579518566955184384",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "InsideTheDekuTree",
+      "files": [
+        "Banc/InsideTheDekuTree/InsideTheDekuTree_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        6.51,
+        108.4,
+        7.25
+      ],
+      "drop": "Item_Dungeon_Map",
+      "event": "InsideTheDekuTree_GetMap",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_Deku_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "0"
+      },
+      "location": "Deku Tree Map Chest",
+      "area": "Deku Tree",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Map",
+      "vanilla": "Map (Deku Tree)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "821372075822700622",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "InsideTheDekuTree",
+      "files": [
+        "Banc/InsideTheDekuTree/InsideTheDekuTree_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -54.39,
+        111.96,
+        12.21
+      ],
+      "drop": "Item_Range_SlingShot",
+      "event": "InsideTheDekuTree_GetSlingShot",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_Deku_GetSlingShot plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "2"
+      },
+      "location": "Deku Tree Slingshot Chest",
+      "area": "Deku Tree",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Range_SlingShot",
+      "vanilla": "Slingshot",
+      "slice_state": "event"
+    },
+    {
+      "hash": "16757992849254467386",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "KokiriForest",
+      "files": [
+        "Banc/KokiriForest/KokiriForest_Adult_Dynamic.bcett.byml.zs",
+        "Banc/KokiriForest/KokiriForest_Child_Dynamic.bcett.byml.zs"
+      ],
+      "translate": [
+        -82.62,
+        122.26,
+        32.95
+      ],
+      "drop": "Item_Sword_Kokiri",
+      "event": "Get_StoneOfForest_GetSword",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "verified",
+      "why": "flow Get_StoneOfForest:GetSword plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {},
+      "location": "KF Kokiri Sword Chest",
+      "area": "Kokiri Forest",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Sword_Kokiri",
+      "vanilla": "Kokiri Sword",
+      "slice_state": "event"
+    },
+    {
+      "hash": "4555665598794293658",
+      "gyaml": "Obj_TBox_A_01",
+      "folder": "KokiriForest",
+      "files": [
+        "Banc/KokiriForest/KokiriForest_Adult_Dynamic.bcett.byml.zs",
+        "Banc/KokiriForest/KokiriForest_Child_Dynamic.bcett.byml.zs"
+      ],
+      "translate": [
+        -54.21,
+        112.26,
+        -40.88
+      ],
+      "drop": "TBox_Rupee_Blue",
+      "event": "KokiriForest_TreasureBox_NaviChatOff",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Dm_SY_TreasureboxSmall:Success_MidoHouse plays the generic chest demo and sets KokiriForest_TreasureBox_NaviChatOff=true, NaviHint_Shield_Hylian_PlayedEventFlow=true, HavePlayedEvent.NaviHint_Shield_Hylian=true, HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop=true, and nothing outside the event reads its state",
+      "dynamic_extra": {},
+      "location": "KF Midos Top Right Chest",
+      "area": "Kokiri Forest",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Blue",
+      "vanilla": "Rupees (5)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "9725242744547055868",
+      "gyaml": "Obj_TBox_A_01",
+      "folder": "KokiriForest",
+      "files": [
+        "Banc/KokiriForest/KokiriForest_Adult_Dynamic.bcett.byml.zs",
+        "Banc/KokiriForest/KokiriForest_Child_Dynamic.bcett.byml.zs"
+      ],
+      "translate": [
+        -49.32,
+        112.26,
+        -40.89
+      ],
+      "drop": "TBox_Rupee_Blue",
+      "event": "KokiriForest_TreasureBox_NaviChatOff",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Dm_SY_TreasureboxSmall:Success_MidoHouse plays the generic chest demo and sets KokiriForest_TreasureBox_NaviChatOff=true, NaviHint_Shield_Hylian_PlayedEventFlow=true, HavePlayedEvent.NaviHint_Shield_Hylian=true, HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop=true, and nothing outside the event reads its state",
+      "dynamic_extra": {},
+      "location": "KF Midos Bottom Right Chest",
+      "area": "Kokiri Forest",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Blue",
+      "vanilla": "Recovery Heart",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "10831981390482426294",
+      "gyaml": "Obj_TBox_A_01",
+      "folder": "KokiriForest",
+      "files": [
+        "Banc/KokiriForest/KokiriForest_Adult_Dynamic.bcett.byml.zs",
+        "Banc/KokiriForest/KokiriForest_Child_Dynamic.bcett.byml.zs"
+      ],
+      "translate": [
+        -50.29,
+        112.26,
+        -42.03
+      ],
+      "drop": "TBox_Rupee_Green",
+      "event": "KokiriForest_TreasureBox_NaviChatOff",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Dm_SY_TreasureboxSmall:Success_MidoHouse plays the generic chest demo and sets KokiriForest_TreasureBox_NaviChatOff=true, NaviHint_Shield_Hylian_PlayedEventFlow=true, HavePlayedEvent.NaviHint_Shield_Hylian=true, HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop=true, and nothing outside the event reads its state",
+      "dynamic_extra": {},
+      "location": "KF Midos Bottom Left Chest",
+      "area": "Kokiri Forest",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Green",
+      "vanilla": "Rupee (1)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "12786193094758345086",
+      "gyaml": "Obj_TBox_A_01",
+      "folder": "KokiriForest",
+      "files": [
+        "Banc/KokiriForest/KokiriForest_Adult_Dynamic.bcett.byml.zs",
+        "Banc/KokiriForest/KokiriForest_Child_Dynamic.bcett.byml.zs"
+      ],
+      "translate": [
+        -53.2,
+        112.26,
+        -42.1
+      ],
+      "drop": "TBox_Rupee_Blue",
+      "event": "KokiriForest_TreasureBox_NaviChatOff",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow Dm_SY_TreasureboxSmall:Success_MidoHouse plays the generic chest demo and sets KokiriForest_TreasureBox_NaviChatOff=true, NaviHint_Shield_Hylian_PlayedEventFlow=true, HavePlayedEvent.NaviHint_Shield_Hylian=true, HavePlayedEvent.NaviHint_Shield_Hylian_BuyShop=true, and nothing outside the event reads its state",
+      "dynamic_extra": {},
+      "location": "KF Midos Top Left Chest",
+      "area": "Kokiri Forest",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Blue",
+      "vanilla": "Rupees (5)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "6781536951709667179",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_02",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -131.58,
+        97.89,
+        12.67
+      ],
+      "drop": "TBox_Rupee_Red",
+      "event": "MiniGame_ChoiceTreasure_OpenClearTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenClearTreasureBox has no chest demo and sets MiniGame_ChoiceTreasure_TalkedAboutRules=false, MiniGame_ChoiceTreasure_ElapsedTime, MiniGame_ChoiceTreasure_IsClear=true, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_OrnamentalRupee_Red_MiniGame",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": null
+    },
+    {
+      "hash": "16881481538337649070",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_02",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -131.58,
+        97.89,
+        12.67
+      ],
+      "drop": "Obj_Heart_Piece",
+      "event": "MiniGame_ChoiceTreasure_OpenClearTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenClearTreasureBox has no chest demo and sets MiniGame_ChoiceTreasure_TalkedAboutRules=false, MiniGame_ChoiceTreasure_ElapsedTime, MiniGame_ChoiceTreasure_IsClear=true, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_Heart_Piece_MiniGame",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Reward",
+      "area": "Market",
+      "catalog_conf": "item",
+      "catalog_item": "Obj_Heart_Piece",
+      "vanilla": "Piece of Heart (Treasure Chest Game)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "1775586642693927992",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -74.92,
+        97.88,
+        9.66
+      ],
+      "drop": "Obj_MiniGame_SmallKey",
+      "event": "MiniGame_ChoiceTreasure_OpenHitTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenHitTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_NumOfHit+=1, MiniGame_SmallKeyNum+=1, UI_RequestSmallKeyCountUpDemo=true, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_MiniGame_SmallKey",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 2 Top",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "Obj_MiniGame_SmallKey",
+      "vanilla": "Small Key (Treasure Chest Game)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "5350594583391365806",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -85.92,
+        97.88,
+        9.66
+      ],
+      "drop": "Obj_MiniGame_SmallKey",
+      "event": "MiniGame_ChoiceTreasure_OpenHitTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenHitTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_NumOfHit+=1, MiniGame_SmallKeyNum+=1, UI_RequestSmallKeyCountUpDemo=true, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_MiniGame_SmallKey",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 3 Top",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "Obj_MiniGame_SmallKey",
+      "vanilla": "Small Key (Treasure Chest Game)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "6478285350658826847",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -107.92,
+        97.88,
+        9.66
+      ],
+      "drop": "Obj_MiniGame_SmallKey",
+      "event": "MiniGame_ChoiceTreasure_OpenHitTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenHitTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_NumOfHit+=1, MiniGame_SmallKeyNum+=1, UI_RequestSmallKeyCountUpDemo=true, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_MiniGame_SmallKey",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 4 Top",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "Obj_MiniGame_SmallKey",
+      "vanilla": "Small Key (Treasure Chest Game)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "12763522142548402103",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -96.92,
+        97.88,
+        9.66
+      ],
+      "drop": "Obj_MiniGame_SmallKey",
+      "event": "MiniGame_ChoiceTreasure_OpenHitTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenHitTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_NumOfHit+=1, MiniGame_SmallKeyNum+=1, UI_RequestSmallKeyCountUpDemo=true, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_MiniGame_SmallKey",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 1 Top",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "Obj_MiniGame_SmallKey",
+      "vanilla": "Small Key (Treasure Chest Game)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "18239509117326156183",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -118.92,
+        97.88,
+        9.66
+      ],
+      "drop": "Obj_MiniGame_SmallKey",
+      "event": "MiniGame_ChoiceTreasure_OpenLastHitTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenLastHitTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_NumOfHit+=1, MiniGame_SmallKeyNum+=1, UI_RequestSmallKeyCountUpDemo=true, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_MiniGame_SmallKey",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 5 Top",
+      "area": "Market",
+      "catalog_conf": "item",
+      "catalog_item": "Obj_MiniGame_SmallKey",
+      "vanilla": "Small Key (Treasure Chest Game)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "7390716194495618474",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -74.92,
+        97.88,
+        15.65
+      ],
+      "drop": "TBox_Rupee_Green",
+      "event": "MiniGame_ChoiceTreasure_OpenMissTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenMissTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_MissGame=true, Market_Minigame_ChoiceTreasure_MissReplayTalk=true, UI_MapMenuIsUnvisibleByLsPush=true, UI_MapMenuIsUnvisibleByLsPush=false, Market_MiniGame_ChoiceTreasure_NumOfHit=0, Market_MiniGame_ChoiceTreasure_MissGame=false, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_OrnamentalRupee_Green_MiniGame",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 2 Bottom",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Green",
+      "vanilla": "Rupee (Treasure Chest Game) (1)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "9591654059707200528",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -96.92,
+        97.88,
+        15.65
+      ],
+      "drop": "TBox_Rupee_Green",
+      "event": "MiniGame_ChoiceTreasure_OpenMissTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenMissTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_MissGame=true, Market_Minigame_ChoiceTreasure_MissReplayTalk=true, UI_MapMenuIsUnvisibleByLsPush=true, UI_MapMenuIsUnvisibleByLsPush=false, Market_MiniGame_ChoiceTreasure_NumOfHit=0, Market_MiniGame_ChoiceTreasure_MissGame=false, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_OrnamentalRupee_Green_MiniGame",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 5 Bottom",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Green",
+      "vanilla": "Rupees (Treasure Chest Game) (20)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "12114077686306649660",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -85.92,
+        97.88,
+        15.65
+      ],
+      "drop": "TBox_Rupee_Green",
+      "event": "MiniGame_ChoiceTreasure_OpenMissTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenMissTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_MissGame=true, Market_Minigame_ChoiceTreasure_MissReplayTalk=true, UI_MapMenuIsUnvisibleByLsPush=true, UI_MapMenuIsUnvisibleByLsPush=false, Market_MiniGame_ChoiceTreasure_NumOfHit=0, Market_MiniGame_ChoiceTreasure_MissGame=false, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_OrnamentalRupee_Green_MiniGame",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 1 Bottom",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Green",
+      "vanilla": "Rupee (Treasure Chest Game) (1)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "13633455645485504369",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -107.92,
+        97.88,
+        15.65
+      ],
+      "drop": "TBox_Rupee_Blue",
+      "event": "MiniGame_ChoiceTreasure_OpenMissTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenMissTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_MissGame=true, Market_Minigame_ChoiceTreasure_MissReplayTalk=true, UI_MapMenuIsUnvisibleByLsPush=true, UI_MapMenuIsUnvisibleByLsPush=false, Market_MiniGame_ChoiceTreasure_NumOfHit=0, Market_MiniGame_ChoiceTreasure_MissGame=false, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_OrnamentalRupee_Blue_MiniGame",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 3 Bottom",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Blue",
+      "vanilla": "Rupees (Treasure Chest Game) (5)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "15659683110284072977",
+      "gyaml": "Obj_HrlCity_Shop_TBox_A_01",
+      "folder": "Market",
+      "files": [
+        "Banc/Market/Market_Child_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -118.92,
+        97.88,
+        15.65
+      ],
+      "drop": "TBox_Rupee_Blue",
+      "event": "MiniGame_ChoiceTreasure_OpenMissTreasureBox",
+      "copies_agree": true,
+      "verdict": "keep_vanilla",
+      "confidence": "guess",
+      "why": "flow MiniGame_SequentialChoiceTreasure:MiniGame_SequentialChoiceTreasure_OpenMissTreasureBox has no chest demo and sets Market_MiniGame_ChoiceTreasure_MissGame=true, Market_Minigame_ChoiceTreasure_MissReplayTalk=true, UI_MapMenuIsUnvisibleByLsPush=true, UI_MapMenuIsUnvisibleByLsPush=false, Market_MiniGame_ChoiceTreasure_NumOfHit=0, Market_MiniGame_ChoiceTreasure_MissGame=false, MiniGame_SmallKeyNum=0, MiniGame_ChoiceTreasure_OpenedEitherBox=false, MiniGame_ChoiceTreasure_GimickRegeneration=true, MiniGame_ChoiceTreasure_GimickRegeneration=false, MiniGame_ChoiceTreasure_OpenedEitherBox=true, and its state is read elsewhere, so the event must still run or its flags must be set another way, but the chest has IsEnableRepeatOpen so a randomized item would be granted on every opening, which is untested",
+      "dynamic_extra": {
+        "DropViewActor": "Obj_OrnamentalRupee_Blue_MiniGame",
+        "IsEnableRepeatOpen": "true"
+      },
+      "location": "Market Treasure Chest Game Room 4 Bottom",
+      "area": "Market",
+      "catalog_conf": "pool",
+      "catalog_item": "TBox_Rupee_Blue",
+      "vanilla": "Rupees (Treasure Chest Game) (5)",
+      "slice_state": "pool"
+    },
+    {
+      "hash": "9221365632831348137",
+      "gyaml": "Obj_TBox_A_03",
+      "folder": "ShadowTemple",
+      "files": [
+        "Banc/ShadowTemple/ShadowTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -173.23,
+        41.41,
+        -69.1
+      ],
+      "drop": "Item_Dungeon_BossKey",
+      "event": "ForesetTemple_GetBossKey",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow ForestTemple_Gimmick:TreasureBoxDM_NaviChat_ForestTemple_BossKey plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "19"
+      },
+      "location": "Shadow Temple Boss Key Chest",
+      "area": "Shadow Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_BossKey",
+      "vanilla": "Boss Key (Shadow Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "14535080241831873137",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "ShadowTemple",
+      "files": [
+        "Banc/ShadowTemple/ShadowTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -72.62,
+        90.52,
+        -10.15
+      ],
+      "drop": "Item_HoverBoot",
+      "event": "SageOfShdawo_GetHoverBoots",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow SageOfShadow:SageOfShdawo_GetHoverBoots plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "4"
+      },
+      "location": "Shadow Temple Hover Boots Chest",
+      "area": "Shadow Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_HoverBoot",
+      "vanilla": "Hover Boots",
+      "slice_state": "event"
+    },
+    {
+      "hash": "1733372171176975157",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "ShadowTemple",
+      "files": [
+        "Banc/ShadowTemple/ShadowTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        84.08,
+        87.31,
+        22.88
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "ShadowTemple_GetCompass",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_ShadowTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "7"
+      },
+      "location": "Shadow Temple Compass Chest",
+      "area": "Shadow Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Shadow Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "13528903653876646082",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "ShadowTemple",
+      "files": [
+        "Banc/ShadowTemple/ShadowTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        2.63,
+        90.54,
+        -26.21
+      ],
+      "drop": "Item_Dungeon_Map",
+      "event": "ShadowTemple_GetMap",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_ShadowTemple_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "3"
+      },
+      "location": "Shadow Temple Map Chest",
+      "area": "Shadow Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Map",
+      "vanilla": "Map (Shadow Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "16272168033146555902",
+      "gyaml": "Obj_TBox_A_03",
+      "folder": "SpiritTemple",
+      "files": [
+        "Banc/SpiritTemple/SpiritTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        19.8,
+        151.02,
+        -65.09
+      ],
+      "drop": "Item_Dungeon_BossKey",
+      "event": "ForesetTemple_GetBossKey",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow ForestTemple_Gimmick:TreasureBoxDM_NaviChat_ForestTemple_BossKey plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "29"
+      },
+      "location": "Spirit Temple Boss Key Chest",
+      "area": "Spirit Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_BossKey",
+      "vanilla": "Boss Key (Spirit Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "15633505270333176438",
+      "gyaml": "Obj_TBox_A_02_NoBake",
+      "folder": "SpiritTemple",
+      "files": [
+        "Banc/SpiritTemple/SpiritTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        13.0,
+        104.76,
+        -63.74
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "SpiritTemple_GetCompass",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_SpiritTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "14"
+      },
+      "location": "Spirit Temple Compass Chest",
+      "area": "Spirit Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Spirit Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "10378828369334876242",
+      "gyaml": "Obj_TBox_A_03",
+      "folder": "WaterTemple",
+      "files": [
+        "Banc/WaterTemple/WaterTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        33.12,
+        103.66,
+        -81.49
+      ],
+      "drop": "Item_Dungeon_BossKey",
+      "event": "ForesetTemple_GetBossKey",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow ForestTemple_Gimmick:TreasureBoxDM_NaviChat_ForestTemple_BossKey plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "15"
+      },
+      "location": "Water Temple Boss Key Chest",
+      "area": "Water Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_BossKey",
+      "vanilla": "Boss Key (Water Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "16424266294822218796",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "WaterTemple",
+      "files": [
+        "Banc/WaterTemple/WaterTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -68.26,
+        104.26,
+        20.15
+      ],
+      "drop": "Item_Dungeon_Compass",
+      "event": "WaterTemple_GetCompass",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_WaterTemple_Compass plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "3"
+      },
+      "location": "Water Temple Compass Chest",
+      "area": "Water Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Compass",
+      "vanilla": "Compass (Water Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "16384925224245172970",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "WaterTemple",
+      "files": [
+        "Banc/WaterTemple/WaterTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        36.75,
+        119.51,
+        -4.49
+      ],
+      "drop": "Item_Dungeon_Map",
+      "event": "WaterTemple_GetMap",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow NaviChat:TreasureBoxDM_NaviChat_WaterTemple_Map plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "17"
+      },
+      "location": "Water Temple Map Chest",
+      "area": "Water Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Dungeon_Map",
+      "vanilla": "Map (Water Temple)",
+      "slice_state": "event"
+    },
+    {
+      "hash": "18059711820131847165",
+      "gyaml": "Obj_TBox_A_02",
+      "folder": "WaterTemple",
+      "files": [
+        "Banc/WaterTemple/WaterTemple_Static.bcett.byml.zs"
+      ],
+      "translate": [
+        -77.9,
+        126.6,
+        -99.17
+      ],
+      "drop": "Item_Longshot",
+      "event": "WaterTemple_Room07_LongHook_FocusOnGimmick",
+      "copies_agree": true,
+      "verdict": "strip_safe",
+      "confidence": "flow_evidence",
+      "why": "flow SageOfWater_FocusGimmick:WaterTemple_Room07_LongHook plays the generic chest demo and sets no flags, and nothing outside the event reads its state",
+      "dynamic_extra": {
+        "DefaultDungeonRoomIndex": "7"
+      },
+      "location": "Water Temple Longshot Chest",
+      "area": "Water Temple",
+      "catalog_conf": "item",
+      "catalog_item": "Item_Longshot",
+      "vanilla": "Progressive Hookshot",
+      "slice_state": "event"
+    }
+  ]
+}

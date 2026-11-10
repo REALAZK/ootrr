@@ -1,0 +1,453 @@
+{
+  "format": 1,
+  "game": "oot-remake:390bb9ab6ad47584",
+  "files": [
+    "Banc/BottomOfTheWell/BottomOfTheWell_Dynamic.bcett.byml.zs",
+    "Banc/ForestTemple/ForestTemple_Static.bcett.byml.zs",
+    "Banc/GerudoFortress/GerudoFortress_Adult_Static.bcett.byml.zs",
+    "Banc/GerudoTrainingGround/GerudoTrainingGround_Static.bcett.byml.zs",
+    "Banc/IceCavern/IceCavern_Static.bcett.byml.zs",
+    "Banc/InsideGanonCastle/InsideGanonCastle_Dynamic.bcett.byml.zs",
+    "Banc/InsideGanonCastle/InsideGanonCastle_Static.bcett.byml.zs",
+    "Banc/InsideJabuJabuBelly/InsideJabuJabuBelly_Static.bcett.byml.zs",
+    "Banc/InsideTheDekuTree/InsideTheDekuTree_Dynamic.bcett.byml.zs",
+    "Banc/InsideTheDekuTree/InsideTheDekuTree_Static.bcett.byml.zs",
+    "Banc/KokiriForest/KokiriForest_Adult_Dynamic.bcett.byml.zs",
+    "Banc/KokiriForest/KokiriForest_Child_Dynamic.bcett.byml.zs",
+    "Banc/LostWood/LostWood_Adult_Dynamic.bcett.byml.zs",
+    "Banc/LostWood/LostWood_Child_Dynamic.bcett.byml.zs",
+    "Banc/ShadowTemple/ShadowTemple_Static.bcett.byml.zs",
+    "Banc/SpiritTemple/SpiritTemple_Static.bcett.byml.zs",
+    "Banc/ZoraDomain/ZoraDomain_Child_Static.bcett.byml.zs"
+  ],
+  "chests": [
+    {
+      "name": "Bottom of the Well Back Left Bombable Chest",
+      "state": "pool"
+    },
+    {
+      "name": "Bottom of the Well Center Skulltula Chest",
+      "state": "pool"
+    },
+    {
+      "name": "Bottom of the Well Compass Chest",
+      "state": "event"
+    },
+    {
+      "name": "Bottom of the Well Fire Keese Chest",
+      "state": "check"
+    },
+    {
+      "name": "Bottom of the Well Front Center Bombable Chest",
+      "state": "pool"
+    },
+    {
+      "name": "Bottom of the Well Front Left Fake Wall Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Bottom of the Well Invisible Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Bottom of the Well Lens of Truth Chest",
+      "state": "event"
+    },
+    {
+      "name": "Bottom of the Well Map Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Bottom of the Well Right Bottom Fake Wall Chest",
+      "state": "pool"
+    },
+    {
+      "name": "Bottom of the Well Underwater Front Chest",
+      "state": "pool"
+    },
+    {
+      "name": "Bottom of the Well Underwater Left Chest",
+      "state": "pool"
+    },
+    {
+      "name": "Deku Tree Basement Chest",
+      "state": "mismatch"
+    },
+    {
+      "name": "Deku Tree Compass Chest",
+      "state": "event"
+    },
+    {
+      "name": "Deku Tree Compass Room Side Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Deku Tree Map Chest",
+      "state": "event"
+    },
+    {
+      "name": "Deku Tree Slingshot Chest",
+      "state": "event"
+    },
+    {
+      "name": "Deku Tree Slingshot Room Side Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Bomb Bag Chest",
+      "state": "event"
+    },
+    {
+      "name": "Dodongos Cavern Compass Chest",
+      "state": "event"
+    },
+    {
+      "name": "Dodongos Cavern Map Chest",
+      "state": "event"
+    },
+    {
+      "name": "Fire Temple Big Lava Room Blocked Door Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Fire Temple Big Lava Room Lower Open Door Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Fire Temple Boss Key Chest",
+      "state": "event"
+    },
+    {
+      "name": "Fire Temple Boulder Maze Lower Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Fire Temple Boulder Maze Shortcut Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Fire Temple Boulder Maze Side Room Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Fire Temple Boulder Maze Upper Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Fire Temple Compass Chest",
+      "state": "event"
+    },
+    {
+      "name": "Fire Temple Highest Goron Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Fire Temple Map Chest",
+      "state": "event"
+    },
+    {
+      "name": "Fire Temple Megaton Hammer Chest",
+      "state": "event"
+    },
+    {
+      "name": "Fire Temple Near Boss Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Forest Temple Blue Poe Chest",
+      "state": "event"
+    },
+    {
+      "name": "Forest Temple Boss Key Chest",
+      "state": "event"
+    },
+    {
+      "name": "Forest Temple Bow Chest",
+      "state": "event"
+    },
+    {
+      "name": "Forest Temple First Room Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple First Stalfos Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Floormaster Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Map Chest",
+      "state": "event"
+    },
+    {
+      "name": "Forest Temple Red Poe Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Well Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "GF Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Light Trial Invisible Enemies Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Shadow Trial Golden Gauntlets Chest",
+      "state": "event"
+    },
+    {
+      "name": "Ganons Tower Boss Key Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Gerudo Training Ground Beamos Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Gerudo Training Ground Eye Statue Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Gerudo Training Ground Hammer Room Switch Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Gerudo Training Ground Heavy Block Third Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Gerudo Training Ground Hidden Ceiling Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Gerudo Training Ground Maze Path Final Chest",
+      "state": "event"
+    },
+    {
+      "name": "Gerudo Training Ground Near Scarecrow Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Gerudo Training Ground Stalfos Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Gerudo Training Ground Underwater Silver Rupee Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Graveyard Dampe Race Hookshot Chest",
+      "state": "event"
+    },
+    {
+      "name": "Graveyard Shield Grave Chest",
+      "state": "check"
+    },
+    {
+      "name": "Ice Cavern Compass Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Ice Cavern Iron Boots Chest",
+      "state": "event"
+    },
+    {
+      "name": "Ice Cavern Map Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Jabu Jabus Belly Boomerang Chest",
+      "state": "event"
+    },
+    {
+      "name": "Jabu Jabus Belly Compass Chest",
+      "state": "event"
+    },
+    {
+      "name": "Jabu Jabus Belly Map Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "KF Kokiri Sword Chest",
+      "state": "event"
+    },
+    {
+      "name": "KF Midos Bottom Left Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "KF Midos Bottom Right Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "KF Midos Top Left Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "KF Midos Top Right Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "LW Near Shortcuts Grotto Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Market Treasure Chest Game Reward",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 1 Bottom",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 1 Top",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 2 Bottom",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 2 Top",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 3 Bottom",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 3 Top",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 4 Bottom",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 4 Top",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 5 Bottom",
+      "state": "event"
+    },
+    {
+      "name": "Market Treasure Chest Game Room 5 Top",
+      "state": "event"
+    },
+    {
+      "name": "Shadow Temple After Wind Hidden Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Boss Key Chest",
+      "state": "event"
+    },
+    {
+      "name": "Shadow Temple Compass Chest",
+      "state": "event"
+    },
+    {
+      "name": "Shadow Temple Early Silver Rupee Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Falling Spikes Switch Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Hover Boots Chest",
+      "state": "event"
+    },
+    {
+      "name": "Shadow Temple Invisible Floormaster Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Map Chest",
+      "state": "event"
+    },
+    {
+      "name": "Spirit Temple Boss Key Chest",
+      "state": "event"
+    },
+    {
+      "name": "Spirit Temple Child Early Torches Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Compass Chest",
+      "state": "event"
+    },
+    {
+      "name": "Spirit Temple Early Adult Right Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Spirit Temple Hallway Left Invisible Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Hallway Right Invisible Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Map Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Mirror Shield Chest",
+      "state": "event"
+    },
+    {
+      "name": "Spirit Temple Near Four Armos Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Spirit Temple Silver Gauntlets Chest",
+      "state": "event"
+    },
+    {
+      "name": "Spirit Temple Statue Room Hand Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Spirit Temple Sun Block Room Chest",
+      "state": "pooled"
+    },
+    {
+      "name": "Wasteland Chest",
+      "state": "mismatch"
+    },
+    {
+      "name": "Water Temple Boss Key Chest",
+      "state": "event"
+    },
+    {
+      "name": "Water Temple Compass Chest",
+      "state": "event"
+    },
+    {
+      "name": "Water Temple Longshot Chest",
+      "state": "event"
+    },
+    {
+      "name": "Water Temple Map Chest",
+      "state": "event"
+    },
+    {
+      "name": "ZD Chest",
+      "state": "eligible"
+    },
+    {
+      "name": "ZR Open Grotto Chest",
+      "state": "mismatch"
+    }
+  ]
+}

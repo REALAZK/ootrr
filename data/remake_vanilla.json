@@ -1,0 +1,13 @@
+{
+"format": 1,
+"note": "Where the remake chest holds a different item than the OoTR vanilla item, the item the remake chest really holds. Only entries whose remake item has an item definition are listed.",
+"locations": {
+"Bottom of the Well Invisible Chest":"Rupees (50)",
+"Deku Tree Compass Room Side Chest":"Deku Nuts (5)",
+"Deku Tree Slingshot Room Side Chest":"Deku Nuts (5)",
+"KF Midos Bottom Right Chest":"Rupees (5)",
+"LW Near Shortcuts Grotto Chest":"Rupees (50)",
+"Spirit Temple Hallway Left Invisible Chest":"Rupees (20)",
+"Spirit Temple Hallway Right Invisible Chest":"Rupees (20)"
+}
+}

@@ -1,0 +1,12 @@
+{
+  "id": "keysanity",
+  "name": "Keysanity",
+  "tip": "Every dungeon key can be anywhere in the world. Maps and compasses are given to you.",
+  "order": 20,
+  "settings": {
+    "shuffle_smallkeys": "keysanity",
+    "shuffle_bosskeys": "keysanity",
+    "shuffle_ganon_bosskey": "keysanity",
+    "shuffle_mapcompass": "startwith"
+  }
+}

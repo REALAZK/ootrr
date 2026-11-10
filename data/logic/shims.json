@@ -1,0 +1,20 @@
+{
+  "goal": "Triforce",
+  "groups": {
+    "stones": ["Kokiri Emerald", "Goron Ruby", "Zora Sapphire"],
+    "medallions": ["Forest Medallion", "Fire Medallion", "Water Medallion", "Shadow Medallion", "Spirit Medallion", "Light Medallion"],
+    "rewards": ["Kokiri Emerald", "Goron Ruby", "Zora Sapphire", "Forest Medallion", "Fire Medallion", "Water Medallion", "Shadow Medallion", "Spirit Medallion", "Light Medallion"],
+    "bottles": ["Bottle", "Bottle with Milk", "Deliver Letter", "Sell Big Poe", "Bottle with Red Potion", "Bottle with Green Potion", "Bottle with Blue Potion", "Bottle with Fairy", "Bottle with Fish", "Bottle with Blue Fire", "Bottle with Bugs", "Bottle with Poe"]
+  },
+  "helpers": {
+    "has_soul(soul)": "True",
+    "has_all_notes_for_song(song)": "True",
+    "region_has_shortcuts(name)": "False",
+    "has_bottle": "has_group(bottles) or (Rutos_Letter, 2)",
+    "has_stones(n)": "count_group(stones) >= n",
+    "has_medallions(n)": "count_group(medallions) >= n",
+    "has_dungeon_rewards(n)": "count_group(rewards) >= n",
+    "has_hearts(n)": "(Piece_of_Heart, (n - 3) * 4)",
+    "can_live_dmg(hearts, revive)": "hearts < 3 or (revive and Fairy) or can_use(Nayrus_Love)"
+  }
+}
