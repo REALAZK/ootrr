@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=OOTRR
+GenericName=Randomizer
+Comment=Ocarina of Time remake randomizer, opens in your browser
+Exec=@BIN@ serve
+Terminal=true
+Categories=Utility;Game;
+Keywords=randomizer;zelda;ocarina;

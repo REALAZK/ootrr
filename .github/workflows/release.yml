@@ -1,0 +1,185 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: |
+          version="$(grep -m1 '^version' Cargo.toml | cut -d '"' -f2)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "v$version" ]; then
+            echo "tag ${GITHUB_REF_NAME} does not match Cargo.toml version $version" >&2
+            exit 1
+          fi
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install stable --profile minimal
+      - run: cargo test --workspace --release
+
+  windows:
+    needs: [version, test]
+    runs-on: windows-latest
+    env:
+      OOTRR_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install stable --profile minimal
+      - name: Build
+        shell: pwsh
+        run: |
+          $flags = @("--remap-path-prefix=$env:USERPROFILE=user", "--remap-path-prefix=$env:GITHUB_WORKSPACE=ootrr", "-C", "link-arg=/PDBALTPATH:%_PDB%")
+          $env:CARGO_ENCODED_RUSTFLAGS = $flags -join [char]0x1f
+          cargo build --release --locked
+      - name: Audit
+        run: python -I tools/audit.py target/release/ootrr.exe
+      - name: Installer
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" packaging\windows\ootrr.iss
+      - name: Portable zip
+        shell: pwsh
+        run: |
+          $name = "OOTRR-$env:OOTRR_VERSION-windows-x64"
+          New-Item -ItemType Directory -Force "release\$name" | Out-Null
+          Copy-Item target\release\ootrr.exe, LICENSE, NOTICE, README.md "release\$name"
+          Compress-Archive -Path "release\$name" -DestinationPath "release\$name.zip" -Force
+          Remove-Item -Recurse -Force "release\$name"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            release/*.exe
+            release/*.zip
+          if-no-files-found: error
+
+  linux:
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    env:
+      OOTRR_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          rustup toolchain install stable --profile minimal
+          rustup target add x86_64-unknown-linux-musl
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+      - name: Build
+        run: |
+          export RUSTFLAGS="--remap-path-prefix=$GITHUB_WORKSPACE=ootrr --remap-path-prefix=$HOME=user"
+          cargo build --release --locked --target x86_64-unknown-linux-musl
+      - name: Audit
+        run: python3 -I tools/audit.py target/x86_64-unknown-linux-musl/release/ootrr
+      - name: Package
+        run: |
+          chmod +x packaging/linux/build_release.sh packaging/linux/install.sh
+          packaging/linux/build_release.sh "$OOTRR_VERSION" target/x86_64-unknown-linux-musl/release/ootrr release
+      - name: Check the installer script
+        run: |
+          sh -n packaging/linux/install.sh
+          tmp="$(mktemp -d)"
+          tar -xzf release/OOTRR-$OOTRR_VERSION-linux-x86_64.tar.gz -C "$tmp"
+          "$tmp"/ootrr-$OOTRR_VERSION-linux-x86_64/install.sh --prefix "$tmp/prefix" --yes
+          "$tmp/prefix/bin/ootrr" > /dev/null || true
+          "$tmp"/ootrr-$OOTRR_VERSION-linux-x86_64/install.sh --prefix "$tmp/prefix" --uninstall
+          dpkg-deb --info release/OOTRR-$OOTRR_VERSION-linux-amd64.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            release/*.tar.gz
+            release/*.deb
+          if-no-files-found: error
+
+  macos:
+    needs: [version, test]
+    runs-on: macos-latest
+    env:
+      OOTRR_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          rustup toolchain install stable --profile minimal
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - name: Build
+        run: |
+          export RUSTFLAGS="--remap-path-prefix=$GITHUB_WORKSPACE=ootrr --remap-path-prefix=$HOME=user"
+          cargo build --release --locked --target aarch64-apple-darwin
+          cargo build --release --locked --target x86_64-apple-darwin
+          mkdir -p target/universal
+          lipo -create -output target/universal/ootrr \
+            target/aarch64-apple-darwin/release/ootrr \
+            target/x86_64-apple-darwin/release/ootrr
+      - name: Audit
+        run: python3 -I tools/audit.py target/universal/ootrr
+      - name: Package
+        run: |
+          chmod +x packaging/macos/build_pkg.sh
+          packaging/macos/build_pkg.sh "$OOTRR_VERSION" target/universal/ootrr release
+          pkgutil --check-signature release/OOTRR-$OOTRR_VERSION-macos-universal.pkg || true
+          pkgutil --payload-files release/OOTRR-$OOTRR_VERSION-macos-universal.pkg | head -20
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: release/*.pkg
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [version, windows, linux, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOTES: |
+            OOTRR ${{ needs.version.outputs.version }}
+
+            This is an early version. It shuffles chests, and optionally some story and NPC rewards. The reward option is not tested in the game yet.
+
+            No game files, keys or dumps are included. You need your own extracted game files.
+
+            Windows: run the setup exe. macOS: open the pkg. The installers are not signed, so Windows SmartScreen and macOS Gatekeeper will warn you the first time. Linux: use the deb, or unpack the tar.gz and run install.sh.
+
+            Check SHA256SUMS.txt to verify a download.
+        run: |
+          if gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" dist/* --repo "${GITHUB_REPOSITORY}" --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" dist/* \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "OOTRR ${{ needs.version.outputs.version }}" \
+              --notes "$NOTES" \
+              --prerelease
+          fi

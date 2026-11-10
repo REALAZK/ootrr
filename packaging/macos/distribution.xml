@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="2">
+    <title>OOTRR @VERSION@</title>
+    <organization>io.github.realazk</organization>
+    <options customize="never" require-scripts="false" hostArchitectures="arm64,x86_64"/>
+    <welcome file="welcome.html"/>
+    <license file="license.txt"/>
+    <conclusion file="conclusion.html"/>
+    <domains enable_localSystem="true"/>
+    <pkg-ref id="io.github.realazk.ootrr"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="io.github.realazk.ootrr"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="io.github.realazk.ootrr" visible="false">
+        <pkg-ref id="io.github.realazk.ootrr"/>
+    </choice>
+    <pkg-ref id="io.github.realazk.ootrr" version="@VERSION@" onConclusion="none">ootrr-component.pkg</pkg-ref>
+</installer-gui-script>

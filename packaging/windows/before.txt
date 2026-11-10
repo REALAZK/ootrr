@@ -1,0 +1,7 @@
+OOTRR is a randomizer for the Ocarina of Time remake.
+
+It contains no game files, no keys and no dumps. It only reads files you extracted yourself from a copy of the game you own, and it writes a mod folder that your emulator can load.
+
+After the install, start OOTRR from the Start menu. A console window opens and the tool shows a link. Open the link in your browser to generate a seed and build a mod. Keep the console window open while you use it.
+
+This is an early version. Back up your saves before you try a seed.
