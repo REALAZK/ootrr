@@ -5,6 +5,7 @@ A local rando for the Ocarina of Time remaake, in early dev. repo: https://githu
 ## How it works
 
 Generate: settings and a seed it will create a seed file.
+
 Build: a seed file plus your own extracted game folder produce a mod folder for your emulator.
 (more detailed tutorial will come soon.)
 
