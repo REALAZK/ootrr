@@ -1,6 +1,12 @@
 # Ocarina of Time Remake Randomizer (OOTRR)
 
+[![Join the OOTRR Discord](https://img.shields.io/badge/Discord-Join%20the%20OOTRR%20server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/jJ5V3NA2GM)
+
 A local rando for the Ocarina of Time remaake, in early dev. repo: https://github.com/realazk/ootrr
+
+## Community
+
+Questions, bug reports, seeds and playtesting happen on the [OOTRR Discord](https://discord.gg/jJ5V3NA2GM). Come say hi, share a seed or help test a build.
 
 ## How it works
 
