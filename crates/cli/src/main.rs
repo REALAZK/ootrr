@@ -47,6 +47,8 @@ const USAGE: &str = "usage:
   ootrr bfevfl-dump <romfs_root> <relative_path>
   ootrr bfevfl-rewrite <romfs_root> <relative_path> <out_file>
   ootrr bfevfl-replace <romfs_root> <relative_path> <old_item> <new_item> [out_file]
+  ootrr flow-durations <romfs_root> [name_prefix] [top_n]
+  ootrr flow-scale <romfs_root> <load_dir> <mod_name> <factor> <min_frames> <relative_path>...
   ootrr flow-force <romfs_root> <load_dir> <mod_name> <relative_path> <event_name> <case_value> [<event_name> <case_value>]...
   ootrr flow-rewards <romfs_root> <out_json>
   ootrr flow-locations-report [--tests] [--all]
@@ -290,6 +292,8 @@ fn main() -> ExitCode {
         Some("bfevfl-rewrite") => check_bfevfl::rewrite(&a[1..]),
         Some("bfevfl-replace") => check_bfevfl::replace(&a[1..]),
         Some("flow-force") => check_bfevfl::force(&a[1..]),
+        Some("flow-durations") => check_bfevfl::durations(&a[1..]),
+        Some("flow-scale") => check_bfevfl::scale(&a[1..]),
         Some("flow-rewards") => check_bfevfl::catalog(&a[1..]),
         Some("flow-locations-report") => flow_cmd::report(&a[1..]),
         Some("flow-locations-check") => flow_cmd::check(&a[1..]),

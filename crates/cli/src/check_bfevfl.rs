@@ -2,7 +2,7 @@ use std::collections::BTreeMap as Map;
 use std::path::Path as P;
 use std::time::Instant;
 
-use ootrr_core::bfevfl::{replace_bytes, rewards, show, Bf, Kind, Replaced};
+use ootrr_core::bfevfl::{replace_bytes, rewards, show, Bf, Kind, Replaced, Val};
 use ootrr_core::modpack::Pack;
 use ootrr_core::TITLE_ID;
 use ootrr_core::error::{Error, Res};
@@ -232,5 +232,104 @@ pub fn force(a: &[String]) -> Res<()> {
     let pk: Pack = Pack::create(P::new(load_dir), TITLE_ID, name)?;
     let at = pk.write_romfs(r, &zs::compress_raw(&out, id)?)?;
     println!("forced {done} switch(es), wrote {}", at.display());
+    Ok(())
+}
+
+pub fn durations(a: &[String]) -> Res<()> {
+    let root: &str = a.first().ok_or(Error::Format("missing romfs_root"))?;
+    let prefix: &str = a.get(1).map(|s| s.as_str()).unwrap_or("Dm_");
+    let top: usize = a.get(2).and_then(|s| s.parse().ok()).unwrap_or(40);
+    let mut rf: Romfs = Romfs::open(P::new(root))?;
+    let files: Vec<String> = rf
+        .list("Event/EventFlow")?
+        .into_iter()
+        .filter(|p| p.ends_with(".bfevfl.zs") && !p.contains(".110."))
+        .filter(|p| p.rsplit('/').next().map(|n| n.starts_with(prefix)).unwrap_or(false))
+        .collect();
+    let mut rows: Vec<(f32, f32, f32, usize, String)> = Vec::new();
+    for f in &files {
+        let raw: Vec<u8> = load(&mut rf, f)?;
+        let Ok(bf) = Bf::parse(&raw) else {
+            continue;
+        };
+        let tl: f32 = bf.tls.iter().map(|t| t.dur).sum();
+        let tl_max: f32 = bf.tls.iter().map(|t| t.dur).fold(0.0, f32::max);
+        let mut waits: f32 = 0.0;
+        let mut texts: usize = 0;
+        for fl in &bf.flows {
+            for e in &fl.events {
+                if let Kind::Action { params: Some(c), .. } = &e.kind {
+                    if let Some(Val::Int(n)) = c.get("Frames") {
+                        waits += *n as f32;
+                    }
+                    if c.get("MessageId").is_some() {
+                        texts += 1;
+                    }
+                }
+            }
+        }
+        let name: String = f.rsplit('/').next().unwrap_or(f).trim_end_matches(".bfevfl.zs").to_string();
+        rows.push((tl, tl_max, waits, texts, name));
+    }
+    rows.sort_by(|x, y| (y.0 + y.2).partial_cmp(&(x.0 + x.2)).unwrap_or(std::cmp::Ordering::Equal));
+    println!("{} flows starting with {prefix}. timeline total, longest timeline, wait frames, text boxes, name", rows.len());
+    for r in rows.iter().take(top) {
+        println!("{:9.0} {:9.0} {:7.0} {:4}  {}", r.0, r.1, r.2, r.3, r.4);
+    }
+    Ok(())
+}
+
+pub fn scale(a: &[String]) -> Res<()> {
+    let root: &str = a.first().ok_or(Error::Format("missing romfs_root"))?;
+    let load_dir: &str = a.get(1).ok_or(Error::Format("missing load_dir"))?;
+    let name: &str = a.get(2).ok_or(Error::Format("missing mod_name"))?;
+    let factor: f32 = a
+        .get(3)
+        .ok_or(Error::Format("missing factor"))?
+        .parse()
+        .map_err(|_| Error::Format("bad factor"))?;
+    let min: i32 = a
+        .get(4)
+        .ok_or(Error::Format("missing min_frames"))?
+        .parse()
+        .map_err(|_| Error::Format("bad min_frames"))?;
+    let rels: &[String] = a.get(5..).unwrap_or(&[]);
+    if rels.is_empty() || !(0.0..=1.0).contains(&factor) {
+        return Err(Error::Format("need a factor from 0 to 1 and at least one flow file"));
+    }
+    let mut rf: Romfs = Romfs::open(P::new(root))?;
+    let pk: Pack = Pack::create(P::new(load_dir), TITLE_ID, name)?;
+    for r in rels {
+        let z: Vec<u8> = rf.read(r)?;
+        let id: Option<u32> = dict_id(&z).or(Some(1));
+        let raw: Vec<u8> = rf.read_zs(r)?;
+        let mut bf: Bf = Bf::parse(&raw)?;
+        let mut n: usize = 0;
+        let mut before: i64 = 0;
+        let mut after: i64 = 0;
+        for fl in bf.flows.iter_mut() {
+            for e in fl.events.iter_mut() {
+                if let Kind::Action { params: Some(c), .. } = &mut e.kind {
+                    for (k, v) in c.items.iter_mut() {
+                        if k != "Frames" {
+                            continue;
+                        }
+                        if let Val::Int(x) = v {
+                            if *x >= min {
+                                let y: i32 = ((*x as f32) * factor).round().max(1.0) as i32;
+                                before += *x as i64;
+                                after += y as i64;
+                                *x = y;
+                                n += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        let out: Vec<u8> = bf.write()?;
+        let at = pk.write_romfs(r, &zs::compress_raw(&out, id)?)?;
+        println!("{r}: scaled {n} waits, {before} frames -> {after}, wrote {}", at.display());
+    }
     Ok(())
 }
