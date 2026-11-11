@@ -47,6 +47,7 @@ export function render() {
   const missing = [];
   if (!state.game_check || !state.game_check.ok) missing.push("a valid game folder");
   if (!p.mod.trim()) missing.push("a mod folder");
+  else if (state.mod_check && !state.mod_check.ok) missing.push("a mod folder that exists");
   if (!name_ok(p.name)) missing.push("a valid mod name");
 
   async function poll(id) {

@@ -11,6 +11,8 @@ pub struct Pick {
     pub flow: usize,
 }
 
+const COUNTED_VANILLA: [&str; 3] = ["Small Key (Fire Temple)", "Small Key (Water Temple)", "Small Key (Spirit Temple)"];
+
 fn class(kind: &str) -> u8 {
     match kind {
         "SmallKey" => 1,
@@ -58,6 +60,9 @@ fn reason(d: &Data, w: &World, p: &Plan, name: &str) -> Option<String> {
     let kind: &str = d.vanilla_of(name).and_then(|v| d.item(v)).map(|i| i.kind.as_str()).unwrap_or("");
     if pinned_vanilla(p, kind) {
         return Some("its dungeon item setting is vanilla".to_string());
+    }
+    if !p.keys_roam() && d.vanilla_of(name).is_some_and(|v| COUNTED_VANILLA.contains(&v)) {
+        return Some("its dungeon's keys are counted for the vanilla layout".to_string());
     }
     if d.keeps_event(name) && !d.special(name) && d.vanilla_of(name).is_some_and(|v| d.family(v).is_some()) {
         return Some("it holds an upgrade item behind a story event".to_string());

@@ -56,7 +56,7 @@
             "Nut Crate": "True"
         },
         "exits": {
-            "Child Spirit Temple Climb": "(Small_Key_Spirit_Temple, 1)"
+            "Child Spirit Temple Climb": "spirit_keys(1)"
         }
     },
     {
@@ -68,8 +68,8 @@
         "exits": {
             "Spirit Temple Boulder Room": "
                 Bow or Hookshot or has_bombchus or (Bombs and logic_spirit_lower_adult_switch)",
-            "Spirit Temple Central Chamber": "(Small_Key_Spirit_Temple, 1)",
-            "Adult Spirit Temple Climb": "(Small_Key_Spirit_Temple, 3)"
+            "Spirit Temple Central Chamber": "spirit_keys(1)",
+            "Adult Spirit Temple Climb": "spirit_keys(3)"
         }
     },
     {
@@ -102,31 +102,31 @@
         "locations": {
             "Spirit Temple Child Climb North Chest": "
                 (is_child and has_projectile(child) and
-                    (Small_Key_Spirit_Temple, 5)) or
+                    spirit_keys(5)) or
                 (is_adult and has_projectile(adult) and
-                    ((Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                    ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops))) or
+                    (spirit_keys(3) or spirit_temple_shortcuts or
+                    (spirit_keys(2) and free_bombchu_drops))) or
                 has_projectile(both)",
             "Spirit Temple Child Climb East Chest": "
                 (is_child and has_projectile(child) and
-                    (Small_Key_Spirit_Temple, 5)) or
+                    spirit_keys(5)) or
                 (is_adult and has_projectile(adult) and
-                    ((Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                    ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops))) or
+                    (spirit_keys(3) or spirit_temple_shortcuts or
+                    (spirit_keys(2) and free_bombchu_drops))) or
                 has_projectile(both)",
             "Spirit Temple Child Climb Pot": "True",
             "Spirit Temple GS Sun on Floor Room": "
                 (is_child and has_projectile(child) and
-                    (Small_Key_Spirit_Temple, 5)) or
+                    spirit_keys(5)) or
                 (is_adult and (has_projectile(adult) or can_take_damage) and
-                    ((Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                    ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops))) or
+                    (spirit_keys(3) or spirit_temple_shortcuts or
+                    (spirit_keys(2) and free_bombchu_drops))) or
                 has_projectile(both) or can_use(Dins_Fire) or
                 (can_take_damage and (Sticks or Kokiri_Sword or has_projectile(child)))"
         },
         "exits": {
             "Spirit Temple Central Chamber": "has_explosives",
-            "Child Spirit Before Locked Door": "(Small_Key_Spirit_Temple, 5)"
+            "Child Spirit Before Locked Door": "spirit_keys(5)"
         }
     },
     {
@@ -135,86 +135,86 @@
         "locations": {
             "Spirit Temple Map Chest": "
                 (is_child and Sticks and
-                    (Small_Key_Spirit_Temple, 5)) or
+                    spirit_keys(5)) or
                 (is_adult and (has_fire_source or (logic_spirit_map_chest and Bow)) and
-                    ((Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts)) or
+                    (spirit_keys(3) or spirit_temple_shortcuts)) or
                 ((can_use(Dins_Fire) or (((Magic_Meter and Fire_Arrows) or logic_spirit_map_chest) and Bow and Sticks)) and
-                    (has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)))",
+                    (has_explosives or (spirit_keys(2) and free_bombchu_drops)))",
             "Spirit Temple Sun Block Room Chest": "
                 (is_child and Sticks and (logic_spirit_sun_chest_no_rupees or (Silver_Rupee_Spirit_Temple_Sun_Block, 5)) and
-                    (Small_Key_Spirit_Temple, 5)) or
+                    spirit_keys(5)) or
                 (is_adult and (has_fire_source or (logic_spirit_sun_chest_bow and (Silver_Rupee_Spirit_Temple_Sun_Block, 5) and Bow)) and
-                    ((Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts)) or
+                    (spirit_keys(3) or spirit_temple_shortcuts)) or
                 ((can_use(Dins_Fire) or (((Magic_Meter and Fire_Arrows) or (logic_spirit_sun_chest_bow and (Silver_Rupee_Spirit_Temple_Sun_Block, 5))) and
                         Bow and Sticks and (logic_spirit_sun_chest_no_rupees or (Silver_Rupee_Spirit_Temple_Sun_Block, 5)))) and
-                    (has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)))",
+                    (has_explosives or (spirit_keys(2) and free_bombchu_drops)))",
             # With longshot and explosives, right hand is reachable as adult after opening either
             # upper door. Because some of the keys cannot be spent without adult accessing the
             # main body of the dungeon, this route is able to be age-unknown, where child can be
             # expected to reach it as long as adult cannot enter. Because we cannot truly know
             # whether adult can enter, child must still possess the items that adult would use.
             "Spirit Temple Silver Gauntlets Chest": "
-                (Small_Key_Spirit_Temple, 5) or
-                (has_explosives and Longshot and (Small_Key_Spirit_Temple, 3))",
+                spirit_keys(5) or
+                (has_explosives and Longshot and spirit_keys(3))",
             "Spirit Temple Central Chamber Pot 1": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Central Chamber Pot 2": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Central Chamber Pot 3": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Central Chamber Pot 4": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Central Chamber Pot 5": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Central Chamber Pot 6": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Central Chamber Flying Pot 1": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Central Chamber Flying Pot 2": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Hall After Sun Block Room Pot 1": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Hall After Sun Block Room Pot 2": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Sun Block Room Silver Rupee Left": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Sun Block Room Silver Rupee Center Front": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Sun Block Room Silver Rupee Center Back": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Sun Block Room Silver Rupee Right Front": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple Sun Block Room Silver Rupee Right Back": "
-                (Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts or
-                has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)",
+                spirit_keys(3) or spirit_temple_shortcuts or
+                has_explosives or (spirit_keys(2) and free_bombchu_drops)",
             "Spirit Temple GS Lobby": "
                 (is_child and logic_spirit_lobby_gs and Boomerang and
-                    (Small_Key_Spirit_Temple, 5)) or
+                    spirit_keys(5)) or
                 (is_adult and (Hookshot or Hover_Boots or logic_spirit_lobby_jump) and
-                    ((Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts)) or
+                    (spirit_keys(3) or spirit_temple_shortcuts)) or
                 (logic_spirit_lobby_gs and Boomerang and (Hookshot or Hover_Boots or logic_spirit_lobby_jump) and
-                    (has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)))",
+                    (has_explosives or (spirit_keys(2) and free_bombchu_drops)))",
             "Spirit Temple GS Hall After Sun Block Room": "
                 (is_child and Boomerang and
-                    (Small_Key_Spirit_Temple, 5)) or
+                    spirit_keys(5)) or
                 (is_adult and Hookshot and
-                    ((Small_Key_Spirit_Temple, 3) or spirit_temple_shortcuts)) or
+                    (spirit_keys(3) or spirit_temple_shortcuts)) or
                 (Boomerang and Hookshot and
-                    (has_explosives or ((Small_Key_Spirit_Temple, 2) and free_bombchu_drops)))"
+                    (has_explosives or (spirit_keys(2) and free_bombchu_drops)))"
         },
         "exits": {
             "Child Spirit Temple Climb": "True",
@@ -227,8 +227,8 @@
             # Age-unknown logic is incompatible with the rest of the world.
             # Because adult might unlock all doors, child must require all 5 keys to pass.
             "Desert Colossus Hands": "
-                (Small_Key_Spirit_Temple, 5) or
-                (is_adult and has_explosives and (Small_Key_Spirit_Temple, 3))"
+                spirit_keys(5) or
+                (is_adult and has_explosives and spirit_keys(3))"
         }
     },
     {
@@ -245,8 +245,8 @@
             "Spirit Temple Adult Climb Flying Pot 2": "True"
         },
         "exits": {
-            "Early Adult Spirit Temple": "(Small_Key_Spirit_Temple, 5)",
-            "Spirit Temple Anubis Room": "(Small_Key_Spirit_Temple, 4)"
+            "Early Adult Spirit Temple": "spirit_keys(5)",
+            "Spirit Temple Anubis Room": "spirit_keys(4)"
         }
     },
     {
@@ -258,7 +258,7 @@
         "exits": {
             "Spirit Temple Beyond Anubis Room": "has_explosives",
             "Spirit Temple Big Mirror Room": "
-                (Small_Key_Spirit_Temple, 5) and
+                spirit_keys(5) and
                 (logic_spirit_wall or Longshot or has_bombchus or
                     ((Bombs or Nuts or can_use(Dins_Fire)) and
                         (Bow or Hookshot or Megaton_Hammer)))"

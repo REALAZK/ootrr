@@ -4,7 +4,7 @@ use ootrr_core::settings::seed::SeedFile;
 
 use crate::api_settings;
 use crate::body;
-use crate::error::Hr;
+use crate::error::{Fail, Hr};
 
 pub fn describe(sf: &SeedFile) -> Hr<Json> {
     let l: Loaded = sf.settings()?;
@@ -25,7 +25,7 @@ pub fn describe(sf: &SeedFile) -> Hr<Json> {
 }
 
 pub fn read(b: &Json) -> Hr<Json> {
-    let sf: SeedFile = SeedFile::parse(body::text(b, "seed_text")?)?;
+    let sf: SeedFile = SeedFile::parse(body::text(b, "seed_text")?).map_err(|e| Fail::new(422, &format!("That file is not a seed file this version can read. ({e})")))?;
     describe(&sf)
 }
 

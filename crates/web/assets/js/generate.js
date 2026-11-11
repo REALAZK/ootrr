@@ -1,5 +1,6 @@
 import { h, fill, notice, copy, save_text } from "./dom.js";
 import { button as report_button } from "./report.js";
+import { panel as plando_panel } from "./plando.js";
 import { post } from "./api.js";
 import { state, touch } from "./store.js";
 import { effective, match_preset, changed } from "./rules.js";
@@ -48,8 +49,10 @@ export function render() {
         "section",
         { class: "card stack" },
         h("h2", null, "Your seed"),
-        res.placements_ready ? null : notice("warn", res.notice || "This seed file has no item placements yet. Placement arrives with the chest shuffle slice."),
+        res.placements_ready ? null : notice("warn", res.notice || "This seed changes no items. Turn on a shuffle setting if you want items to move."),
         res.warnings && res.warnings.length ? notice("warn", res.warnings.join(" ")) : null,
+        Array.isArray(res.notes) && res.notes.length ? notice("warn", res.notes.join("\n")) : null,
+        state.plando.length && res.report && res.report.includes("Plandomizer:") ? notice("info", `Plandomizer: ${state.plando.length} hand placed ${state.plando.length === 1 ? "entry was" : "entries were"} used for this seed. Share the seed file, because the seed text and settings alone cannot recreate it.`) : null,
         summary(res),
         h(
           "div",
@@ -68,11 +71,16 @@ export function render() {
     go_btn.disabled = true;
     fill(out, h("section", { class: "card" }, h("p", null, "Generating"), h("progress", { "aria-label": "Generating" })));
     try {
-      const res = await post("/api/generate", { seed: seed.value, settings: effective(schema, state.vals), spoiler: true });
+      const res = await post("/api/generate", { seed: seed.value, settings: effective(schema, state.vals), spoiler: true, plando: state.plando });
       seed.value = res.seed;
       state.seed = res.seed;
+      state.last_error = "";
       show(res);
     } catch (e) {
+      state.result = null;
+      state.last_error = e.message;
+      touch();
+      bar();
       fill(out, notice("error", e.message));
     }
     go_btn.disabled = false;
@@ -87,7 +95,7 @@ export function render() {
       const res = await post("/api/seed/read", { seed_text: text });
       res.seed_text = text;
       res.file_name = f.name.replace(/[^A-Za-z0-9._-]/g, "-");
-      res.notice = res.placements_ready ? "" : "This seed file has no item placements yet. Placement arrives with the chest shuffle slice.";
+      res.notice = res.placements_ready ? "" : "This seed changes no items. Turn on a shuffle setting if you want items to move.";
       state.vals = res.settings;
       state.seed = res.seed;
       seed.value = res.seed;
@@ -100,7 +108,15 @@ export function render() {
 
   go_btn.onclick = run;
   pick.onchange = open_file;
-  if (state.result) show(state.result);
+  if (state.result) {
+    try {
+      show(state.result);
+    } catch {
+      state.result = null;
+      touch();
+      fill(out, notice("warn", "The saved seed from an earlier visit could not be shown, so it was cleared. Generate a new one."));
+    }
+  }
   refresh_string().then(() => {
     if (live.error) fill(fix, notice("error", `The settings need a fix before a seed can be made. ${live.error}`));
   });
@@ -112,7 +128,7 @@ export function render() {
     h(
       "section",
       { class: "card stack" },
-      h("div", null, h("label", { class: "lbl", for: "seed" }, "Seed"), seed, h("p", { class: "hint" }, "The same seed with the same settings always gives the same seed file.")),
+      h("div", null, h("label", { class: "lbl", for: "seed" }, "Seed"), seed, h("p", { class: "hint" }, "The same seed with the same settings (and no plandomizer entries) always gives the same seed file.")),
       h("p", { class: "muted" }, `Settings: ${preset}${n ? `, ${n} changed from the defaults` : ""}. `, h("a", { href: "#/settings" }, "Change settings")),
       h(
         "div",
@@ -123,6 +139,7 @@ export function render() {
       ),
     ),
     fix,
+    plando_panel(),
     out,
   );
 }

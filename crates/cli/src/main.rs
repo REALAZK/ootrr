@@ -14,6 +14,7 @@ mod flow_cmd;
 mod game_cmd;
 mod hints_cmd;
 mod items_cmd;
+mod key_credit_cmd;
 mod logic_cmd;
 mod pot_cmd;
 mod progressive_cmd;
@@ -47,7 +48,7 @@ const USAGE: &str = "usage:
   ootrr check-rstbl <romfs_root> [sample_per_group]
   ootrr check-ainb <romfs_root> <subfolder>
   ootrr ainb-dump <romfs_root> <relative_path>
-  ootrr ainb-start <romfs_root> <load_dir_or_-> <mod_name> [--hearts N] [--item NAME[:COUNT]]...
+  ootrr ainb-start <romfs_root> <load_dir_or_-> <mod_name> [--hearts N] [--item NAME[:COUNT]]... [--flag NAME=true|false]...
   ootrr check-bfevfl <romfs_root> <subfolder>
   ootrr bfevfl-dump <romfs_root> <relative_path>
   ootrr bfevfl-rewrite <romfs_root> <relative_path> <out_file>
@@ -65,7 +66,7 @@ const USAGE: &str = "usage:
   ootrr check-msbt <romfs_root> [language ... | all]
   ootrr settings-dump [--compact] [--presets <dir>] [--decode <settings_string>]
   ootrr serve [--port N] [--lan] [--no-open] [--no-update-check]
-  ootrr generate <settings_string_or_preset_or_file> <seed> <out.ootrr> [--spoiler <file>]
+  ootrr generate <settings_string_or_preset_or_file> <seed> <out.ootrr> [--spoiler <file>] [--plando Location=Item]... [--plando-file <file>]
   ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name>
   ootrr slice-scan <romfs_root> <out_json>
   ootrr flags-build <romfs_root> <out_json>
@@ -86,6 +87,7 @@ const USAGE: &str = "usage:
   ootrr pot-set <romfs_root> <load_dir> <mod_name> [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] <ActorHash>=<Item_Actor>...
   ootrr boss-heart <romfs_root> <load_dir> <mod_name> [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] [--chest <actor>] [--slot] <Location>=<Item_Actor>...
   ootrr progressive <romfs_root> <load_dir> <mod_name> [--scale <factor> <min_frames>] [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] [--grants] <Family>=<hash>[,<hash>...]...
+  ootrr key-credit <romfs_root> <load_dir> <mod_name> [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] [--count <Dungeon>] <ChestActorHash>=<Dungeon_or_None>...
   ootrr zs-extract <romfs_root> <relative_path> <out_file>
   ootrr zs-pack <in_file> <out_file> <dict_id_or_0>
   ootrr byml-rewrite <romfs_root> <relative_path> <out_file>
@@ -305,6 +307,7 @@ fn main() -> ExitCode {
         Some("flow-durations") => check_bfevfl::durations(&a[1..]),
         Some("flow-scale") => check_bfevfl::scale(&a[1..]),
         Some("progressive") => progressive_cmd::run(&a[1..]),
+        Some("key-credit") => key_credit_cmd::run(&a[1..]),
         Some("boss-heart") => boss_heart_cmd::run(&a[1..]),
         Some("hints-show") => hints_cmd::show(&a[1..]),
         Some("check-game") => game_cmd::check(&a[1..]),
@@ -319,6 +322,11 @@ fn main() -> ExitCode {
         Some("check-msbt") => check_msbt::run(&a[1..]),
         Some("settings-dump") => settings_cmd::run(&a[1..]),
         Some("serve") => serve_cmd::run(&a[1..]),
+        None => serve_cmd::run(&[]),
+        Some("help") | Some("--help") | Some("-h") => {
+            println!("{USAGE}");
+            return ExitCode::SUCCESS;
+        }
         Some("generate") => slice_cmd::generate(&a[1..]),
         Some("build") => slice_cmd::build(&a[1..]),
         Some("slice-scan") => slice_cmd::scan_cmd(&a[1..]),

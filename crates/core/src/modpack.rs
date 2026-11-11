@@ -5,7 +5,10 @@ use crate::error::{Error, Res};
 
 pub struct Pack {
     pub root: PB,
+    pub work: PB,
 }
+
+pub const WORK: &str = ".new";
 
 fn is_title(s: &str) -> bool {
     s.len() == 16 && s.chars().all(|c| c.is_ascii_hexdigit())
@@ -43,7 +46,39 @@ impl Pack {
         let root: PB = load.join(title.to_ascii_uppercase()).join(name);
         fs::create_dir_all(root.join("romfs"))?;
         fs::create_dir_all(root.join("exefs"))?;
-        Ok(Pack { root })
+        Ok(Pack { work: root.clone(), root })
+    }
+
+    pub fn begin(load: &P, title: &str, name: &str) -> Res<Pack> {
+        if !is_title(title) {
+            return Err(Error::BadPath(title.to_string()));
+        }
+        if !is_name(name) {
+            return Err(Error::BadPath(name.to_string()));
+        }
+        let root: PB = load.join(title.to_ascii_uppercase()).join(name);
+        let work: PB = root.join(WORK);
+        if work.is_dir() {
+            fs::remove_dir_all(&work)?;
+        }
+        fs::create_dir_all(work.join("romfs"))?;
+        fs::create_dir_all(work.join("exefs"))?;
+        Ok(Pack { root, work })
+    }
+
+    pub fn commit(&self) -> Res<()> {
+        if self.work == self.root {
+            return Ok(());
+        }
+        for d in ["romfs", "exefs"] {
+            let old: PB = self.root.join(d);
+            if old.is_dir() {
+                fs::remove_dir_all(&old)?;
+            }
+            fs::rename(self.work.join(d), &old)?;
+        }
+        fs::remove_dir_all(&self.work)?;
+        Ok(())
     }
 
     pub fn clean(load: &P, title: &str, name: &str) -> Res<()> {
@@ -72,7 +107,7 @@ impl Pack {
     }
 
     fn put(&self, top: &str, r: &str, data: &[u8]) -> Res<PB> {
-        let p: PB = self.root.join(top).join(rel(r)?);
+        let p: PB = self.work.join(top).join(rel(r)?);
         if let Some(d) = p.parent() {
             fs::create_dir_all(d)?;
         }
@@ -84,6 +119,27 @@ impl Pack {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_staged_build_replaces_the_old_mod_only_on_commit() {
+        let d: PB = std::env::temp_dir().join(format!("ootrr_pack_stage_{}", std::process::id()));
+        let _ = fs::remove_dir_all(&d);
+        let old: Pack = Pack::create(&d, "0400486024DEC000", "Test Mod").unwrap();
+        old.write_romfs("Old/File.bin", b"old").unwrap();
+        let new: Pack = Pack::begin(&d, "0400486024DEC000", "Test Mod").unwrap();
+        new.write_romfs("New/File.bin", b"new").unwrap();
+        assert!(old.root.join("romfs").join("Old").join("File.bin").is_file());
+        assert!(!old.root.join("romfs").join("New").exists());
+        new.commit().unwrap();
+        assert!(!old.root.join("romfs").join("Old").exists());
+        assert_eq!(fs::read(old.root.join("romfs").join("New").join("File.bin")).unwrap(), b"new");
+        assert!(old.root.join("exefs").is_dir());
+        assert!(!old.root.join(WORK).exists());
+        let again: Pack = Pack::begin(&d, "0400486024DEC000", "Test Mod").unwrap();
+        drop(again);
+        assert_eq!(fs::read(old.root.join("romfs").join("New").join("File.bin")).unwrap(), b"new");
+        let _ = fs::remove_dir_all(&d);
+    }
 
     fn tmp(tag: &str) -> PB {
         let pb: PB = std::env::temp_dir().join(format!("ootrr_{}_{}", tag, std::process::id()));

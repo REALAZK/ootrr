@@ -12,8 +12,6 @@ const HELPERS: &str = include_str!("../../../../data/logic/LogicHelpers.json");
 
 const TOWER: [&str; 3] = ["Ganons Castle Tower", "Ganons Castle Tower Below Boss", "Ganondorf Boss Room"];
 
-const KEY_COUNT: u32 = 10;
-
 const WORLD: [&str; 14] = [
     include_str!("../../../../data/logic/World/Overworld.json"),
     include_str!("../../../../data/logic/World/Bosses.json"),
@@ -74,16 +72,14 @@ fn unique(files: Vec<Json>) -> Vec<Json> {
     out
 }
 
-pub fn spec(d: &Data) -> Res<Spec> {
+pub fn spec(d: &Data, over: &[(&str, &str)]) -> Res<Spec> {
     let mut s: Spec = Spec::from_bundle(SHIMS)?;
     s.settings = Settings::from_json(&parse(SETTINGS)?)?;
+    for (k, v) in over {
+        s.settings.set_str(k, v);
+    }
     for it in &d.items {
         s.add_item(&it.name, it.adv, 0);
-        match it.kind.as_str() {
-            "SmallKey" => s.start.push((it.name.clone(), KEY_COUNT)),
-            "BossKey" | "GanonBossKey" => s.start.push((it.name.clone(), 1)),
-            _ => {}
-        }
     }
     s.add_helpers(HELPERS)?;
     let mut files: Vec<Json> = Vec::with_capacity(WORLD.len());
@@ -95,7 +91,11 @@ pub fn spec(d: &Data) -> Res<Spec> {
 }
 
 pub fn world(d: &Data) -> Res<World> {
-    let s: Spec = spec(d)?;
+    world_with(d, &[])
+}
+
+pub fn world_with(d: &Data, over: &[(&str, &str)]) -> Res<World> {
+    let s: Spec = spec(d, over)?;
     let mut w: World = World::build(&s).map_err(|e| E::Msg(format!("logic world: {e}")))?;
     for r in w.regions.iter_mut() {
         if r.dungeon.is_none() && TOWER.contains(&r.name.as_str()) {

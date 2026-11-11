@@ -6,7 +6,7 @@ use ootrr_core::json::{self, Json};
 use ootrr_core::settings::presets::{self, Preset};
 use ootrr_core::settings::seed::SeedFile;
 use ootrr_core::settings::{Loaded, Settings};
-use ootrr_core::slice::{self, scan, BuildCounts, Built, GenOpts, Generated};
+use ootrr_core::slice::{self, plando, scan, BuildCounts, Built, GenOpts, Generated};
 
 fn arg<'a>(a: &'a [String], i: usize, what: &'static str) -> Res<&'a str> {
     a.get(i).map(|s| s.as_str()).ok_or(Error::Format(what))
@@ -45,6 +45,17 @@ pub fn generate(a: &[String]) -> Res<()> {
                 i += 1;
                 spoiler = Some(arg(a, i, "--spoiler needs a file")?);
                 o.spoiler = true;
+            }
+            "--plando" => {
+                i += 1;
+                o.plando.push(plando::parse(arg(a, i, "--plando needs Location=Item")?)?);
+            }
+            "--plando-file" => {
+                i += 1;
+                let t: String = fs::read_to_string(arg(a, i, "--plando-file needs a file")?)?;
+                for line in t.lines().map(|l| l.trim()).filter(|l| !l.is_empty() && !l.starts_with('#')) {
+                    o.plando.push(plando::parse(line)?);
+                }
             }
             other => return Err(Error::Msg(format!("unknown option {other}"))),
         }

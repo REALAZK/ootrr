@@ -54,7 +54,23 @@ export function show() {
   const id = here();
   current = id;
   const main = $("#main");
-  fill(main, screens.get(id)());
+  try {
+    fill(main, screens.get(id)());
+  } catch (e) {
+    fill(
+      main,
+      h("p", { class: "notice error", role: "alert" }, `This screen could not be shown. ${e.message}`),
+      h("button", { type: "button", class: "btn", onclick: () => {
+        state.result = null;
+        try {
+          sessionStorage.removeItem("ootrr.result");
+        } catch {
+          state.result = null;
+        }
+        show();
+      } }, "Clear the saved seed and try again"),
+    );
+  }
   bar();
   window.scrollTo(0, 0);
   main.focus({ preventScroll: true });

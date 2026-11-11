@@ -1,11 +1,14 @@
 use ootrr_core::json::Json;
 use ootrr_core::settings::Loaded;
+use ootrr_core::slice::data::Data;
+use ootrr_core::slice::plando::Entry;
+use ootrr_core::slice::support::plan;
 use ootrr_core::slice::{self, GenOpts, Generated};
 
 use crate::api_seed;
 use crate::api_settings;
 use crate::body;
-use crate::error::Hr;
+use crate::error::{Fail, Hr};
 use crate::token;
 
 fn slug(seed: &str) -> String {
@@ -25,17 +28,49 @@ pub fn run(b: &Json) -> Hr<Json> {
         _ => token::seed_text(12),
     };
     let want_spoiler: bool = b.get("spoiler").and_then(|x| x.as_bool()).unwrap_or(true);
-    let opts: GenOpts = GenOpts { spoiler: want_spoiler, ..GenOpts::default() };
+    let opts: GenOpts = GenOpts { spoiler: want_spoiler, plando: plando_of(b)?, ..GenOpts::default() };
     let g: Generated = slice::generate_with(&l.settings, &seed, &opts)?;
     let mut out: Json = api_seed::describe(&g.seed_file)?;
     let w: Json = Json::strs(l.warnings.iter().map(|x| x.as_str()));
     out.put("warnings", w);
     out.put("ok", true.into());
     out.put("report", g.report.as_str().into());
+    out.put("notes", Json::strs(notes(&l).iter().map(|x| x.as_str())));
     out.put("file_name", format!("ootrr-{}.ootrr", slug(&seed)).into());
     out.put("seed_text", g.seed_file.to_text().into());
     out.put("spoiler", spoiler(&g, want_spoiler));
     Ok(out)
+}
+
+fn notes(l: &Loaded) -> Vec<String> {
+    match plan(&l.settings) {
+        Ok(p) => p.notes.into_iter().filter(|n| !n.starts_with("Not applied")).collect(),
+        Err(_) => Vec::new(),
+    }
+}
+
+fn plando_of(b: &Json) -> Hr<Vec<Entry>> {
+    let Some(v) = b.get("plando") else {
+        return Ok(Vec::new());
+    };
+    let list: &[Json] = v.as_arr().ok_or_else(|| Fail::bad("plando must be a list"))?;
+    let mut out: Vec<Entry> = Vec::with_capacity(list.len());
+    for x in list {
+        let l: &str = x.get("location").and_then(|y| y.as_str()).ok_or_else(|| Fail::bad("each plando entry needs a location"))?;
+        let i: &str = x.get("item").and_then(|y| y.as_str()).ok_or_else(|| Fail::bad("each plando entry needs an item"))?;
+        if l.len() > body::MAX_STRING || i.len() > body::MAX_STRING {
+            return Err(Fail::bad("a plando name is too long"));
+        }
+        out.push(Entry { location: l.to_string(), item: i.to_string() });
+    }
+    Ok(out)
+}
+
+pub fn options(b: &Json) -> Hr<Json> {
+    let l: Loaded = api_settings::from_body(b)?;
+    let d: Data = Data::load()?;
+    let (locs, items): (Vec<String>, Vec<String>) = slice::plando_options(&d, &l.settings)?;
+    Ok(Json::obj().with("locations", Json::strs(locs.iter().map(|x| x.as_str()))).with("items", Json::strs(items.iter().map(|x| x.as_str()))))
 }
 
 fn pair(l: &str, i: &str) -> Json {
@@ -90,6 +125,22 @@ mod tests {
         assert_eq!(sp.get("locations").and_then(|x| x.as_arr()).unwrap().len(), sf.placements.len());
         assert!(!sp.get("playthrough").and_then(|x| x.as_arr()).unwrap().is_empty());
         assert!(r.get("report").and_then(|x| x.as_str()).unwrap().contains("Randomized"));
+    }
+
+    #[test]
+    fn plando_entries_are_honoured_and_bad_ones_say_why() {
+        let t: &str = r#"{"seed":"p","settings":{"shuffle_chests":"all"},"plando":[{"location":"KF Midos Top Left Chest","item":"Boomerang"}]}"#;
+        let r: Json = run(&j(t)).unwrap();
+        let sf: SeedFile = SeedFile::parse(r.get("seed_text").and_then(|x| x.as_str()).unwrap()).unwrap();
+        assert_eq!(sf.placements.get("KF Midos Top Left Chest").map(|s| s.as_str()), Some("Boomerang"));
+        let bad: &str = r#"{"seed":"p","settings":{"shuffle_chests":"all"},"plando":[{"location":"Nowhere Chest","item":"Boomerang"}]}"#;
+        assert!(run(&j(bad)).is_err());
+        let shape: &str = r#"{"seed":"p","settings":{},"plando":"x"}"#;
+        assert!(run(&j(shape)).is_err());
+        let o: Json = options(&j(r#"{"settings":{"shuffle_chests":"all"}}"#)).unwrap();
+        let locs: &[Json] = o.get("locations").and_then(|x| x.as_arr()).unwrap();
+        assert!(locs.iter().any(|x| x.as_str() == Some("KF Midos Top Left Chest")));
+        assert!(o.get("items").and_then(|x| x.as_arr()).unwrap().iter().any(|x| x.as_str() == Some("Boomerang")));
     }
 
     #[test]

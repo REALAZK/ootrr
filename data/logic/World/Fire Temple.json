@@ -6,10 +6,10 @@
             "DMC Fire Temple Entrance": "True",
             "Fire Temple Near Boss": "logic_fewer_tunic_requirements or can_use(Goron_Tunic)",
             "Fire Temple Big Lava Room": "
-                (Small_Key_Fire_Temple, 2) and
+                fire_keys(2) and
                 (logic_fewer_tunic_requirements or can_use(Goron_Tunic))",
             "Fire Temple Lower Locked Door": "
-                ((Small_Key_Fire_Temple, 8) or (not keysanity)) and can_use(Megaton_Hammer)",
+                (fire_keys(8) or (not keysanity)) and can_use(Megaton_Hammer)",
             "Farores Wind Warp": "can_use(Farores_Wind)"
         }
     },
@@ -59,7 +59,7 @@
         },
         "exits": {
             "Fire Temple Elevator Room": "
-                is_adult and Goron_Tunic and (Small_Key_Fire_Temple, 3)"
+                is_adult and Goron_Tunic and fire_keys(3)"
         }
     },
     {
@@ -72,7 +72,7 @@
         },
         "exits": {
             "Fire Temple Boulder Maze Lower": "
-                (Small_Key_Fire_Temple, 4) and
+                fire_keys(4) and
                 (Progressive_Strength_Upgrade or logic_fire_strength) and
                 (has_explosives or Bow or Hookshot)"
         }
@@ -86,20 +86,20 @@
             "Fire Temple GS Boulder Maze": "has_explosives"
         },
         "exits": {
-            "Fire Temple Narrow Path Room": "(Small_Key_Fire_Temple, 5)"
+            "Fire Temple Narrow Path Room": "fire_keys(5)"
         }
     },
     {
         "region_name": "Fire Temple Narrow Path Room",
         "dungeon": "Fire Temple",
         "locations": {
-            "Fire Temple Map Chest": "Bow or (Small_Key_Fire_Temple, 6)",
+            "Fire Temple Map Chest": "Bow or fire_keys(6)",
             "Fire Temple Narrow Path Room Recovery Heart 1": "True",
             "Fire Temple Narrow Path Room Recovery Heart 2": "True",
             "Fire Temple Narrow Path Room Recovery Heart 3": "True"
         },
         "exits": {
-            "Fire Temple Boulder Maze Upper": "(Small_Key_Fire_Temple, 6)"
+            "Fire Temple Boulder Maze Upper": "fire_keys(6)"
         }
     },
     {
@@ -119,7 +119,7 @@
                 can_use(Scarecrow) or (logic_fire_scarecrow and Longshot)"
         },
         "exits": {
-            "Fire Temple Flame Maze": "(Small_Key_Fire_Temple, 7)"
+            "Fire Temple Flame Maze": "fire_keys(7)"
         }
     },
     {
@@ -134,7 +134,7 @@
         },
         "exits": {
             "Fire Temple Upper": "
-                (Small_Key_Fire_Temple, 8) or
+                fire_keys(8) or
                 (Hover_Boots and Megaton_Hammer) or logic_fire_flame_maze"
         }
     },

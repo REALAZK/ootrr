@@ -15,7 +15,7 @@ function table(head, rows) {
 function placements(res) {
   const all = res.placements || [];
   if (all.length === 0) {
-    return notice("info", res.notice || "This seed file has no item placements yet. Placement arrives with the chest shuffle slice.");
+    return notice("info", res.notice || "This seed changes no items. Turn on a shuffle setting if you want items to move.");
   }
   const out = h("div");
   const info = h("p", { class: "muted small" });

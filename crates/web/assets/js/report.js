@@ -18,6 +18,8 @@ export function text(res) {
     `Preset: ${preset}${n ? `, ${n} changed` : ""}`,
     `Game folder: ${game}`,
   ];
+  if (state.plando && state.plando.length) lines.push(`Plandomizer: ${state.plando.map((p) => `${p.location}=${p.item}`).join(", ")}`);
+  if (state.last_error) lines.push(`Last error: ${state.last_error}`);
   if (state.build_note) lines.push(`Last build: ${state.build_note}`);
   lines.push("", "What I did:", "", "What I expected:", "", "What happened:", "");
   return lines.join("\n");

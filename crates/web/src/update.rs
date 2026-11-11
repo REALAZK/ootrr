@@ -5,7 +5,7 @@ use ootrr_core::json::{self, Json};
 
 use crate::state::Shared;
 
-pub const API: &str = "https://api.github.com/repos/realazk/ootrr/releases/latest";
+pub const API: &str = "https://api.github.com/repos/realazk/ootrr/releases?per_page=1";
 pub const PAGE: &str = "https://github.com/realazk/ootrr/";
 pub const WAIT: &str = "6";
 pub const KEEP: Duration = Duration::from_secs(3600);
@@ -54,6 +54,13 @@ fn none(current: &str) -> Json {
     Json::obj().with("checked", false.into()).with("newer", false.into()).with("current", current.into())
 }
 
+pub fn newest(list: &Json) -> Option<&Json> {
+    match list {
+        Json::Arr(v) => v.iter().find(|r| r.get("draft").and_then(|x| x.as_bool()) != Some(true)),
+        other => Some(other),
+    }
+}
+
 pub fn reply(release: &Json, current: &str) -> Json {
     let tag: &str = release.get("tag_name").and_then(|x| x.as_str()).unwrap_or("");
     let url: &str = release.get("html_url").and_then(|x| x.as_str()).unwrap_or("");
@@ -70,8 +77,20 @@ pub fn reply(release: &Json, current: &str) -> Json {
         .with("note", note_of(body).as_str().into())
 }
 
+fn curl() -> std::path::PathBuf {
+    if cfg!(windows)
+        && let Some(root) = std::env::var_os("SystemRoot")
+    {
+        let p: std::path::PathBuf = std::path::Path::new(&root).join("System32").join("curl.exe");
+        if p.is_file() {
+            return p;
+        }
+    }
+    std::path::PathBuf::from("curl")
+}
+
 fn fetch() -> Option<Json> {
-    let out = Command::new("curl")
+    let out = Command::new(curl())
         .args([
             "-fsSL",
             "-m",
@@ -107,7 +126,7 @@ pub fn check(sh: &Shared) -> Json {
         return j.clone();
     }
     let (j, ttl): (Json, Duration) = match fetch() {
-        Some(r) => (reply(&r, current), KEEP),
+        Some(r) => (newest(&r).map(|x| reply(x, current)).unwrap_or_else(|| none(current)), KEEP),
         None => (none(current), RETRY),
     };
     *c = Some((Instant::now(), ttl, j.clone()));
@@ -153,6 +172,15 @@ mod tests {
         assert_eq!(note_of("- Fixes presets"), "Fixes presets");
         assert_eq!(note_of(""), "");
         assert_eq!(note_of(&"x".repeat(500)).chars().count(), NOTE_MAX);
+    }
+
+    #[test]
+    fn the_newest_release_is_read_from_a_list_and_drafts_are_skipped() {
+        let a: Json = rel("v9.0.0", "https://github.com/realazk/ootrr/releases/tag/v9.0.0", "x").with("draft", true.into());
+        let b: Json = rel("v8.0.0", "https://github.com/realazk/ootrr/releases/tag/v8.0.0", "x");
+        let list: Json = Json::Arr(vec![a, b]);
+        assert_eq!(newest(&list).and_then(|r| r.get("tag_name")).and_then(|x| x.as_str()), Some("v8.0.0"));
+        assert!(newest(&Json::Arr(Vec::new())).is_none());
     }
 
     #[test]

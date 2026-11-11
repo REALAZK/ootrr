@@ -13,7 +13,8 @@ Questions, bug reports, seeds and playtesting happen on the [OOTRR Discord](http
 Generate: settings and a seed it will create a seed file.
 
 Build: a seed file plus your own extracted game folder produce a mod folder for your emulator.
-(more detailed tutorial will come soon.)
+
+New here? Follow the [full tutorial with screenshots](https://docs.google.com/document/d/19bxnx9MBVK9WNcX4B0JpQdvWd249YmhNvEfIP1zRMug/edit?usp=sharing), from installing to playing in Lichii.
 
 ## Your game folder
 
@@ -28,6 +29,8 @@ Everything is optional and off unless noted. All of these are experimental and s
 - Gossip stones that tell you where an important item lies, without the Mask of Truth.
 - Start with one random Spiritual Stone or Medallion.
 - Faster chest and item pickup scenes.
+- Kokiri Forest can start open (open, or open exit with the Deku Tree still closed).
+- A plandomizer on the Generate page, or --plando Location=Item on the command line, to fix chosen items at chosen locations. The seed is only made if it can still be beaten.
 
 ## Troubleshooting
 
@@ -49,11 +52,11 @@ The installers are not signed. Windows SmartScreen and macOS Gatekeeper warn you
 
 ## Commands
 
-Run `ootrr` with no arguments for the full list. The common ones:
+Running `ootrr` with no arguments (for example by double clicking the exe) starts the web page, the same as `ootrr serve`. Run `ootrr help` for the full list. The common ones:
 
 ```
 ootrr serve [--port N]
-ootrr generate <preset_or_settings_string> <seed> <out.ootrr> [--spoiler <file>]
+ootrr generate <preset_or_settings_string> <seed> <out.ootrr> [--spoiler <file>] [--plando Location=Item]...
 ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name>
 ootrr swap-entrance <romfs_root> <load_dir> <mod_name> <entrance_a> <entrance_b>
 ootrr set-drop <romfs_root> <load_dir> <mod_name> <actor_hash> <item_name> [no-event]

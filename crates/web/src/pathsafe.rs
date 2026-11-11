@@ -33,6 +33,7 @@ fn seg_ok(n: &str) -> bool {
 }
 
 pub fn abs(s: &str) -> Res<PB> {
+    let s: &str = s.strip_prefix('"').and_then(|x| x.strip_suffix('"')).unwrap_or(s);
     if s.is_empty() || s.len() > MAX_PATH_BYTES {
         return Err(bad("the path is empty or too long"));
     }
@@ -103,6 +104,13 @@ mod tests {
     }
 
     #[cfg(windows)]
+    #[test]
+    fn one_pair_of_surrounding_quotes_is_dropped() {
+        let d: String = std::env::temp_dir().display().to_string();
+        assert_eq!(abs(&format!("\"{d}\"")).unwrap(), abs(&d).unwrap());
+        assert!(abs(&format!("\"{d}")).is_err());
+    }
+
     #[test]
     fn windows_paths() {
         assert_eq!(abs("C:\\Users\\x\\\\y").unwrap(), PB::from("C:\\Users\\x\\y"));

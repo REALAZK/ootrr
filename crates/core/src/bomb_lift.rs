@@ -1,5 +1,5 @@
 use crate::byml::{Byml, Node};
-use crate::error::Res;
+use crate::error::{Error, Res};
 use crate::romfs::Romfs;
 use crate::sarc;
 use crate::staging::{rewrite, Out};
@@ -9,8 +9,9 @@ pub const NONE: u32 = 3069107721;
 pub const KEY: &str = "LiftGrade";
 pub const PARAM: &str = "Component/LiftableParam/";
 
-pub const PACKS: [&str; 4] = [
+pub const PACKS: [&str; 5] = [
     "Item_Bomb",
+    "Npc_Hylia_ImperialSoldier_Bomb",
     "Obj_BombFlower_A_01",
     "Obj_BombFlower_A_04",
     "Obj_BombFlower_Fruit_For_Break_Obj_DeathMtTrail_BrokenRock_A_01",
@@ -37,7 +38,16 @@ pub fn lower(raw: &[u8]) -> Res<(Vec<u8>, usize)> {
 pub fn stage(rf: &mut Romfs) -> Res<Vec<Out>> {
     let mut outs: Vec<Out> = Vec::new();
     for p in PACKS {
-        outs.push(rewrite(rf, &pack_of(p), |raw| lower(raw).map(|(b, _)| b))?);
+        let mut n: usize = 0;
+        let o: Out = rewrite(rf, &pack_of(p), |raw| {
+            let (b, c): (Vec<u8>, usize) = lower(raw)?;
+            n = c;
+            Ok(b)
+        })?;
+        if n == 0 {
+            return Err(Error::Msg(format!("bomb lift: {p} has no entry with the low lift grade, the game files may have changed")));
+        }
+        outs.push(o);
     }
     Ok(outs)
 }

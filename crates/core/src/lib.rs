@@ -6,6 +6,8 @@ pub mod calibrate;
 pub mod catalog;
 pub mod catalog_json;
 pub mod chest_slot;
+pub mod dungeon_credit;
+pub mod dungeon_text;
 pub mod entrance_swap;
 pub mod entrances;
 pub mod error;

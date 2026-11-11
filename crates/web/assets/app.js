@@ -29,7 +29,11 @@ async function boot() {
   register("settings", settings);
   register("generate", generate);
   register("result", result);
-  start();
+  try {
+    start();
+  } catch (e) {
+    return fail(`The page could not start. ${e.message}`);
+  }
   start_update();
   if (here() !== "setup") {
     await probe();

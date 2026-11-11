@@ -27,7 +27,7 @@ pub fn pace(raw: &[u8]) -> Res<Vec<u8>> {
 pub fn apply(rf: &mut Romfs, pk: &Pack) -> Res<usize> {
     let mut n: usize = 0;
     for f in FILES {
-        let mine = pk.root.join("romfs").join(f);
+        let mine = pk.work.join("romfs").join(f);
         let z: Vec<u8> = if P::new(&mine).is_file() { fs::read(&mine)? } else { rf.read(f)? };
         let id: u32 = dict_id(&z).unwrap_or(DICT);
         let raw: Vec<u8> = rf.zs.decompress(&z)?;

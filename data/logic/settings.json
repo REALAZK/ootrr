@@ -19,6 +19,7 @@
   "dungeon_shortcuts": [],
   "ensure_tod_access": false,
   "entrance_shuffle": false,
+  "fire_key_layout": "vanilla",
   "fix_broken_drops": false,
   "free_bombchu_drops": false,
   "ganon_bosskey_hearts": 20,
@@ -216,8 +217,10 @@
   "skip_child_zelda": false,
   "skip_reward_from_rauru": "not_free",
   "skipped_trials": {"Forest": false, "Fire": false, "Water": false, "Shadow": false, "Spirit": false, "Light": false},
+  "spirit_key_layout": "vanilla",
   "starting_age": "child",
   "triforce_goal_per_world": 20,
   "warp_songs": false,
+  "water_key_layout": "vanilla",
   "zora_fountain": "closed"
 }

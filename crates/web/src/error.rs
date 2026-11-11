@@ -24,7 +24,10 @@ impl Fail {
 
 impl From<Error> for Fail {
     fn from(e: Error) -> Fail {
-        Fail::new(422, &e.to_string())
+        match e {
+            Error::Format(m) => Fail::new(422, m),
+            other => Fail::new(422, &other.to_string()),
+        }
     }
 }
 
@@ -37,6 +40,7 @@ mod tests {
         let f: Fail = Fail::from(Error::Msg("nope".into()));
         assert_eq!(f.status, 422);
         assert_eq!(f.msg, "nope");
+        assert_eq!(Fail::from(Error::Format("plain words")).msg, "plain words");
         assert_eq!(Fail::bad("x").status, 400);
         assert_eq!(Fail::deny("x").status, 403);
     }

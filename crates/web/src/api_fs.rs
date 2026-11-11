@@ -44,7 +44,18 @@ fn order(a: &Entry, b: &Entry) -> Ordering {
 }
 
 fn read(p: &P) -> Res<(Vec<Entry>, bool)> {
-    let rd: fs::ReadDir = fs::read_dir(p).map_err(|e| Error::Msg(format!("cannot open that folder: {e}")))?;
+    let rd: fs::ReadDir = fs::read_dir(p).map_err(|e| {
+        Error::Msg(
+            if p.is_file() {
+                "That path is a file, not a folder."
+            } else if e.kind() == std::io::ErrorKind::PermissionDenied {
+                "That folder cannot be opened, access is denied."
+            } else {
+                "That folder does not exist or cannot be read."
+            }
+            .to_string(),
+        )
+    })?;
     let mut out: Vec<Entry> = Vec::new();
     let mut cut: bool = false;
     for e in rd {

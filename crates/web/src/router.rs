@@ -54,6 +54,10 @@ fn api(sh: &Shared, r: &Req) -> Hr<Resp> {
             need(r, "POST")?;
             api_generate::run(&body::json(r)?)?
         }
+        "/api/plando/options" => {
+            need(r, "POST")?;
+            api_generate::options(&body::json(r)?)?
+        }
         "/api/seed/read" => {
             need(r, "POST")?;
             api_seed::read(&body::json(r)?)?

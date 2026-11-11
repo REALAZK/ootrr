@@ -9,10 +9,11 @@ use crate::settings::Settings;
 use crate::settings::seed::SeedFile;
 use crate::slice::data::Data;
 use crate::slice::fill::{changed, fill, vanilla_place};
-use crate::slice::logic::world;
+use crate::slice::logic::world_with;
 use crate::slice::pick::{pick, scoped, Pick};
+use crate::slice::plando::{loc_of, resolve, Entry};
 use crate::start_reward::pick as pick_start;
-use crate::slice::support::{plan, Plan, Songs};
+use crate::slice::support::{plan, Keep, Plan, Songs};
 use crate::spoiler::{playthrough, Spoiler};
 use crate::world::{LocId, Placement, World};
 
@@ -22,11 +23,12 @@ pub const TRIES: u32 = 600;
 pub struct GenOpts {
     pub spoiler: bool,
     pub tries: u32,
+    pub plando: Vec<Entry>,
 }
 
 impl Default for GenOpts {
     fn default() -> GenOpts {
-        GenOpts { spoiler: false, tries: TRIES }
+        GenOpts { spoiler: false, tries: TRIES, plando: Vec::new() }
     }
 }
 
@@ -58,6 +60,16 @@ pub fn allowed(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> bool {
             i.dungeon.is_some()
                 && i.dungeon.as_deref() == w.regions[w.locs[l].region].dungeon.as_deref()
                 && (d.flow.by_name(&w.locs[l].name).is_none() || d.flow_accepts(i))
+        }
+        Some(i) if p.keys_roam() && i.kind == "SmallKey" => {
+            let name: &str = &w.locs[l].name;
+            let dungeon: bool = w.regions[w.locs[l].region].dungeon.is_some();
+            let place: bool = match p.small {
+                Keep::AnyDungeon => dungeon,
+                Keep::Overworld => !dungeon,
+                _ => true,
+            };
+            place && i.dungeon.is_some() && d.flow.by_name(name).is_none() && d.cat.by_name(name).is_some_and(|c| c.kind == "chest")
         }
         Some(i) => {
             let name: &str = &w.locs[l].name;
@@ -138,7 +150,7 @@ fn report(s: &str, p: &Plan, pk: &Pick, c: &Counts, moved: &[String]) -> String 
     }
     let _ = writeln!(
         out,
-        "Logic: OoTR glitchless rules for the vanilla world, dungeon keys assumed available inside their own dungeon, every other location holds its vanilla item."
+        "Logic: OoTR glitchless rules for the vanilla world, small keys counted for real, with the Fire, Water and Spirit keys kept in their vanilla chests, every other location holds its vanilla item."
     );
     out
 }
@@ -147,8 +159,14 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     if d.scan.rows.is_empty() {
         return Err(E::Format("the chest list in data/slice.json is empty, run slice-scan first"));
     }
-    let p: Plan = plan(s)?;
-    let mut w: World = world(d)?;
+    let mut p: Plan = plan(s)?;
+    let mut w: World = world_with(d, &p.logic())?;
+    let mut named: Vec<String> = Vec::with_capacity(p.excluded.len());
+    for e in &p.excluded {
+        let l: LocId = loc_of(&w, e).map_err(|x| E::Msg(x.to_string().replacen("plando:", "disabled locations:", 1)))?;
+        named.push(w.locs[l].name.clone());
+    }
+    p.excluded = named;
     if let Some((name, _)) = pick_start(seed, p.start) {
         let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
         w.start.push((i, 1));
@@ -159,6 +177,7 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     for l in &pk.free {
         if let Some(i) = vanilla.get(*l)
             && !ok(i, *l)
+            && !(p.keys_roam() && d.item(&w.items.names[i]).is_some_and(|x| x.kind == "SmallKey"))
         {
             return Err(E::Msg(format!(
                 "the vanilla item {} of {} is not allowed there under these settings",
@@ -166,11 +185,23 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
             )));
         }
     }
+    let plan: Vec<(LocId, ItemId)> = resolve(&w, &o.plando)?;
+    for (l, i) in &plan {
+        if !pk.free.contains(l) {
+            return Err(E::Msg(format!(
+                "plando: {} is not shuffled with these settings, so it cannot hold {}",
+                w.locs[*l].name, w.items.names[*i]
+            )));
+        }
+        if !ok(*i, *l) {
+            return Err(E::Msg(format!("plando: {} cannot be placed at {} under these settings", w.items.names[*i], w.locs[*l].name)));
+        }
+    }
     let mut rng: Rng = Rng::from_text(seed);
     let got: Placement = if pk.free.is_empty() {
         vanilla.clone()
     } else {
-        fill(&w, &vanilla, &pk.free, &ok, &mut rng, o.tries)?
+        fill(&w, &vanilla, &pk.free, &ok, &mut rng, o.tries, &plan, !p.keys_roam())?
     };
     let mut map: BM<String, String> = BM::new();
     let mut moved: Vec<String> = Vec::new();
@@ -196,8 +227,24 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     } else {
         (None, Vec::new())
     };
-    let rep: String = report(seed, &p, &pk, &counts, &moved);
+    let mut rep: String = report(seed, &p, &pk, &counts, &moved);
+    if !plan.is_empty() {
+        let _ = writeln!(rep, "Plandomizer: {} placements were fixed by hand.", plan.len());
+    }
     Ok(Generated { seed_file, counts, report: rep, spoiler: sp, spheres })
+}
+
+pub fn plando_options(d: &Data, s: &Settings) -> Res<(Vec<String>, Vec<String>)> {
+    let p: Plan = plan(s)?;
+    let w: World = world_with(d, &p.logic())?;
+    let vanilla: Placement = vanilla_place(&w, d)?;
+    let pk: Pick = pick(d, &w, &p);
+    let mut locs: Vec<String> = pk.free.iter().map(|l| w.locs[*l].name.clone()).collect();
+    let mut items: Vec<String> = pk.free.iter().filter_map(|l| vanilla.get(*l)).map(|i| w.items.names[i].clone()).collect();
+    locs.sort();
+    items.sort();
+    items.dedup();
+    Ok((locs, items))
 }
 
 pub fn generate_with(s: &Settings, seed: &str, o: &GenOpts) -> Res<Generated> {
@@ -213,6 +260,7 @@ mod tests {
     use super::*;
     use crate::settings::Value;
     use crate::slice::data::{CATALOG_JSON, ITEMS_JSON, VANILLA_JSON};
+    use crate::slice::logic::world;
 
     const BIG: [&str; 6] = [
         "Forest Temple Bow Chest",
@@ -364,7 +412,7 @@ mod tests {
         let d: Data = synthetic();
         let a: Generated = generate_data(&d, &all_chests(), "s", &GenOpts::default()).unwrap();
         assert!(a.spoiler.is_none());
-        let o: GenOpts = GenOpts { spoiler: true, tries: TRIES };
+        let o: GenOpts = GenOpts { spoiler: true, ..GenOpts::default() };
         let b: Generated = generate_data(&d, &all_chests(), "s", &o).unwrap();
         let t: String = b.spoiler.unwrap();
         assert!(t.contains("Randomized chests") && t.contains("Sphere 1"));
@@ -417,7 +465,7 @@ mod tests {
         s.set("shuffle_boss_hearts", Value::Bool(true)).unwrap();
         let mut out_of_place: usize = 0;
         for n in 0..2 {
-            let g: Generated = generate_data(&d, &s, &format!("everything {n}"), &GenOpts { spoiler: false, tries: TRIES }).unwrap();
+            let g: Generated = generate_data(&d, &s, &format!("everything {n}"), &GenOpts::default()).unwrap();
             for (loc, item) in &g.seed_file.placements {
                 let song_loc: bool = d.flow.by_name(loc).is_some_and(|f| f.cat == "song");
                 let song_item: bool = d.item(item).and_then(|i| i.actor.as_deref()).is_some_and(is_song);
@@ -465,6 +513,63 @@ mod tests {
                 }
             }
         }
+    }
+
+    fn plan_of(list: &[&str]) -> GenOpts {
+        GenOpts { plando: list.iter().map(|x| crate::slice::plando::parse(x).unwrap()).collect(), ..GenOpts::default() }
+    }
+
+    #[test]
+    fn a_plando_entry_is_honoured_and_every_seed_stays_beatable() {
+        let d: Data = Data::load().unwrap();
+        for n in 0..4 {
+            let o: GenOpts = plan_of(&["KF Midos Top Left Chest=Boomerang", "KF Midos Top Right Chest=Bomb Bag"]);
+            let r: Res<Generated> = generate_data(&d, &all_chests(), &format!("plando {n}"), &o);
+            let g: Generated = match r {
+                Ok(g) => g,
+                Err(e) => panic!("{e}"),
+            };
+            let p = &g.seed_file.placements;
+            assert_eq!(p.get("KF Midos Top Left Chest").map(|s| s.as_str()), Some("Boomerang"));
+            assert_eq!(p.get("KF Midos Top Right Chest").map(|s| s.as_str()), Some("Bomb Bag"));
+            assert!(g.report.contains("Plandomizer: 2"));
+        }
+    }
+
+    #[test]
+    fn bad_plando_entries_are_refused_with_a_reason() {
+        let d: Data = Data::load().unwrap();
+        let go = |s: &Settings, l: &[&str]| generate_data(&d, s, "p", &plan_of(l)).err().map(|e| e.to_string()).unwrap_or_default();
+        assert!(go(&all_chests(), &["KF Midos Top Left Chest=Not An Item"]).contains("no item is named"));
+        let m: String = go(&all_chests(), &["Midos Top Left=Boomerang"]);
+        assert!(m.contains("no location is named") && m.contains("KF Midos Top Left Chest"), "{m}");
+        assert!(go(&all_chests(), &["KF Midos Top Left Chest=Boomerang", "KF Midos Top Right Chest=Boomerang"]).contains("no copy left"));
+        assert!(go(&all_chests(), &["KF Midos Top Left Chest=Boomerang", "KF Midos Top Left Chest=Deku Shield"]).contains("more than once"));
+        assert!(go(&with(&[("shuffle_chests", "off")]), &["KF Midos Top Left Chest=Boomerang"]).contains("not shuffled"));
+    }
+
+    #[test]
+    fn an_open_forest_generates_and_can_put_progression_past_mido() {
+        let d: Data = Data::load().unwrap();
+        for v in ["open", "closed_deku"] {
+            let s: Settings = with(&[("open_forest", v)]);
+            for n in 0..3 {
+                let g: Generated = generate_data(&d, &s, &format!("forest {v} {n}"), &GenOpts::default()).unwrap();
+                assert!(g.report.contains("Kokiri Forest starts open"));
+            }
+        }
+    }
+
+    #[test]
+    fn disabled_locations_match_without_case_and_typos_are_refused() {
+        let d: Data = Data::load().unwrap();
+        let mut s: Settings = all_chests();
+        s.set("disabled_locations", Value::set(&["kf midos top left chest"])).unwrap();
+        let g: Generated = generate_data(&d, &s, "dis", &GenOpts::default()).unwrap();
+        assert!(!g.seed_file.placements.contains_key("KF Midos Top Left Chest"));
+        s.set("disabled_locations", Value::set(&["Midos Top Left"])).unwrap();
+        let e: String = generate_data(&d, &s, "dis", &GenOpts::default()).err().unwrap().to_string();
+        assert!(e.contains("disabled locations: no location is named") && e.contains("KF Midos Top Left Chest"), "{e}");
     }
 
     #[test]

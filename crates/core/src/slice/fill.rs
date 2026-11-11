@@ -82,6 +82,8 @@ pub fn fill(
     allow: &dyn Fn(ItemId, LocId) -> bool,
     rng: &mut Rng,
     tries: u32,
+    plan: &[(LocId, ItemId)],
+    check_vanilla: bool,
 ) -> Res<Placement> {
     let mut fixed: Placement = vanilla.clone();
     let mut pool: Vec<ItemId> = Vec::with_capacity(free.len());
@@ -91,8 +93,20 @@ pub fn fill(
         }
         fixed.item[*l] = None;
     }
-    if !explore(w, vanilla, &[]).won() {
+    for (l, i) in plan {
+        let at: usize = pool
+            .iter()
+            .position(|x| x == i)
+            .ok_or_else(|| E::Msg(format!("plando: {} has no copy left to place at {}", w.items.names[*i], w.locs[*l].name)))?;
+        pool.swap_remove(at);
+        fixed.put(*l, *i);
+    }
+    let open: Vec<LocId> = free.iter().copied().filter(|l| !plan.iter().any(|(p, _)| p == l)).collect();
+    if check_vanilla && !explore(w, vanilla, &[]).won() {
         return Err(E::Format("the vanilla placement does not reach the goal under this logic"));
+    }
+    if !plan.is_empty() && !explore(w, &fixed, &pool).won() {
+        return Err(E::Format("plando: the seed cannot be beaten with these fixed placements"));
     }
     let mut won: Vec<Placement> = Vec::new();
     let mut last: E = E::Format("no fill attempts were made");
@@ -101,7 +115,7 @@ pub fn fill(
         if n >= base && !won.is_empty() {
             break;
         }
-        match once(w, &fixed, free, &pool, allow, rng) {
+        match once(w, &fixed, &open, &pool, allow, rng) {
             Ok(p) => {
                 won.push(p);
                 if won.len() >= WINS as usize {
@@ -112,7 +126,10 @@ pub fn fill(
         }
     }
     if won.is_empty() {
-        return Err(last);
+        if plan.is_empty() {
+            return Err(last);
+        }
+        return Err(E::Msg(format!("plando: no seed could be made with these fixed placements, last problem: {last}")));
     }
     let moved: Vec<usize> = (0..won.len()).filter(|i| changed(vanilla, &won[*i], free) > 0).collect();
     let k: usize = if moved.is_empty() {
@@ -126,7 +143,7 @@ pub fn fill(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::slice::logic::world;
+    use crate::slice::logic::{world, world_with};
 
     #[test]
     fn the_vanilla_game_reaches_the_goal() {
@@ -134,5 +151,22 @@ mod tests {
         let w: World = world(&d).unwrap();
         let p: Placement = vanilla_place(&w, &d).unwrap();
         assert!(explore(&w, &p, &[]).won());
+    }
+
+    #[test]
+    fn no_small_key_is_given_for_free() {
+        let d: Data = Data::load().unwrap();
+        let w: World = world(&d).unwrap();
+        assert!(w.start.iter().all(|(i, _)| !w.items.names[*i].starts_with("Small Key")));
+    }
+
+    #[test]
+    fn each_vanilla_key_layout_needs_its_own_slack() {
+        let d: Data = Data::load().unwrap();
+        for k in ["fire_key_layout", "water_key_layout", "spirit_key_layout"] {
+            let w: World = world_with(&d, &[(k, "shuffled")]).unwrap();
+            let p: Placement = vanilla_place(&w, &d).unwrap();
+            assert!(!explore(&w, &p, &[]).won(), "{k}");
+        }
     }
 }

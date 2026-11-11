@@ -8,6 +8,7 @@ export const state = {
   info: null,
   vals: {},
   seed: "",
+  plando: [],
   paths: { game: "", mod: "", name: "My Seed" },
   game_check: null,
   mod_check: null,
@@ -38,7 +39,7 @@ function take(store, key) {
 }
 
 export function save() {
-  put(localStorage, KEY, { vals: state.vals, seed: state.seed, paths: state.paths });
+  put(localStorage, KEY, { vals: state.vals, seed: state.seed, plando: state.plando, paths: state.paths });
   put(sessionStorage, RKEY, state.result);
 }
 
@@ -52,6 +53,12 @@ export function restore(schema) {
   const s = take(localStorage, KEY);
   state.vals = sanitize(schema, s && s.vals);
   if (s && typeof s.seed === "string") state.seed = s.seed.slice(0, 100);
+  if (s && Array.isArray(s.plando)) {
+    state.plando = s.plando
+      .filter((p) => p && typeof p.location === "string" && typeof p.item === "string")
+      .slice(0, 200)
+      .map((p) => ({ location: p.location.slice(0, 120), item: p.item.slice(0, 120) }));
+  }
   if (s && s.paths && typeof s.paths === "object") {
     for (const k of ["game", "mod", "name"]) {
       if (typeof s.paths[k] === "string") state.paths[k] = s.paths[k].slice(0, 1000);

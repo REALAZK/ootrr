@@ -1,5 +1,7 @@
 use crate::ainb::{start, Ainb};
-use crate::error::Res;
+use crate::error::{Error, Res};
+use crate::flags::FlagList;
+use crate::flags_build;
 use crate::rng::Rng;
 use crate::romfs::Romfs;
 use crate::staging::Out;
@@ -44,9 +46,20 @@ pub fn give(raw: &[u8], actor: &str) -> Res<Vec<u8>> {
     a.write()
 }
 
-pub fn stage(rf: &mut Romfs, actor: &str) -> Res<Out> {
+pub fn stage(rf: &mut Romfs, actor: Option<&str>, flags: &[(String, bool)]) -> Res<Out> {
+    if !flags.is_empty() {
+        let l: FlagList = flags_build::load(rf)?;
+        for (n, _) in flags {
+            start::check_flag(&l, n).map_err(|e| Error::Msg(format!("start flag {n}: {e}")))?;
+        }
+    }
     let raw: Vec<u8> = rf.read(start::MODULE)?;
-    let out: Vec<u8> = give(&raw, actor)?;
+    let mut a: Ainb = Ainb::parse(&raw)?;
+    if let Some(x) = actor {
+        start::patch(&mut a, None, &[(x.to_string(), 1)])?;
+    }
+    start::set_flags(&mut a, flags)?;
+    let out: Vec<u8> = a.write()?;
     Ok(Out { path: start::MODULE.to_string(), old: raw.len(), new: out.len(), z: out })
 }
 

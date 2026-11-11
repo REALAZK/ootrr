@@ -352,8 +352,7 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
             }
         }
     }
-    Pack::clean(load, TITLE_ID, mod_name)?;
-    let pk: Pack = Pack::create(load, TITLE_ID, mod_name)?;
+    let pk: Pack = Pack::begin(load, TITLE_ID, mod_name)?;
     let mut rst: Option<Rst> = None;
     let mut grown: usize = 0;
     for e in &edits {
@@ -433,8 +432,10 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
         more.extend(hints::stage(&mut rf, &d, seed)?);
     }
     more.extend(crate::bomb_lift::stage(&mut rf)?);
-    if let Some((_, actor)) = crate::start_reward::pick(&seed.seed, p.start) {
-        more.push(crate::start_reward::stage(&mut rf, actor)?);
+    let reward: Option<&str> = crate::start_reward::pick(&seed.seed, p.start).map(|(_, a)| a);
+    let flags: Vec<(String, bool)> = p.start_flags();
+    if reward.is_some() || !flags.is_empty() {
+        more.push(crate::start_reward::stage(&mut rf, reward, &flags)?);
     }
     for o in more {
         pk.write_romfs(&o.path, &o.z)?;
@@ -479,6 +480,7 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
             notes.push(format!("  {} | {} | {} ({}) | {} -> {}", c.location, c.file, c.event, c.index, c.old, c.new));
         }
     }
+    pk.commit()?;
     let report: String = describe(&counts, &pk.root, &chests, &notes);
     Ok(Built { root: pk.root, counts, chests, report })
 }

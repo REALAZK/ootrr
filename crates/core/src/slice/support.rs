@@ -14,7 +14,26 @@ pub enum Mode {
 pub enum Keep {
     Vanilla,
     Dungeon,
+    AnyDungeon,
+    Overworld,
+    Anywhere,
 }
+
+impl Keep {
+    pub fn roams(self) -> bool {
+        matches!(self, Keep::AnyDungeon | Keep::Overworld | Keep::Anywhere)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Forest {
+    Closed,
+    ClosedDeku,
+    Open,
+}
+
+pub const MIDO_WALL: &str = "KokiriForest_Npc_Kokiri_Mido_Child_Blocker";
+pub const EXIT_WALL: &str = "KokiriForest_Npc_Kokiri_007_Child_Blocker_00";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Songs {
@@ -36,14 +55,14 @@ pub struct Plan {
     pub hints: bool,
     pub fast: bool,
     pub start: Reward,
+    pub forest: Forest,
     pub excluded: Vec<String>,
     pub notes: Vec<String>,
 }
 
-const UNCHANGED: [&str; 26] = [
+const UNCHANGED: [&str; 25] = [
     "logic_rules",
     "starting_age",
-    "open_forest",
     "open_kakariko",
     "open_door_of_time",
     "zora_fountain",
@@ -80,12 +99,16 @@ pub fn show(v: &Value) -> String {
     }
 }
 
-fn keep(s: &Settings, id: &str, bad: &mut Vec<String>) -> Keep {
+fn keep(s: &Settings, id: &str, roam: bool, bad: &mut Vec<String>) -> Keep {
     match s.text(id) {
         Ok("vanilla") => Keep::Vanilla,
         Ok("dungeon") => Keep::Dungeon,
+        Ok("any_dungeon") if roam => Keep::AnyDungeon,
+        Ok("overworld") if roam => Keep::Overworld,
+        Ok("keysanity") if roam => Keep::Anywhere,
         Ok(v) => {
-            bad.push(format!("{id} is {v}, this slice supports only vanilla and dungeon"));
+            let ok: &str = if roam { "vanilla, dungeon, any_dungeon, overworld and keysanity" } else { "vanilla and dungeon" };
+            bad.push(format!("{id} is {v}, which this build cannot place yet (only {ok} work)"));
             Keep::Vanilla
         }
         Err(e) => {
@@ -112,6 +135,34 @@ fn chest_mode(s: &Settings, bad: &mut Vec<String>) -> Mode {
     }
 }
 
+pub const KEY_LAYOUTS: [&str; 3] = ["fire_key_layout", "water_key_layout", "spirit_key_layout"];
+
+impl Plan {
+    pub fn keys_roam(&self) -> bool {
+        self.small.roams()
+    }
+
+    pub fn start_flags(&self) -> Vec<(String, bool)> {
+        match self.forest {
+            Forest::Closed => Vec::new(),
+            Forest::ClosedDeku => vec![(EXIT_WALL.to_string(), false)],
+            Forest::Open => vec![(MIDO_WALL.to_string(), false), (EXIT_WALL.to_string(), false)],
+        }
+    }
+
+    pub fn logic(&self) -> Vec<(&'static str, &'static str)> {
+        let mut out: Vec<(&'static str, &'static str)> = match self.forest {
+            Forest::Closed => Vec::new(),
+            Forest::ClosedDeku => vec![("open_forest", "closed_deku")],
+            Forest::Open => vec![("open_forest", "open")],
+        };
+        if self.keys_roam() {
+            out.extend(KEY_LAYOUTS.iter().map(|k| (*k, "shuffled")));
+        }
+        out
+    }
+}
+
 pub fn plan(s: &Settings) -> Res<Plan> {
     let def: Settings = Settings::default();
     let mut bad: Vec<String> = Vec::new();
@@ -120,7 +171,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         match (s.get(id), def.get(id)) {
             (Some(a), Some(b)) if a == b => noted.push(format!("{id}={}", show(a))),
             (Some(a), _) => bad.push(format!(
-                "{id} is {}, this slice does not change the game and accepts only the default",
+                "{id} is {}, which this build cannot apply yet (only the default works)",
                 show(a)
             )),
             _ => bad.push(format!("no setting named {id}")),
@@ -129,25 +180,25 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     for id in OFF_ONLY {
         match s.text(id) {
             Ok("off") => {}
-            Ok(v) => bad.push(format!("{id} is {v}, this slice shuffles chests only and accepts only off")),
+            Ok(v) => bad.push(format!("{id} is {v}, which this build cannot shuffle yet (only off works)")),
             Err(e) => bad.push(e.to_string()),
         }
     }
     match s.text("shuffle_hideoutkeys") {
         Ok("vanilla") => {}
-        Ok(v) => bad.push(format!("shuffle_hideoutkeys is {v}, this slice accepts only vanilla")),
+        Ok(v) => bad.push(format!("shuffle_hideoutkeys is {v}, which this build cannot place yet (only vanilla works)")),
         Err(e) => bad.push(e.to_string()),
     }
     let chests: Mode = chest_mode(s, &mut bad);
-    let small: Keep = keep(s, "shuffle_smallkeys", &mut bad);
-    let boss: Keep = keep(s, "shuffle_bosskeys", &mut bad);
-    let map: Keep = keep(s, "shuffle_mapcompass", &mut bad);
-    let ganon: Keep = keep(s, "shuffle_ganon_bosskey", &mut bad);
+    let small: Keep = keep(s, "shuffle_smallkeys", true, &mut bad);
+    let boss: Keep = keep(s, "shuffle_bosskeys", false, &mut bad);
+    let map: Keep = keep(s, "shuffle_mapcompass", false, &mut bad);
+    let ganon: Keep = keep(s, "shuffle_ganon_bosskey", false, &mut bad);
     let rewards: bool = match s.text("shuffle_rewards") {
         Ok("off") => false,
         Ok("supported") => true,
         Ok(v) => {
-            bad.push(format!("shuffle_rewards is {v}, this slice accepts off or supported"));
+            bad.push(format!("shuffle_rewards is {v}, which this build cannot apply (only off or supported work)"));
             false
         }
         Err(e) => {
@@ -181,6 +232,19 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             Reward::Off
         }
     };
+    let forest: Forest = match s.text("open_forest") {
+        Ok("closed") => Forest::Closed,
+        Ok("closed_deku") => Forest::ClosedDeku,
+        Ok("open") => Forest::Open,
+        Ok(v) => {
+            bad.push(format!("open_forest is {v}, which is not a known choice"));
+            Forest::Closed
+        }
+        Err(e) => {
+            bad.push(e.to_string());
+            Forest::Closed
+        }
+    };
     let songs: Songs = match s.text("shuffle_songs") {
         Ok("off") => Songs::Off,
         Ok("own") => Songs::Own,
@@ -198,14 +262,14 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if !bad.is_empty() {
         let lines: Vec<String> = bad.iter().map(|b| format!("  {b}")).collect();
         return Err(E::Msg(format!(
-            "these settings are not supported by the chest shuffle slice:\n{}",
+            "This build cannot apply these settings yet:\n{}",
             lines.join("\n")
         )));
     }
     let mut notes: Vec<String> = Vec::new();
     if !noted.is_empty() {
         notes.push(format!(
-            "Not applied by this slice, the game plays as unmodified: {}",
+            "Not applied by this build, the game plays as unmodified: {}",
             noted.join(", ")
         ));
     }
@@ -214,13 +278,15 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         (songs != Songs::Off, "Songs are shuffled. The song lessons are edited, experimental and untested in the game."),
         (fast, "Chest and item pickup scenes are sped up."),
         (start != Reward::Off, "You start the game with one random Stone or Medallion. Experimental and untested in the game."),
+        (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
+        (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
         (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
     ] {
         if on {
             notes.push(text.to_string());
         }
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, hearts, songs, hints, fast, start, excluded, notes })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, hearts, songs, hints, fast, start, forest, excluded, notes })
 }
 
 #[cfg(test)]
@@ -259,6 +325,20 @@ mod tests {
         assert!(e.contains("shuffle_smallkeys is keysanity"));
         assert!(e.contains("bridge is open"));
         assert!(e.contains("starting_hearts is 5"));
+    }
+
+    #[test]
+    fn the_forest_setting_becomes_start_flags_and_a_logic_value() {
+        let mut s: Settings = Settings::default();
+        assert!(plan(&s).unwrap().start_flags().is_empty());
+        s.set("open_forest", Value::s("closed_deku")).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert_eq!(p.start_flags(), vec![(EXIT_WALL.to_string(), false)]);
+        assert_eq!(p.logic(), vec![("open_forest", "closed_deku")]);
+        s.set("open_forest", Value::s("open")).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert_eq!(p.start_flags().len(), 2);
+        assert!(p.notes.iter().any(|n| n.contains("Kokiri Forest starts open")));
     }
 
     #[test]

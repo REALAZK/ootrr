@@ -5,6 +5,8 @@ use std::time::Instant;
 use ootrr_core::TITLE_ID;
 use ootrr_core::ainb::{self, start, Ainb};
 use ootrr_core::error::{Error, Res};
+use ootrr_core::flags::FlagList;
+use ootrr_core::flags_build;
 use ootrr_core::modpack::Pack;
 use ootrr_core::murmur::murmur3_32;
 use ootrr_core::romfs::Romfs;
@@ -130,6 +132,9 @@ fn state(a: &Ainb) -> String {
     for it in start::items(a) {
         s.push_str(&format!("  item {} x{} (element {})\n", it.actor, it.num, it.el));
     }
+    for (n, v) in start::flags(a) {
+        s.push_str(&format!("  flag {n} = {v}\n"));
+    }
     s
 }
 
@@ -152,6 +157,7 @@ pub fn start_cmd(a: &[String]) -> Res<()> {
     let name: &str = a.get(2).ok_or(Error::Format("missing mod_name"))?;
     let mut hearts: Option<i32> = None;
     let mut add: Vec<(String, i32)> = Vec::new();
+    let mut set: Vec<(String, bool)> = Vec::new();
     let mut i: usize = 3;
     while i < a.len() {
         let v: &str = a.get(i + 1).map(|s| s.as_str()).ok_or(Error::Format("flag needs a value"))?;
@@ -161,15 +167,26 @@ pub fn start_cmd(a: &[String]) -> Res<()> {
                 let (n, c): (&str, &str) = v.split_once(':').unwrap_or((v, "1"));
                 add.push((n.to_string(), c.parse().map_err(|_| Error::Format("bad item count"))?));
             }
-            _ => return Err(Error::Format("unknown flag, use --hearts N or --item NAME[:COUNT]")),
+            "--flag" => {
+                let (n, b): (&str, &str) = v.split_once('=').unwrap_or((v, "true"));
+                set.push((n.to_string(), b.parse().map_err(|_| Error::Format("bad flag value, use true or false"))?));
+            }
+            _ => return Err(Error::Format("unknown flag, use --hearts N, --item NAME[:COUNT] or --flag NAME=true|false")),
         }
         i += 2;
     }
     let mut rf: Romfs = Romfs::open(P::new(root))?;
+    if !set.is_empty() {
+        let l: FlagList = flags_build::load(&mut rf)?;
+        for (n, _) in &set {
+            start::check_flag(&l, n)?;
+        }
+    }
     let raw: Vec<u8> = rf.read(start::MODULE)?;
     let mut ab: Ainb = Ainb::parse(&raw)?;
     print!("before: {}", state(&ab));
     start::patch(&mut ab, hearts, &add)?;
+    start::set_flags(&mut ab, &set)?;
     let out: Vec<u8> = ab.write()?;
     let back: Ainb = Ainb::parse(&out)?;
     print!("after: {}", state(&back));

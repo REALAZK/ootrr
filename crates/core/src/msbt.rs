@@ -337,6 +337,47 @@ impl Msbt {
         self.set_tokens(name, &t)
     }
 
+    pub fn add_raw(&mut self, name: &str, v: Vec<u8>) -> Res<usize> {
+        if name.is_empty() || name.len() > 255 {
+            return Err(bad("msbt: a new label needs 1 to 255 bytes"));
+        }
+        if self.find(name).is_some() {
+            return Err(bad("msbt: the label exists already"));
+        }
+        if self.secs.iter().any(|s| matches!(s, Sec::Other(_))) {
+            return Err(bad("msbt: cannot add a label to a file with sections besides LBL1 and TXT2"));
+        }
+        let n: usize = self.strings().ok_or(bad("msbt: no TXT2 section"))?.len();
+        let idx: u32 = to32(n)?;
+        let g: &mut Vec<Vec<Label>> = self
+            .secs
+            .iter_mut()
+            .find_map(|s| if let Sec::Lbl(g) = s { Some(g) } else { None })
+            .ok_or(bad("msbt: no LBL1 section"))?;
+        if g.is_empty() {
+            return Err(bad("msbt: the label table has no groups"));
+        }
+        let at: usize = label_group(name, g.len());
+        g[at].push(Label { name: name.to_string(), idx });
+        self.strings_mut().ok_or(bad("msbt: no TXT2 section"))?.push(v);
+        Ok(n)
+    }
+
+    pub fn put_markup(&mut self, name: &str, s: &str) -> Res<bool> {
+        let t: Vec<Tok> = from_markup(s)?;
+        self.put_tokens(name, &t)
+    }
+
+    pub fn put_tokens(&mut self, name: &str, t: &[Tok]) -> Res<bool> {
+        let v: Vec<u8> = self.encode(t)?;
+        if self.find(name).is_some() {
+            self.set_raw(name, v)?;
+            return Ok(false);
+        }
+        self.add_raw(name, v)?;
+        Ok(true)
+    }
+
     pub fn write(&self) -> Res<Vec<u8>> {
         let unit: usize = unit_of(self.enc)?;
         let be: bool = self.be;
@@ -586,6 +627,29 @@ mod tests {
         );
         assert_eq!(p.secs.last(), m.secs.last());
         assert!(replace_label(&b, "NOPE", "x").is_err());
+    }
+
+    #[test]
+    fn a_new_label_lands_in_its_hash_group_and_reads_back() {
+        let mut m: Msbt = sample(false, false);
+        assert!(m.put_markup("OOTRR_NEW", "one {0.3:0000}two").unwrap());
+        assert_eq!(m.find("OOTRR_NEW"), Some(3));
+        let g: &Vec<Vec<Label>> = m.labels().unwrap();
+        assert!(g[label_group("OOTRR_NEW", 3)].iter().any(|l| l.name == "OOTRR_NEW" && l.idx == 3));
+        let b: Vec<u8> = m.write().unwrap();
+        let p: Msbt = parse(&b).unwrap();
+        assert_eq!(p, m);
+        assert_eq!(p.write().unwrap(), b);
+        assert_eq!(p.raw("TEST_A"), Some(b"plain text".as_slice()));
+        assert_eq!(to_markup(&p.text("OOTRR_NEW").unwrap()), "one {0.3:0000}two");
+        let mut q: Msbt = p.clone();
+        assert!(!q.put_markup("OOTRR_NEW", "three").unwrap());
+        assert_eq!(q.strings().unwrap().len(), 4);
+        assert_eq!(q.raw("OOTRR_NEW"), Some(b"three".as_slice()));
+        assert!(q.add_raw("OOTRR_NEW", Vec::new()).is_err());
+        assert!(q.add_raw("", Vec::new()).is_err());
+        let mut odd: Msbt = sample(false, true);
+        assert!(odd.add_raw("OOTRR_NEW", Vec::new()).is_err());
     }
 
     #[test]
