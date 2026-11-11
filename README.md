@@ -15,6 +15,26 @@ Generate: settings and a seed it will create a seed file.
 Build: a seed file plus your own extracted game folder produce a mod folder for your emulator.
 (more detailed tutorial will come soon.)
 
+## Your game folder
+
+The mod build needs your own extracted copy of the game with the 1.1.1 update installed. Pick a folder of the game with the 1.1.1 update applied in the Setup screen. The folder must hold the Pack, Banc, Event and System folders. Setup checks for the 1.1.1 files and tells you if they are missing. A folder from the base game without the update fails the build.
+
+## What the settings change
+
+Everything is optional and off unless noted. All of these are experimental and some have not been played in the game yet.
+
+- Chest shuffle, dungeon item placement and progressive upgrades (Hookshot, Strength, bags, wallets, scales and more).
+- Boss and NPC rewards, boss heart containers as chests, and songs shuffled among the song teachers or anywhere.
+- Gossip stones that tell you where an important item lies, without the Mask of Truth.
+- Start with one random Spiritual Stone or Medallion.
+- Faster chest and item pickup scenes.
+
+## Troubleshooting
+
+- The build stops with "the game folder has no ..." Your folder is missing a file of version 1.1.1, so it is an older version of the game. Use a folder with the update applied.
+- Setup shows the 1.1.1 check with a cross: same cause.
+- The emulator ignores the mod: copy the whole mod folder into the emulator's load folder for the game and remove other mods that change the same files.
+
 ## Install
 
 Download the file for your system from the [releases page](https://github.com/realazk/ootrr/releases) and check it against `SHA256SUMS.txt`.

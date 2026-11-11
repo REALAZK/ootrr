@@ -7,6 +7,20 @@ use crate::error::Hr;
 use crate::pathsafe;
 
 const MARKERS: [(&str, bool); 2] = [("Pack/ZsDic.pack.zs", false), ("Banc", true)];
+pub const VERSION: &str = "System/Resource/ResourceSizeTable.Product.111.Nin_Ounce_NVN2.rsizetable.zs";
+
+#[cfg(test)]
+pub(crate) fn fake_version(root: &P) {
+    let data: ootrr_core::slice::data::Data = ootrr_core::slice::data::Data::load().unwrap();
+    for r in ootrr_core::required::list(&data) {
+        let t: PB = r.split('/').fold(root.to_path_buf(), |a, s| a.join(s));
+        if t.is_file() {
+            continue;
+        }
+        fs::create_dir_all(t.parent().unwrap()).unwrap();
+        fs::write(&t, b"").unwrap();
+    }
+}
 
 pub struct Report {
     pub ok: bool,
@@ -52,10 +66,30 @@ pub fn inspect(p: &P) -> Report {
         let ok: bool = has(&base, r, d);
         rep.checks.push((format!("{r}{}", if d { "/" } else { "" }), ok));
     }
+    if found.is_some() {
+        rep.checks.push((VERSION.to_string(), has(&base, VERSION, false)));
+    }
     match found {
+        Some(f) if !has(&f, VERSION, false) => rep.problems.push(
+            "This folder is missing the files of game version 1.1.1 (System/Resource/ResourceSizeTable.Product.111...). The mod build needs the game extracted with the 1.1.1 update installed. Extract it again from the emulator with the update applied and pick that folder.".to_string(),
+        ),
         Some(f) => {
-            rep.ok = true;
-            rep.romfs = Some(f);
+            let gone: Vec<String> = match ootrr_core::slice::data::Data::load() {
+                Ok(d) => ootrr_core::required::missing(&f, &d),
+                Err(_) => Vec::new(),
+            };
+            if gone.is_empty() {
+                rep.ok = true;
+                rep.romfs = Some(f);
+            } else {
+                rep.checks.push((format!("{} files the build reads are missing", gone.len()), false));
+                let shown: Vec<&str> = gone.iter().take(6).map(|s| s.as_str()).collect();
+                rep.problems.push(format!(
+                    "This folder is missing {} files the mod build reads, for example {}. The folder is probably an incomplete or older extraction of the game.",
+                    gone.len(),
+                    shown.join(", ")
+                ));
+            }
         }
         None => rep
             .problems
@@ -102,6 +136,29 @@ mod tests {
         fs::create_dir_all(root.join("Pack")).unwrap();
         fs::create_dir_all(root.join("Banc")).unwrap();
         fs::write(root.join("Pack").join("ZsDic.pack.zs"), b"").unwrap();
+        fake_version(root);
+    }
+
+    #[test]
+    fn a_folder_without_the_1_1_1_files_is_refused_with_a_reason() {
+        let d: PB = tmp("old");
+        fake_romfs(&d);
+        fs::remove_dir_all(d.join("System")).unwrap();
+        let r: Report = inspect(&d);
+        assert!(!r.ok);
+        assert!(r.romfs.is_none());
+        assert!(r.problems.iter().any(|p| p.contains("1.1.1")));
+        assert!(r.checks.iter().any(|(l, ok)| l.contains("Product.111") && !*ok));
+    }
+
+    #[test]
+    fn a_folder_with_a_few_files_missing_is_refused_and_names_them() {
+        let d: PB = tmp("partial");
+        fake_romfs(&d);
+        fs::remove_file(d.join("Event").join("EventFlow").join("Dm_SY_Treasurebox.bfevfl.zs")).unwrap();
+        let r: Report = inspect(&d);
+        assert!(!r.ok);
+        assert!(r.problems.iter().any(|p| p.contains("Dm_SY_Treasurebox") || p.contains("missing 1 files")));
     }
 
     #[test]

@@ -7,6 +7,16 @@ use crate::modpack::rel;
 use crate::sarc;
 use crate::zs::Zs;
 
+fn missing(e: std::io::Error, r: &str) -> Error {
+    if e.kind() == std::io::ErrorKind::NotFound {
+        Error::Msg(format!(
+            "the game folder has no {r}. The mod build needs the game extracted with the 1.1.1 update installed, so this folder is probably an older version or an incomplete extraction"
+        ))
+    } else {
+        Error::from(e)
+    }
+}
+
 pub struct Romfs {
     pub root: PB,
     pub zs: Zs,
@@ -26,7 +36,7 @@ impl Romfs {
     }
 
     pub fn read(&self, r: &str) -> Res<Vec<u8>> {
-        Ok(fs::read(self.root.join(rel(r)?))?)
+        fs::read(self.root.join(rel(r)?)).map_err(|e| missing(e, r))
     }
 
     pub fn read_zs(&mut self, r: &str) -> Res<Vec<u8>> {

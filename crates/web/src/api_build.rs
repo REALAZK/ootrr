@@ -104,6 +104,7 @@ mod tests {
         fs::create_dir_all(g.join("Pack")).unwrap();
         fs::create_dir_all(g.join("Banc")).unwrap();
         fs::write(g.join("Pack").join("ZsDic.pack.zs"), b"").unwrap();
+        crate::api_validate::fake_version(&g);
         g
     }
 

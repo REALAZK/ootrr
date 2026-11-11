@@ -161,6 +161,7 @@ mod tests {
         fs::create_dir_all(g.join("Pack")).unwrap();
         fs::create_dir_all(g.join("Banc")).unwrap();
         fs::write(g.join("Pack").join("ZsDic.pack.zs"), b"CONTENT-MUST-NOT-LEAK").unwrap();
+        crate::api_validate::fake_version(&g);
         let r: Out = get(&h, &format!("/api/validate?path={}", enc(&g.display().to_string())));
         assert_eq!(r.status, 200);
         assert_eq!(r.json().get("ok").and_then(|x| x.as_bool()), Some(true));
@@ -204,6 +205,7 @@ mod tests {
         fs::create_dir_all(g.join("Pack")).unwrap();
         fs::create_dir_all(g.join("Banc")).unwrap();
         fs::write(g.join("Pack").join("ZsDic.pack.zs"), b"").unwrap();
+        crate::api_validate::fake_version(&g);
         let m: PB = d.join("mods");
         fs::create_dir_all(&m).unwrap();
         let made: Json = post(&h, "/api/generate", r#"{"seed":"b","settings":{"shuffle_chests":"off"}}"#).json();
