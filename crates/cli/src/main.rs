@@ -1,3 +1,4 @@
+mod boss_heart_cmd;
 mod calibrate_cmd;
 mod check_ainb;
 mod check_bfevfl;
@@ -10,8 +11,12 @@ mod entrance_json;
 mod event_chests_cmd;
 mod flags_cmd;
 mod flow_cmd;
+mod game_cmd;
+mod hints_cmd;
 mod items_cmd;
 mod logic_cmd;
+mod pot_cmd;
+mod progressive_cmd;
 mod save_cmd;
 mod serve_cmd;
 mod settings_cmd;
@@ -76,6 +81,11 @@ const USAGE: &str = "usage:
   ootrr event-chests-testmod <romfs_root> <event_chests_json> <load_dir> <mod_name>
   ootrr find-drop <romfs_root> <item_name_or_star>
   ootrr set-drop <romfs_root> <load_dir> <mod_name> <actor_hash> <item_name> [no-event]
+  ootrr hints-show <seed.ootrr> <romfs_root>
+  ootrr check-game <romfs_root>
+  ootrr pot-set <romfs_root> <load_dir> <mod_name> [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] <ActorHash>=<Item_Actor>...
+  ootrr boss-heart <romfs_root> <load_dir> <mod_name> [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] [--chest <actor>] [--slot] <Location>=<Item_Actor>...
+  ootrr progressive <romfs_root> <load_dir> <mod_name> [--scale <factor> <min_frames>] [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] [--grants] <Family>=<hash>[,<hash>...]...
   ootrr zs-extract <romfs_root> <relative_path> <out_file>
   ootrr zs-pack <in_file> <out_file> <dict_id_or_0>
   ootrr byml-rewrite <romfs_root> <relative_path> <out_file>
@@ -85,7 +95,7 @@ const USAGE: &str = "usage:
   ootrr save-info <progress.sav> [--flags <flags_json>]
   ootrr save-get <progress.sav> <name_or_hash>... [--flags <flags_json>]
   ootrr save-set <in> <out> <name=value>... [--flags <flags_json>]
-  ootrr save-unlock <in> <out> <preset[,preset]> [name=value]... [--start Map/StartPos --romfs <root> | --map M --xyz x,y,z --rad-y R] [--keys clear] [--flags <flags_json>]
+  ootrr save-unlock <in> <out> <preset[,preset]> [name=value]... [--start Map/StartPos --romfs <root> | --map M --xyz x,y,z --rad-y R] [--keys clear] [--key-on <hash,hash>] [--key-off <hash,hash>] [--flags <flags_json>]
   ootrr save-check <progress.sav>... [--flags <flags_json>]
   ootrr save-diff <a> <b> [--flags <flags_json>]
   ootrr save-presets [--in <progress.sav>] [--flags <flags_json>]
@@ -294,6 +304,11 @@ fn main() -> ExitCode {
         Some("flow-force") => check_bfevfl::force(&a[1..]),
         Some("flow-durations") => check_bfevfl::durations(&a[1..]),
         Some("flow-scale") => check_bfevfl::scale(&a[1..]),
+        Some("progressive") => progressive_cmd::run(&a[1..]),
+        Some("boss-heart") => boss_heart_cmd::run(&a[1..]),
+        Some("hints-show") => hints_cmd::show(&a[1..]),
+        Some("check-game") => game_cmd::check(&a[1..]),
+        Some("pot-set") => pot_cmd::run(&a[1..]),
         Some("flow-rewards") => check_bfevfl::catalog(&a[1..]),
         Some("flow-locations-report") => flow_cmd::report(&a[1..]),
         Some("flow-locations-check") => flow_cmd::check(&a[1..]),

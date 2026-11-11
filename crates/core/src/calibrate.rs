@@ -422,6 +422,7 @@ fn targets(p: &Plan) -> Vec<Target> {
                 old_actor: s.old.clone(),
                 new_actor: s.new.clone(),
                 ev: None,
+                family: None,
             });
         }
     }

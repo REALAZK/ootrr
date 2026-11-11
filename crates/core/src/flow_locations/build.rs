@@ -24,6 +24,7 @@ pub struct Choice {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Opts {
     pub untested: bool,
+    pub songs: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -72,11 +73,11 @@ fn plausible(s: &str) -> bool {
     ok && known && s.len() <= 64
 }
 
-fn pick<'a>(d: &'a Data, c: &Choice) -> Res<&'a Loc> {
+fn pick<'a>(d: &'a Data, c: &Choice, o: &Opts) -> Res<&'a Loc> {
     let l: &Loc = d
         .by_name(&c.location)
         .ok_or_else(|| E::Msg(format!("{} is not a flow location this build knows", c.location)))?;
-    if !l.supported {
+    if !l.supported && !(o.songs && l.cat == "song") {
         return Err(E::Msg(format!("{} is not supported, {}", l.name, l.why)));
     }
     Ok(l)
@@ -98,7 +99,7 @@ pub fn plan(d: &Data, cs: &[Choice], o: &Opts) -> Res<(Vec<Change>, usize, Vec<S
             return Err(E::Msg(format!("{} is chosen twice", c.location)));
         }
         seen.push(&c.location);
-        let l: &Loc = pick(d, c)?;
+        let l: &Loc = pick(d, c, o)?;
         if !d.usable(&c.item) {
             if !(o.untested && plausible(&c.item)) {
                 return Err(E::Msg(format!(
@@ -277,10 +278,10 @@ mod tests {
         let d: Data = data();
         assert!(plan(&d, &[ch("Volvagia", "Item_Hookshot")], &Opts::default()).is_err());
         let (c, _, u): (Vec<Change>, usize, Vec<String>) =
-            plan(&d, &[ch("Volvagia", "Item_Hookshot")], &Opts { untested: true }).unwrap();
+            plan(&d, &[ch("Volvagia", "Item_Hookshot")], &Opts { untested: true, songs: false }).unwrap();
         assert_eq!(c.len(), 2);
         assert_eq!(u, vec!["Item_Hookshot".to_string()]);
-        assert!(plan(&d, &[ch("Volvagia", "bad name")], &Opts { untested: true }).is_err());
+        assert!(plan(&d, &[ch("Volvagia", "bad name")], &Opts { untested: true, songs: false }).is_err());
     }
 
     #[test]

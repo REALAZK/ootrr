@@ -2,7 +2,7 @@ use std::collections::BTreeMap as Map;
 use std::path::Path as P;
 use std::time::Instant;
 
-use ootrr_core::bfevfl::{replace_bytes, rewards, show, Bf, Kind, Replaced, Val};
+use ootrr_core::bfevfl::{replace_bytes, rewards, scale_waits, show, Bf, Kind, Paced, Replaced, Val};
 use ootrr_core::modpack::Pack;
 use ootrr_core::TITLE_ID;
 use ootrr_core::error::{Error, Res};
@@ -304,32 +304,10 @@ pub fn scale(a: &[String]) -> Res<()> {
         let id: Option<u32> = dict_id(&z).or(Some(1));
         let raw: Vec<u8> = rf.read_zs(r)?;
         let mut bf: Bf = Bf::parse(&raw)?;
-        let mut n: usize = 0;
-        let mut before: i64 = 0;
-        let mut after: i64 = 0;
-        for fl in bf.flows.iter_mut() {
-            for e in fl.events.iter_mut() {
-                if let Kind::Action { params: Some(c), .. } = &mut e.kind {
-                    for (k, v) in c.items.iter_mut() {
-                        if k != "Frames" {
-                            continue;
-                        }
-                        if let Val::Int(x) = v {
-                            if *x >= min {
-                                let y: i32 = ((*x as f32) * factor).round().max(1.0) as i32;
-                                before += *x as i64;
-                                after += y as i64;
-                                *x = y;
-                                n += 1;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        let p: Paced = scale_waits(&mut bf, factor, min);
         let out: Vec<u8> = bf.write()?;
         let at = pk.write_romfs(r, &zs::compress_raw(&out, id)?)?;
-        println!("{r}: scaled {n} waits, {before} frames -> {after}, wrote {}", at.display());
+        println!("{r}: scaled {} waits, {} frames -> {}, wrote {}", p.waits, p.before, p.after, at.display());
     }
     Ok(())
 }

@@ -1,5 +1,6 @@
 use crate::error::{Error as E, Res};
 use crate::settings::{Settings, Value};
+use crate::start_reward::Reward;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
@@ -15,6 +16,13 @@ pub enum Keep {
     Dungeon,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Songs {
+    Off,
+    Own,
+    Anywhere,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Plan {
     pub chests: Mode,
@@ -23,6 +31,11 @@ pub struct Plan {
     pub map: Keep,
     pub ganon: Keep,
     pub rewards: bool,
+    pub hearts: bool,
+    pub songs: Songs,
+    pub hints: bool,
+    pub fast: bool,
+    pub start: Reward,
     pub excluded: Vec<String>,
     pub notes: Vec<String>,
 }
@@ -142,6 +155,45 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             false
         }
     };
+    let hearts: bool = s.flag("shuffle_boss_hearts").unwrap_or_else(|e| {
+        bad.push(e.to_string());
+        false
+    });
+    let hints: bool = s.flag("gossip_hints").unwrap_or_else(|e| {
+        bad.push(e.to_string());
+        false
+    });
+    let fast: bool = s.flag("faster_chests").unwrap_or_else(|e| {
+        bad.push(e.to_string());
+        false
+    });
+    let start: Reward = match s.text("start_reward") {
+        Ok("off") => Reward::Off,
+        Ok("stone") => Reward::Stone,
+        Ok("medal") => Reward::Medal,
+        Ok("any") => Reward::Any,
+        Ok(v) => {
+            bad.push(format!("start_reward is {v}, which is not a known choice"));
+            Reward::Off
+        }
+        Err(e) => {
+            bad.push(e.to_string());
+            Reward::Off
+        }
+    };
+    let songs: Songs = match s.text("shuffle_songs") {
+        Ok("off") => Songs::Off,
+        Ok("own") => Songs::Own,
+        Ok("anywhere") => Songs::Anywhere,
+        Ok(v) => {
+            bad.push(format!("shuffle_songs is {v}, which is not a known choice"));
+            Songs::Off
+        }
+        Err(e) => {
+            bad.push(e.to_string());
+            Songs::Off
+        }
+    };
     let excluded: Vec<String> = s.items("disabled_locations").map(|v| v.to_vec()).unwrap_or_default();
     if !bad.is_empty() {
         let lines: Vec<String> = bad.iter().map(|b| format!("  {b}")).collect();
@@ -157,7 +209,18 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             noted.join(", ")
         ));
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, excluded, notes })
+    for (on, text) in [
+        (hearts, "Boss Heart Containers are shuffled. Each becomes a chest, experimental and untested in the game."),
+        (songs != Songs::Off, "Songs are shuffled. The song lessons are edited, experimental and untested in the game."),
+        (fast, "Chest and item pickup scenes are sped up."),
+        (start != Reward::Off, "You start the game with one random Stone or Medallion. Experimental and untested in the game."),
+        (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
+    ] {
+        if on {
+            notes.push(text.to_string());
+        }
+    }
+    Ok(Plan { chests, small, boss, map, ganon, rewards, hearts, songs, hints, fast, start, excluded, notes })
 }
 
 #[cfg(test)]

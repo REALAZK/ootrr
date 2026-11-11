@@ -3,6 +3,7 @@ pub mod cont;
 mod dic;
 pub mod edit;
 pub mod flow;
+pub mod pace;
 mod rd;
 pub mod rewards;
 pub mod show;
@@ -17,6 +18,7 @@ pub use actor::Actor;
 pub use cont::{Cont, Val};
 pub use edit::{replace_bytes, replace_str, Replaced};
 pub use flow::{Case, Entry, Event, Flow, Kind, VarDef};
+pub use pace::{scale_waits, Paced};
 pub use tl::{Clip, Cut, Shot, Timeline, Trig};
 
 const MAGIC: &[u8; 8] = b"BFEVFL\0\0";

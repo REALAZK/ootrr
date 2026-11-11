@@ -3,6 +3,7 @@ use std::fmt::Write as W;
 
 use crate::error::{Error as E, Res};
 use crate::logic_items::ItemId;
+use crate::progressive::family_of;
 use crate::rng::Rng;
 use crate::settings::Settings;
 use crate::settings::seed::SeedFile;
@@ -10,7 +11,8 @@ use crate::slice::data::Data;
 use crate::slice::fill::{changed, fill, vanilla_place};
 use crate::slice::logic::world;
 use crate::slice::pick::{pick, scoped, Pick};
-use crate::slice::support::{plan, Plan};
+use crate::start_reward::pick as pick_start;
+use crate::slice::support::{plan, Plan, Songs};
 use crate::spoiler::{playthrough, Spoiler};
 use crate::world::{LocId, Placement, World};
 
@@ -46,13 +48,29 @@ pub struct Generated {
     pub spheres: Vec<Vec<(String, String)>>,
 }
 
+pub fn is_song(actor: &str) -> bool {
+    actor.starts_with("Item_Melody_") && actor != "Item_Melody_ScarecrowSong"
+}
+
 pub fn allowed(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> bool {
     match d.item(&w.items.names[it]) {
         Some(i) if scoped(p, &i.kind) => {
-            i.dungeon.is_some() && i.dungeon.as_deref() == w.regions[w.locs[l].region].dungeon.as_deref()
+            i.dungeon.is_some()
+                && i.dungeon.as_deref() == w.regions[w.locs[l].region].dungeon.as_deref()
+                && (d.flow.by_name(&w.locs[l].name).is_none() || d.flow_accepts(i))
         }
         Some(i) => {
-            i.actor.is_some() && (d.flow.by_name(&w.locs[l].name).is_none() || d.flow_accepts(i))
+            let name: &str = &w.locs[l].name;
+            let up: bool = family_of(&i.tiers).is_some();
+            let song_item: bool = i.actor.as_deref().is_some_and(is_song);
+            let song_loc: bool = d.song_ok(name);
+            let heart_loc: bool = d.cat.by_name(name).is_some_and(|c| c.kind == "bossheart");
+            if p.songs == Songs::Own && song_item != song_loc {
+                return false;
+            }
+            i.actor.is_some()
+                && (d.flow.by_name(name).is_none() || (d.flow_accepts(i) && !up))
+                && !(up && ((d.keeps_event(name) && !d.special(name)) || heart_loc))
         }
         None => false,
     }
@@ -130,7 +148,11 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
         return Err(E::Format("the chest list in data/slice.json is empty, run slice-scan first"));
     }
     let p: Plan = plan(s)?;
-    let w: World = world(d)?;
+    let mut w: World = world(d)?;
+    if let Some((name, _)) = pick_start(seed, p.start) {
+        let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
+        w.start.push((i, 1));
+    }
     let vanilla: Placement = vanilla_place(&w, d)?;
     let pk: Pick = pick(d, &w, &p);
     let ok = |it: ItemId, l: LocId| allowed(d, &w, &p, it, l);
@@ -346,6 +368,103 @@ mod tests {
         let b: Generated = generate_data(&d, &all_chests(), "s", &o).unwrap();
         let t: String = b.spoiler.unwrap();
         assert!(t.contains("Randomized chests") && t.contains("Sphere 1"));
+    }
+
+    fn with(pairs: &[(&str, &str)]) -> Settings {
+        let mut s: Settings = Settings::default();
+        for (k, v) in pairs {
+            s.set(k, Value::s(v)).unwrap();
+        }
+        s
+    }
+
+    #[test]
+    fn boss_hearts_join_the_pool_only_when_asked() {
+        let d: Data = Data::load().unwrap();
+        let off: Generated = generate_data(&d, &Settings::default(), "hearts", &GenOpts::default()).unwrap();
+        assert!(!off.seed_file.placements.contains_key("Deku Tree Queen Gohma Heart"));
+        let mut s: Settings = Settings::default();
+        s.set("shuffle_boss_hearts", Value::Bool(true)).unwrap();
+        for n in 0..2 {
+            let g: Generated = generate_data(&d, &s, &format!("hearts {n}"), &GenOpts::default()).unwrap();
+            let hearts: Vec<&String> = g.seed_file.placements.keys().filter(|k| k.ends_with(" Heart")).collect();
+            assert_eq!(hearts.len(), 8, "{hearts:?}");
+            let held: usize = g.seed_file.placements.values().filter(|v| v.as_str() == "Heart Container").count();
+            assert_eq!(held, 8);
+        }
+    }
+
+    #[test]
+    fn songs_stay_among_the_song_locations_in_own_mode() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = with(&[("shuffle_songs", "own")]);
+        for n in 0..2 {
+            let g: Generated = generate_data(&d, &s, &format!("songs {n}"), &GenOpts::default()).unwrap();
+            for (loc, item) in &g.seed_file.placements {
+                let song_loc: bool = d.song_ok(loc);
+                let song_item: bool = d.item(item).and_then(|i| i.actor.as_deref()).is_some_and(is_song);
+                assert_eq!(song_loc, song_item, "{loc} holds {item}");
+            }
+            let n_song: usize = g.seed_file.placements.keys().filter(|k| d.flow.by_name(k).is_some_and(|f| f.cat == "song")).count();
+            assert_eq!(n_song, 10);
+        }
+    }
+
+    #[test]
+    fn songs_can_move_anywhere_in_anywhere_mode_and_every_seed_is_beatable() {
+        let d: Data = Data::load().unwrap();
+        let mut s: Settings = with(&[("shuffle_songs", "anywhere"), ("shuffle_rewards", "supported")]);
+        s.set("shuffle_boss_hearts", Value::Bool(true)).unwrap();
+        let mut out_of_place: usize = 0;
+        for n in 0..2 {
+            let g: Generated = generate_data(&d, &s, &format!("everything {n}"), &GenOpts { spoiler: false, tries: TRIES }).unwrap();
+            for (loc, item) in &g.seed_file.placements {
+                let song_loc: bool = d.flow.by_name(loc).is_some_and(|f| f.cat == "song");
+                let song_item: bool = d.item(item).and_then(|i| i.actor.as_deref()).is_some_and(is_song);
+                if song_loc != song_item {
+                    out_of_place += 1;
+                }
+            }
+        }
+        assert!(out_of_place > 0);
+    }
+
+    #[test]
+    fn dungeon_items_never_land_on_event_locations_that_cannot_hand_them_out() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = with(&[("shuffle_songs", "own"), ("shuffle_rewards", "supported")]);
+        for n in 0..3 {
+            let g: Generated = generate_data(&d, &s, &format!("dungeon items {n}"), &GenOpts::default()).unwrap();
+            for (loc, item) in &g.seed_file.placements {
+                if d.flow.by_name(loc).is_some() {
+                    assert!(d.item(item).is_some_and(|i| d.flow_accepts(i)), "{loc} holds {item}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_start_reward_changes_the_logic_and_still_generates() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = with(&[("start_reward", "any")]);
+        let g: Generated = generate_data(&d, &s, "start reward", &GenOpts::default()).unwrap();
+        assert!(g.report.contains("start the game with one random"));
+        assert_eq!(g.counts.randomized, g.seed_file.placements.len());
+    }
+
+    #[test]
+    fn upgrade_items_never_land_on_a_boss_heart() {
+        let d: Data = Data::load().unwrap();
+        let mut s: Settings = Settings::default();
+        s.set("shuffle_boss_hearts", Value::Bool(true)).unwrap();
+        for n in 0..2 {
+            let g: Generated = generate_data(&d, &s, &format!("up {n}"), &GenOpts::default()).unwrap();
+            for (loc, item) in &g.seed_file.placements {
+                if loc.ends_with(" Heart") {
+                    assert!(d.family(item).is_none(), "{loc} holds {item}");
+                }
+            }
+        }
     }
 
     #[test]

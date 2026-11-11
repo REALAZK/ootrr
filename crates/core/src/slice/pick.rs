@@ -1,7 +1,7 @@
 use std::collections::BTreeMap as BM;
 
 use crate::slice::data::{Data, State};
-use crate::slice::support::{Keep, Mode, Plan};
+use crate::slice::support::{Keep, Mode, Plan, Songs};
 use crate::world::{LocId, World};
 
 #[derive(Debug, Clone)]
@@ -59,6 +59,9 @@ fn reason(d: &Data, w: &World, p: &Plan, name: &str) -> Option<String> {
     if pinned_vanilla(p, kind) {
         return Some("its dungeon item setting is vanilla".to_string());
     }
+    if d.keeps_event(name) && !d.special(name) && d.vanilla_of(name).is_some_and(|v| d.family(v).is_some()) {
+        return Some("it holds an upgrade item behind a story event".to_string());
+    }
     None
 }
 
@@ -84,6 +87,9 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
     let mut flow: usize = 0;
     if p.rewards {
         for l in &d.flow.locs {
+            if l.cat == "song" && p.songs != Songs::Off {
+                continue;
+            }
             if !d.flow_ok(&l.name) {
                 *left.entry("reward event is not supported yet".to_string()).or_insert(0) += 1;
                 continue;
@@ -99,6 +105,35 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
             }
         }
     }
+    if p.songs != Songs::Off {
+        for l in d.flow.locs.iter().filter(|l| l.cat == "song") {
+            flow += 1;
+            if !d.song_ok(&l.name) {
+                *left.entry("this song lesson cannot hand out another item safely yet".to_string()).or_insert(0) += 1;
+            } else if p.excluded.iter().any(|e| *e == l.name) {
+                *left.entry("excluded by the player".to_string()).or_insert(0) += 1;
+            } else {
+                match w.loc(&l.name) {
+                    Some(x) => free.push(x),
+                    None => *left.entry("location is not in the logic world".to_string()).or_insert(0) += 1,
+                }
+            }
+        }
+    }
+    if p.hearts {
+        for l in d.cat.locs.iter().filter(|l| l.kind == "bossheart") {
+            flow += 1;
+            if p.excluded.iter().any(|e| *e == l.name) {
+                *left.entry("excluded by the player".to_string()).or_insert(0) += 1;
+            } else {
+                match w.loc(&l.name) {
+                    Some(x) => free.push(x),
+                    None => *left.entry("location is not in the logic world".to_string()).or_insert(0) += 1,
+                }
+            }
+        }
+    }
     free.sort_unstable();
+    free.dedup();
     Pick { free, left, flow }
 }

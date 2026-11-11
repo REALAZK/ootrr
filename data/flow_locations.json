@@ -293,6 +293,9 @@
     ]},
     {"name": "OGC Great Fairy Reward", "type": "Cutscene", "cat": "great_fairy", "vanilla": "Double Defense", "item": "Item_FairyBless_DefenseDouble", "items": ["Item_FairyBless_DefenseDouble"], "conf": "item", "support": "supported", "why": "", "paths": 1, "grant_flags": ["IsGet.Item_FairyBless_DefenseDouble", "HavePlayedGetEvent.Item_FairyBless_DefenseDouble", "PouchData.Item_FairyBless_DefenseDouble", "PouchData.Item_FairyBless_DefenseDouble.StockNum"], "bound_flags": [], "bound_flags_known": 0, "set_flags": 2, "set_flags_known": 2, "steps": [], "edits": [
       {"file": "Dm_FairyFountain_Courage.bfevfl", "index": 75, "event": "Event144", "param": "ActorName", "role": "grant", "via": "Dm_SY_GetInEvent:GetInEvent_GreatFairyCourge", "item": "Item_FairyBless_DefenseDouble", "entries": ["C15-01"], "also": []}
+    ]},
+    {"name": "HF Deku Scrub Grotto", "type": "Scrub", "cat": "scrub_sale", "vanilla": "Piece of Heart", "item": "Obj_Heart_Piece", "items": ["Obj_Heart_Piece"], "conf": "item", "support": "supported", "why": "", "paths": 1, "grant_flags": ["IsGet.Obj_Heart_Piece", "HavePlayedGetEvent.Obj_Heart_Piece", "PouchData.Obj_Heart_Piece", "PouchData.Obj_Heart_Piece.StockNum"], "bound_flags": [], "bound_flags_known": 0, "set_flags": 0, "set_flags_known": 0, "steps": [], "edits": [
+      {"file": "Enemy_Scrub_Business_Common.bfevfl", "index": 386, "event": "Event645", "param": "ActorName", "role": "grant", "via": "Enemy_Scrub_Business_Common:SimpleShopSub_Scrub_Business_OneTime", "item": "Obj_Heart_Piece", "entries": ["Enemy_Scrub_Business_Heart"], "also": []}
     ]}
   ],
   "unmatched_oot": [
@@ -311,7 +314,7 @@
     {"name": "ZR Frogs Sarias Song", "type": "NPC", "vanilla": "Rupees (50)", "reason": "frog rewards use EventTriggerIncreaseRupee with a numeric argument, not an item name"},
     {"name": "ZR Frogs Suns Song", "type": "NPC", "vanilla": "Rupees (50)", "reason": "frog rewards use EventTriggerIncreaseRupee with a numeric argument, not an item name"},
     {"name": "ZR Frogs Song of Time", "type": "NPC", "vanilla": "Rupees (50)", "reason": "frog rewards use EventTriggerIncreaseRupee with a numeric argument, not an item name"},
-    {"name": "ZR Frogs in the Rain", "type": "NPC", "vanilla": "Piece of Heart", "reason": "no flow event identified, MiniGame_FrogTenors sub MushiToriGame carries two heart piece arguments (events 71 and 91) but their link to the rain game is unproven"},
+    {"name": "ZR Frogs in the Rain", "type": "NPC", "vanilla": "Piece of Heart", "reason": "no flow event identified. Events 71 and 91 of MiniGame_FrogTenors are the remake's insect repellent game (MiniGame_FrogTenors_InsectRepellent flags, MushiToriGame), not the rain game, and event 247 is the reward of the six song ocarina game (it runs after MiniGame_FrogTenors_SongClear), so it stays ZR Frogs Ocarina Game. Checked in the flow dump 2026-11-11, the rain game has no flow event of its own"},
     {"name": "LH Underwater Item", "type": "NPC", "vanilla": "Rutos Letter", "reason": "no flow grants Rutos Letter, the item is not handed out by an event flow"},
     {"name": "LH Loach Fishing", "type": "NPC", "vanilla": "Rupees (50)", "reason": "MiniGame_Fishing hands out six rupee prizes (events 655 to 660) with no way to tell which is the loach prize"},
     {"name": "LH Sun", "type": "NPC", "vanilla": "Fire Arrows", "reason": "no flow grants Fire Arrows"},

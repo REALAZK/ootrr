@@ -4,6 +4,7 @@ use crate::catalog::Catalog;
 use crate::flow_locations::Data as FlowData;
 use crate::error::{Error as E, Res};
 use crate::json::{self, Json};
+use crate::progressive::{family_of, Grant};
 
 pub const ITEMS_JSON: &str = include_str!("../../../../data/items.json");
 pub const VANILLA_JSON: &str = include_str!("../../../../data/logic/vanilla.json");
@@ -15,6 +16,8 @@ pub const EVENTS_JSON: &str = include_str!("../../../../data/event_chests.json")
 pub const HELD: [u64; 1] = [6859289214373847284];
 
 pub const SEP: &str = " @ ";
+
+pub const SONG_KEPT: [&str; 2] = ["Song from Windmill", "Sheik in Crater"];
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Item {
@@ -258,9 +261,20 @@ impl Data {
             return false;
         }
         match self.vanilla_of(name).and_then(|v| self.item(v)) {
-            Some(i) => (i.actor.as_deref() == Some(actor) || i.tiers.iter().any(|t| t == actor)) && self.flow_accepts(i),
+            Some(i) => {
+                family_of(&i.tiers).is_none()
+                    && (i.actor.as_deref() == Some(actor) || i.tiers.iter().any(|t| t == actor))
+                    && self.flow_accepts(i)
+            }
             None => false,
         }
+    }
+
+    pub fn song_ok(&self, name: &str) -> bool {
+        let Some(l) = self.flow.by_name(name) else {
+            return false;
+        };
+        l.cat == "song" && !SONG_KEPT.contains(&name) && !l.edits.is_empty() && l.item.as_deref().is_some_and(|a| self.flow.usable(a))
     }
 
     pub fn flow_accepts(&self, item: &Item) -> bool {
@@ -287,6 +301,52 @@ impl Data {
         } else {
             None
         }
+    }
+
+    pub fn keeps_event(&self, name: &str) -> bool {
+        match self.cat.by_name(name) {
+            Some(l) => l.refs.iter().any(|r| self.event_mode(r.hash) == Some(Ev::Keep)),
+            None => false,
+        }
+    }
+
+    pub fn special(&self, name: &str) -> bool {
+        self.cat.by_name(name).is_some_and(|l| !l.refs.is_empty() && l.refs.iter().all(|r| crate::special::of(r.hash).is_some()))
+    }
+
+    pub fn holders(&self, family: &str) -> Vec<&str> {
+        let mut out: Vec<&str> = Vec::new();
+        let names = self.cat.locs.iter().map(|l| l.name.as_str()).chain(self.flow.locs.iter().map(|l| l.name.as_str()));
+        for n in names {
+            if self.vanilla_of(n).and_then(|v| self.family(v)) == Some(family) {
+                out.push(n);
+            }
+        }
+        out
+    }
+
+    pub fn wrappable(&self, name: &str) -> bool {
+        match self.flow.by_name(name) {
+            Some(l) => l.supported && l.edits.iter().any(|e| e.role == "grant"),
+            None => false,
+        }
+    }
+
+    pub fn grants(&self, family: &'static str) -> Vec<Grant> {
+        let mut out: Vec<Grant> = Vec::new();
+        for l in &self.flow.locs {
+            if !l.supported || self.vanilla_of(&l.name).and_then(|v| self.family(v)) != Some(family) {
+                continue;
+            }
+            for e in l.edits.iter().filter(|e| e.role == "grant") {
+                out.push(Grant { file: e.file.clone(), index: e.index, event: e.event.clone(), param: e.param.clone(), family });
+            }
+        }
+        out
+    }
+
+    pub fn family(&self, item: &str) -> Option<&'static str> {
+        self.item(item).and_then(|i| family_of(&i.tiers))
     }
 
     pub fn event_ok(&self, name: &str) -> bool {
