@@ -276,7 +276,7 @@ mod tests {
     #[test]
     fn informational_and_unknown_fields_are_tolerated() {
         let t: String = sample().to_text();
-        let a: String = edit(&t, "ootrr-core 0.1.0", "some other build");
+        let a: String = edit(&t, &format!("ootrr-core {}", env!("CARGO_PKG_VERSION")), "some other build");
         assert!(SeedFile::parse(&a).is_ok());
         let b: String = edit(&t, "\"format\"", "\"note\": \"hello\",\n  \"format\"");
         assert_eq!(SeedFile::parse(&b).unwrap(), sample());
