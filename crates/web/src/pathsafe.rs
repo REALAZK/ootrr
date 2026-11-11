@@ -103,7 +103,6 @@ mod tests {
         assert!(abs("/a\\..\\b").is_ok());
     }
 
-    #[cfg(windows)]
     #[test]
     fn one_pair_of_surrounding_quotes_is_dropped() {
         let d: String = std::env::temp_dir().display().to_string();
@@ -111,6 +110,7 @@ mod tests {
         assert!(abs(&format!("\"{d}")).is_err());
     }
 
+    #[cfg(windows)]
     #[test]
     fn windows_paths() {
         assert_eq!(abs("C:\\Users\\x\\\\y").unwrap(), PB::from("C:\\Users\\x\\y"));
