@@ -5,6 +5,7 @@ use crate::flags_gen;
 use crate::flags_harvest::{Evidence, Harvest, Mem};
 use crate::flags_keyed;
 use crate::flags_map;
+use crate::flags_names;
 use crate::flags_rel;
 use crate::flags_scan::Walked;
 use crate::romfs::Romfs;
@@ -48,6 +49,8 @@ fn settle(l: &mut FlagList, mn: &mut Mem, stages: &mut Vec<(String, usize)>) {
 pub fn build(rf: &mut Romfs) -> Res<Built> {
     let mut list: FlagList = load(rf)?;
     let mut stages: Vec<(String, usize)> = Vec::new();
+    flags_names::apply(&mut list);
+    stages.push(("recovered names".to_string(), list.named()));
     let mut h: Harvest = Harvest::new(&list);
     h.want(flags_map::wanted());
     let walked: Walked = h.run(rf, &mut list)?;

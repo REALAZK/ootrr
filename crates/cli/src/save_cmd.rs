@@ -261,6 +261,16 @@ pub fn unlock(a: &[String]) -> Res<()> {
             println!("cleared {n} collected pickup keys, every chest and pickup starts unopened");
         }
     }
+    for (name, on) in [("key-on", true), ("key-off", false)] {
+        let Some(list) = g.opt.get(name) else {
+            continue;
+        };
+        for t in list.split(',') {
+            let k: u64 = t.trim().parse().map_err(|_| Error::Format("save: a key is a decimal actor hash"))?;
+            let changed: bool = s.set_key(k, on);
+            println!("key {k} {} ({})", if on { "set" } else { "cleared" }, if changed { "changed" } else { "already so" });
+        }
+    }
     for sp in g.pos.iter().skip(3) {
         set_one(&mut s, &l, sp)?;
         println!("set {sp}");
