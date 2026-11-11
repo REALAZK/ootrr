@@ -297,6 +297,33 @@ pub fn build() -> Schema {
             .opt("off", "Vanilla", "These rewards keep their original items.")
             .opt("supported", "Supported rewards", "The rewards whose event the tool can edit. Experimental, none of these edits are tested in the game yet."),
     );
+    s.push(
+        Setting::toggle(39, "shuffle_boss_hearts", "shuffle", "Boss Heart Containers", false)
+            .tip("Whether the Heart Containers that bosses leave behind join the item pool. Each one becomes a chest that holds a random item. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::choice(40, "shuffle_songs", "shuffle", "Songs", "off")
+            .tip("Whether the songs you learn from NPCs and Sheik are shuffled. Experimental, untested in the game.")
+            .opt("off", "Vanilla", "Every song comes from its usual teacher.")
+            .opt("own", "Song locations", "The songs are shuffled among the places that teach songs.")
+            .opt("anywhere", "Anywhere", "Songs can appear anywhere and song locations can hold any item."),
+    );
+    s.push(
+        Setting::toggle(41, "gossip_hints", "world", "Gossip stone hints", false)
+            .tip("Every gossip stone tells you where an important item lies. The stones need no Mask of Truth text change, only the words are replaced. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(42, "faster_chests", "world", "Faster item pickups", false)
+            .tip("Shortens the waiting time in chest openings and item pickup scenes. The text and the item are the same, only the pauses are shorter."),
+    );
+    s.push(
+        Setting::choice(43, "start_reward", "starting", "Start with a reward", "off")
+            .tip("Begin the game already holding one random Spiritual Stone or Medallion. The vanilla copy still exists. Experimental, untested in the game.")
+            .opt("off", "No reward", "You start with no stones or medallions.")
+            .opt("stone", "A Spiritual Stone", "One random Spiritual Stone.")
+            .opt("medal", "A Medallion", "One random Medallion.")
+            .opt("any", "Either", "One random Stone or Medallion."),
+    );
     s.push(starting_items());
     s.push(starting_songs());
     s.sort_by_key(|x| x.num);
