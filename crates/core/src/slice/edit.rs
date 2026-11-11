@@ -5,6 +5,7 @@ use std::path::{Path as P, PathBuf as PB};
 use crate::TITLE_ID;
 use crate::boss_heart::{heart_ids, stage as stage_hearts, swap, CHEST, HEART};
 use crate::byml::Byml;
+use crate::dungeon_credit::{key_dungeon, place as place_key, stage_pouch, sweep, KEY_DUNGEONS};
 use crate::flow_locations::{self, Choice, Opts as FlowOpts, Stage};
 use crate::error::{Error as E, Res};
 use crate::modpack::Pack;
@@ -34,6 +35,7 @@ pub struct Target {
     pub new_actor: String,
     pub ev: Option<Ev>,
     pub family: Option<&'static str>,
+    pub key: Option<&'static str>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -116,7 +118,12 @@ fn actors_for(d: &Data, seed: &SeedFile) -> Res<BM<String, String>> {
     Ok(out)
 }
 
+#[cfg(test)]
 fn targets(d: &Data, seed: &SeedFile) -> Res<(Vec<Target>, usize, Vec<Choice>)> {
+    targets_with(d, seed, false)
+}
+
+fn targets_with(d: &Data, seed: &SeedFile, roam: bool) -> Res<(Vec<Target>, usize, Vec<Choice>)> {
     let mut out: Vec<Target> = Vec::new();
     let mut flows: Vec<Choice> = Vec::new();
     let mut same: usize = 0;
@@ -156,6 +163,7 @@ fn targets(d: &Data, seed: &SeedFile) -> Res<(Vec<Target>, usize, Vec<Choice>)> 
                     new_actor: new_actor.clone(),
                     ev: None,
                     family: None,
+                    key: None,
                 });
             }
             continue;
@@ -180,8 +188,14 @@ fn targets(d: &Data, seed: &SeedFile) -> Res<(Vec<Target>, usize, Vec<Choice>)> 
             Some(f) => tiers(f)?[0].to_string(),
             None => given.get(loc).cloned().ok_or_else(|| E::Msg(format!("{loc} was given no item actor")))?,
         };
+        let key: Option<&'static str> = if roam && new.kind == "SmallKey" {
+            let name: &str = new.dungeon.as_deref().unwrap_or("");
+            Some(key_dungeon(name).ok_or_else(|| E::Msg(format!("{item} cannot be placed in a chest, no key count belongs to it")))?)
+        } else {
+            None
+        };
         let l: &crate::catalog::Loc = d.cat.by_name(loc).ok_or_else(|| E::Msg(format!("{loc} is not in the catalog")))?;
-        if family.is_none() && new_actor == l.item {
+        if family.is_none() && key.is_none() && new_actor == l.item {
             same += 1;
             continue;
         }
@@ -196,6 +210,7 @@ fn targets(d: &Data, seed: &SeedFile) -> Res<(Vec<Target>, usize, Vec<Choice>)> 
                 new_actor: new_actor.clone(),
                 ev: d.event_mode(r.hash),
                 family,
+                key,
             });
         }
     }
@@ -214,6 +229,10 @@ pub struct Edited {
 }
 
 pub fn edit_file(file: &str, raw: &[u8], ts: &[Target]) -> Res<Option<Edited>> {
+    edit_file_with(file, raw, ts, false)
+}
+
+pub fn edit_file_with(file: &str, raw: &[u8], ts: &[Target], keys: bool) -> Res<Option<Edited>> {
     let mut y: Byml = Byml::parse(raw)?;
     let mut hits: Vec<(usize, Found)> = Vec::new();
     let mut used: Vec<(String, Size)> = Vec::new();
@@ -231,6 +250,9 @@ pub fn edit_file(file: &str, raw: &[u8], ts: &[Target]) -> Res<Option<Edited>> {
             set_drop_ev(&mut y, t.hash, &t.old_actor, &t.new_actor, t.ev)?
         };
         if n > 0 {
+            if let Some(k) = t.key {
+                place_key(&mut y, t.hash, k).ok_or(E::Format("edited key chest vanished"))?;
+            }
             if special::of(t.hash).is_some() {
                 touched.push(t.hash);
             }
@@ -247,7 +269,8 @@ pub fn edit_file(file: &str, raw: &[u8], ts: &[Target]) -> Res<Option<Edited>> {
             hits.push((i, f));
         }
     }
-    if hits.is_empty() {
+    let swept: usize = if keys { sweep(&mut y, file)? } else { 0 };
+    if hits.is_empty() && swept == 0 {
         return Ok(None);
     }
     Ok(Some(Edited { file: file.to_string(), old_len: raw.len(), bytes: y.write()?, hits, used, hearts, wraps, touched }))
@@ -332,11 +355,13 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
             have
         )));
     }
-    let (ts, same, flows): (Vec<Target>, usize, Vec<Choice>) = targets(&d, seed)?;
+    let roam: bool = p.keys_roam();
+    let keys: Vec<&'static str> = if roam { KEY_DUNGEONS.to_vec() } else { Vec::new() };
+    let (ts, same, flows): (Vec<Target>, usize, Vec<Choice>) = targets_with(&d, seed, roam)?;
     let mut edits: Vec<Edited> = Vec::new();
     for f in banc_files(&rf)? {
         let raw: Vec<u8> = rf.read_zs(&f)?;
-        if let Some(e) = edit_file(&f, &raw, &ts)? {
+        if let Some(e) = edit_file_with(&f, &raw, &ts, roam)? {
             edits.push(e);
         }
     }
@@ -380,8 +405,8 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
     } else {
         special::stage(&mut rf, &wraps, &touched)?
     };
-    if !upgrades.is_empty() {
-        let mut outs: Vec<crate::staging::Out> = stage_upgrades(&mut rf, &upgrades, None, &kids)?;
+    if !upgrades.is_empty() || roam {
+        let mut outs: Vec<crate::staging::Out> = stage_upgrades(&mut rf, &upgrades, None, &kids, &keys)?;
         let fams: BS<&str> = upgrades.iter().map(|u| u.0.as_str()).collect();
         let mut gs: Vec<crate::progressive::Grant> = Vec::new();
         for f in FAMILIES.iter().filter(|x| fams.contains(x.0)) {
@@ -428,8 +453,11 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
     if p.songs == Songs::Anywhere {
         more.extend(crate::song_models::stage(&mut rf)?);
     }
-    if p.hints {
-        more.extend(hints::stage(&mut rf, &d, seed)?);
+    if p.hints || roam {
+        more.extend(hints::stage(&mut rf, &d, seed, p.hints, &keys)?);
+    }
+    if roam {
+        more.push(stage_pouch(&mut rf)?);
     }
     more.extend(crate::bomb_lift::stage(&mut rf)?);
     let reward: Option<&str> = crate::start_reward::pick(&seed.seed, p.start).map(|(_, a)| a);
@@ -453,6 +481,23 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
     }
     if p.fast {
         extra += crate::fast::apply(&mut rf, &pk)?;
+    }
+    if p.intro {
+        let (outs, _): (Vec<crate::staging::Out>, crate::intro_skip::Report) = crate::intro_skip::stage(&mut rf, crate::intro_skip::Opts::FULL)?;
+        for o in outs {
+            pk.write_romfs(&o.path, &o.z)?;
+            extra += 1;
+            if o.new > o.old {
+                if rst.is_none() {
+                    rst = Some(rsizetable::load(&mut rf)?);
+                }
+                if let Some(t) = rst.as_mut()
+                    && t.grow(&o.path, o.old as u64, o.new as u64, MARGIN)?.is_some()
+                {
+                    grown += 1;
+                }
+            }
+        }
     }
     if let Some(t) = &rst {
         pk.write_romfs(rsizetable::TABLE_PATH, &t.to_zs()?)?;
@@ -519,6 +564,7 @@ mod tests {
             new_actor: new.to_string(),
             ev: None,
             family: None,
+            key: None,
         }
     }
 

@@ -13,6 +13,7 @@ mod flags_cmd;
 mod flow_cmd;
 mod game_cmd;
 mod hints_cmd;
+mod intro_cmd;
 mod items_cmd;
 mod key_credit_cmd;
 mod logic_cmd;
@@ -56,6 +57,7 @@ const USAGE: &str = "usage:
   ootrr flow-durations <romfs_root> [name_prefix] [top_n]
   ootrr flow-scale <romfs_root> <load_dir> <mod_name> <factor> <min_frames> <relative_path>...
   ootrr flow-force <romfs_root> <load_dir> <mod_name> <relative_path> <event_name> <case_value> [<event_name> <case_value>]...
+  ootrr intro-skip <romfs_root> <load_dir> <mod_name> [--movie-only | --scene-only | --hold | --hold-and-scene]
   ootrr flow-rewards <romfs_root> <out_json>
   ootrr flow-locations-report [--tests] [--all]
   ootrr flow-locations-check <romfs_root> [flags_json]
@@ -306,6 +308,7 @@ fn main() -> ExitCode {
         Some("flow-force") => check_bfevfl::force(&a[1..]),
         Some("flow-durations") => check_bfevfl::durations(&a[1..]),
         Some("flow-scale") => check_bfevfl::scale(&a[1..]),
+        Some("intro-skip") => intro_cmd::run(&a[1..]),
         Some("progressive") => progressive_cmd::run(&a[1..]),
         Some("key-credit") => key_credit_cmd::run(&a[1..]),
         Some("boss-heart") => boss_heart_cmd::run(&a[1..]),

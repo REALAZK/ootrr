@@ -230,14 +230,28 @@ pub fn languages(rf: &Romfs) -> Res<Vec<String>> {
     Ok(v)
 }
 
-pub fn stage(rf: &mut Romfs, d: &Data, seed: &SeedFile) -> Res<Vec<Out>> {
-    let hints: Vec<Hint> = pick(d, seed, 40);
-    if hints.is_empty() {
+pub fn stage(rf: &mut Romfs, d: &Data, seed: &SeedFile, on: bool, keys: &[&'static str]) -> Res<Vec<Out>> {
+    let hints: Vec<Hint> = if on { pick(d, seed, 40) } else { Vec::new() };
+    if hints.is_empty() && keys.is_empty() {
         return Ok(Vec::new());
     }
-    let mut outs: Vec<Out> = vec![rewrite(rf, FLOW, unmask)?];
+    let mut outs: Vec<Out> = Vec::new();
+    if !hints.is_empty() {
+        outs.push(rewrite(rf, FLOW, unmask)?);
+    }
+    let counted: std::collections::BTreeSet<&str> = keys.iter().copied().collect();
     for f in languages(rf)? {
-        outs.push(rewrite(rf, &f, |raw| apply(raw, &hints))?);
+        let english: bool = crate::dungeon_text::is_english(&f);
+        outs.push(rewrite(rf, &f, |raw| {
+            let mut b: Vec<u8> = raw.to_vec();
+            if !hints.is_empty() {
+                b = apply(&b, &hints)?;
+            }
+            if !keys.is_empty() {
+                b = crate::dungeon_text::apply(&b, keys, &counted, english)?;
+            }
+            Ok(b)
+        })?);
     }
     Ok(outs)
 }

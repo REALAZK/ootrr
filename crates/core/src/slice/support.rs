@@ -15,13 +15,12 @@ pub enum Keep {
     Vanilla,
     Dungeon,
     AnyDungeon,
-    Overworld,
     Anywhere,
 }
 
 impl Keep {
     pub fn roams(self) -> bool {
-        matches!(self, Keep::AnyDungeon | Keep::Overworld | Keep::Anywhere)
+        matches!(self, Keep::AnyDungeon | Keep::Anywhere)
     }
 }
 
@@ -54,6 +53,7 @@ pub struct Plan {
     pub songs: Songs,
     pub hints: bool,
     pub fast: bool,
+    pub intro: bool,
     pub start: Reward,
     pub forest: Forest,
     pub excluded: Vec<String>,
@@ -104,10 +104,9 @@ fn keep(s: &Settings, id: &str, roam: bool, bad: &mut Vec<String>) -> Keep {
         Ok("vanilla") => Keep::Vanilla,
         Ok("dungeon") => Keep::Dungeon,
         Ok("any_dungeon") if roam => Keep::AnyDungeon,
-        Ok("overworld") if roam => Keep::Overworld,
         Ok("keysanity") if roam => Keep::Anywhere,
         Ok(v) => {
-            let ok: &str = if roam { "vanilla, dungeon, any_dungeon, overworld and keysanity" } else { "vanilla and dungeon" };
+            let ok: &str = if roam { "vanilla, dungeon, any_dungeon and keysanity" } else { "vanilla and dungeon" };
             bad.push(format!("{id} is {v}, which this build cannot place yet (only {ok} work)"));
             Keep::Vanilla
         }
@@ -218,6 +217,10 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         bad.push(e.to_string());
         false
     });
+    let intro: bool = s.flag("skip_intro").unwrap_or_else(|e| {
+        bad.push(e.to_string());
+        false
+    });
     let start: Reward = match s.text("start_reward") {
         Ok("off") => Reward::Off,
         Ok("stone") => Reward::Stone,
@@ -277,6 +280,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         (hearts, "Boss Heart Containers are shuffled. Each becomes a chest, experimental and untested in the game."),
         (songs != Songs::Off, "Songs are shuffled. The song lessons are edited, experimental and untested in the game."),
         (fast, "Chest and item pickup scenes are sped up."),
+        (intro, "The new game intro is skipped. The opening movie and the wake up scene are bypassed, experimental and untested in the game."),
         (start != Reward::Off, "You start the game with one random Stone or Medallion. Experimental and untested in the game."),
         (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
         (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
@@ -286,7 +290,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             notes.push(text.to_string());
         }
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, hearts, songs, hints, fast, start, forest, excluded, notes })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, hearts, songs, hints, fast, intro, start, forest, excluded, notes })
 }
 
 #[cfg(test)]
@@ -299,8 +303,10 @@ mod tests {
         assert_eq!(p.chests, Mode::All);
         assert_eq!(p.small, Keep::Dungeon);
         assert_eq!(p.map, Keep::Dungeon);
-        assert_eq!(p.notes.len(), 1);
-        assert!(p.notes[0].contains("bridge=medallions"));
+        assert!(p.intro);
+        assert_eq!(p.notes.len(), 2);
+        assert!(p.notes.iter().any(|n| n.contains("bridge=medallions")));
+        assert!(p.notes.iter().any(|n| n.contains("intro is skipped")));
     }
 
     #[test]
@@ -317,14 +323,34 @@ mod tests {
     fn unsupported_values_are_named_not_ignored() {
         let mut s: Settings = Settings::default();
         s.set("shuffle_pots", Value::s("all")).unwrap();
-        s.set("shuffle_smallkeys", Value::s("keysanity")).unwrap();
+        s.set("shuffle_smallkeys", Value::s("remove")).unwrap();
         s.set("bridge", Value::s("open")).unwrap();
         s.set("starting_hearts", Value::Int(5)).unwrap();
         let e: String = plan(&s).err().unwrap().to_string();
         assert!(e.contains("shuffle_pots is all"));
-        assert!(e.contains("shuffle_smallkeys is keysanity"));
+        assert!(e.contains("shuffle_smallkeys is remove"));
         assert!(e.contains("bridge is open"));
         assert!(e.contains("starting_hearts is 5"));
+    }
+
+    #[test]
+    fn small_keys_can_roam_and_the_logic_is_told_to_count_them_strictly() {
+        let mut s: Settings = Settings::default();
+        assert!(!plan(&s).unwrap().keys_roam());
+        assert!(plan(&s).unwrap().logic().is_empty());
+        for v in ["any_dungeon", "keysanity"] {
+            s.set("shuffle_smallkeys", Value::s(v)).unwrap();
+            let p: Plan = plan(&s).unwrap();
+            assert!(p.keys_roam());
+            assert_eq!(p.logic().len(), 3);
+            assert!(p.logic().iter().all(|(k, v)| k.ends_with("_key_layout") && *v == "shuffled"));
+            assert!(p.notes.iter().any(|n| n.contains("Small keys can be found")));
+        }
+        s.set("shuffle_smallkeys", Value::s("overworld")).unwrap();
+        assert!(plan(&s).is_err());
+        s.set("shuffle_smallkeys", Value::s("dungeon")).unwrap();
+        s.set("shuffle_bosskeys", Value::s("keysanity")).unwrap();
+        assert!(plan(&s).err().unwrap().to_string().contains("shuffle_bosskeys is keysanity"));
     }
 
     #[test]

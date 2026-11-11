@@ -29,6 +29,8 @@ Everything is optional and off unless noted. All of these are experimental and s
 - Gossip stones that tell you where an important item lies, without the Mask of Truth.
 - Start with one random Spiritual Stone or Medallion.
 - Faster chest and item pickup scenes.
+- Skip the opening cutscenes (on by default): a new game goes straight to the first moment you control Link.
+- Small keys in any dungeon or anywhere, counted for the dungeon each key belongs to (experimental).
 - Kokiri Forest can start open (open, or open exit with the Deku Tree still closed).
 - A plandomizer on the Generate page, or --plando Location=Item on the command line, to fix chosen items at chosen locations. The seed is only made if it can still be beaten.
 

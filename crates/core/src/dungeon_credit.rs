@@ -41,6 +41,18 @@ pub const TALK: &str = "EventTalk";
 pub const STYLE: i32 = 4;
 pub const NATIVE: [&str; 4] = ["EventGetDungeonMap", "EventGetDungeonCompass", "EventGetDungeonBossKey", "EventGetDungeonSmallKey"];
 pub const PLAIN: &str = "None";
+pub const SMALL_NATIVE: [&str; 1] = ["EventGetDungeonSmallKey"];
+pub const EVENT_PREFIX: &str = "OOTRR_Key_";
+pub const KEY_DUNGEONS: [&str; 8] = [
+    "ForestTemple",
+    "FireTemple",
+    "WaterTemple",
+    "ShadowTemple",
+    "SpiritTemple",
+    "BottomOfTheWell",
+    "GerudoTrainingGround",
+    "InsideGanonCastle",
+];
 pub const DROP: &str = "Drop__DropActor";
 const HOLDER: &str = "GameDataActor";
 const ADD: &str = "EventTriggerAddOrSubGameDataInt";
@@ -62,6 +74,25 @@ pub fn dungeon(name: &str) -> Res<&'static str> {
         .find(|d| **d == name)
         .copied()
         .ok_or_else(|| Error::Msg(format!("{name} is not a dungeon with a key count, dungeons: {}", DUNGEONS.join(" "))))
+}
+
+pub fn key_dungeon(name: &str) -> Option<&'static str> {
+    match name {
+        "Forest Temple" => Some("ForestTemple"),
+        "Fire Temple" => Some("FireTemple"),
+        "Water Temple" => Some("WaterTemple"),
+        "Shadow Temple" => Some("ShadowTemple"),
+        "Spirit Temple" => Some("SpiritTemple"),
+        "Bottom of the Well" => Some("BottomOfTheWell"),
+        "Gerudo Training Ground" => Some("GerudoTrainingGround"),
+        "Ganons Castle" => Some("InsideGanonCastle"),
+        _ => None,
+    }
+}
+
+pub fn scene_dungeon(file: &str) -> Option<&'static str> {
+    let scene: &str = file.split('/').nth(1)?;
+    KEY_DUNGEONS.iter().copied().find(|d| *d == scene)
 }
 
 pub fn entry_name(d: &str) -> String {
@@ -210,11 +241,15 @@ pub fn credit(f: &mut Flow, d: &str) -> Res<()> {
 }
 
 fn native_next(f: &Flow, i: u16) -> Option<u16> {
+    native_in(f, i, &NATIVE)
+}
+
+fn native_in(f: &Flow, i: u16, kinds: &[&str]) -> Option<u16> {
     let Kind::Action { next, actor, act, .. } = &f.events.get(i as usize)?.kind else {
         return None;
     };
     let n: &String = f.actors.get(*actor as usize)?.actions.get(*act as usize)?;
-    NATIVE.contains(&n.as_str()).then_some(*next)
+    kinds.contains(&n.as_str()).then_some(*next)
 }
 
 fn targets(k: &Kind) -> Vec<u16> {
@@ -227,7 +262,11 @@ fn targets(k: &Kind) -> Vec<u16> {
 }
 
 pub fn skip_native(f: &mut Flow) -> Res<usize> {
-    let jump: Vec<Option<u16>> = (0..f.events.len()).map(|i| idx(i).ok().and_then(|i| native_next(f, i))).collect();
+    skip_native_of(f, &NATIVE)
+}
+
+pub fn skip_native_of(f: &mut Flow, kinds: &[&str]) -> Res<usize> {
+    let jump: Vec<Option<u16>> = (0..f.events.len()).map(|i| idx(i).ok().and_then(|i| native_in(f, i, kinds))).collect();
     let mut n: usize = 0;
     for e in f.events.iter_mut() {
         let Kind::Switch { cases, .. } = &mut e.kind else {
@@ -340,6 +379,46 @@ pub fn audit(a: &Flow, b: &Flow) -> Vec<String> {
         }
     }
     bad
+}
+
+pub fn credit_keys(f: &mut Flow, dungeons: &[&str], big: bool) -> Res<usize> {
+    let n: usize = if big { skip_native_of(f, &SMALL_NATIVE)? } else { 0 };
+    for d in dungeons {
+        credit(f, d)?;
+    }
+    if let Some(m) = sound(f).first() {
+        return Err(Error::Msg(format!("dungeon credit: the chest flow is broken after the key entries, {m}")));
+    }
+    Ok(n)
+}
+
+pub fn sweep(y: &mut Byml, file: &str) -> Res<usize> {
+    let scene: Option<&'static str> = scene_dungeon(file);
+    let Some(list) = y.root.get_mut("Actors").and_then(|a| a.as_arr_mut()) else {
+        return Ok(0);
+    };
+    let mut n: usize = 0;
+    for a in list.iter_mut() {
+        let size: Size = Size::of_gyaml(text(a, "Gyaml"));
+        let Some(d) = a.get_mut("Dynamic") else {
+            continue;
+        };
+        if text(d, DROP) != KEY || text(d, "GetEventName").starts_with(EVENT_PREFIX) {
+            continue;
+        }
+        let dungeon: &str = scene.ok_or_else(|| Error::Msg(format!("{file} has a chest with a small key but is not a dungeon scene this build knows")))?;
+        d.set("GetEventName", Node::Str(event_name(dungeon, size)));
+        n += 1;
+    }
+    Ok(n)
+}
+
+pub fn stage_pouch(rf: &mut Romfs) -> Res<Out> {
+    rewrite(rf, POUCH_TABLE, |raw: &[u8]| {
+        let mut y: Byml = Byml::parse(raw)?;
+        quiet_pouch(&mut y)?;
+        y.write()
+    })
 }
 
 pub fn edit_flow(raw: &[u8], dungeons: &[&str], native: bool) -> Res<(Vec<u8>, usize)> {
@@ -779,6 +858,71 @@ mod tests {
         assert_eq!(crate::chest_slot::key(&flag("ForestTemple", "SmallKeyNum")), 0x90237092);
         assert_eq!(crate::chest_slot::key(&flag("BottomOfTheWell", "IsGetSmallKeyOnce")), 0x9e76cb62);
         assert_eq!(crate::chest_slot::key(&flag("BottomOfTheWell", "SmallKeyTotalNum")), 0x085df1c9);
+    }
+
+    #[test]
+    fn a_small_key_only_credit_skips_just_the_small_key_case_of_the_big_flow() {
+        let mut f: Flow = big();
+        let n: usize = credit_keys(&mut f, &["ForestTemple", "FireTemple"], true).unwrap();
+        assert_eq!(n, 1);
+        assert!(f.entries.iter().any(|e| e.name == "Success_Key_FireTemple"));
+        let Kind::Switch { cases, .. } = &f.events[0].kind else {
+            panic!("expected a switch");
+        };
+        let to: Vec<u16> = cases.iter().map(|c| c.ev).collect();
+        assert_eq!(to[0], 1);
+        assert_eq!(to[1], 2);
+        assert_eq!(to[2], 3);
+        assert_ne!(to[3], 4);
+        let mut s: Flow = small();
+        assert_eq!(credit_keys(&mut s, &["ForestTemple"], false).unwrap(), 0);
+    }
+
+    #[test]
+    fn every_key_chest_is_wrapped_for_the_dungeon_of_its_scene_and_a_foreign_scene_is_refused() {
+        let mut y: Byml = Byml {
+            root: Node::Map(vec![("Actors".to_string(), Node::Arr(vec![chest(1, "Obj_TBox_A_01"), chest(2, "Obj_TBox_A_02")]))]),
+            version: 2,
+            big: false,
+        };
+        place(&mut y, 1, "FireTemple");
+        for i in 0..2 {
+            let Node::Map(m) = &mut y.root.get_mut("Actors").unwrap().as_arr_mut().unwrap()[i] else {
+                panic!("expected a map");
+            };
+            for (k, v) in m.iter_mut() {
+                if k == "Dynamic" {
+                    v.set(DROP, Node::Str(KEY.to_string()));
+                }
+            }
+        }
+        assert_eq!(sweep(&mut y, "Banc/ForestTemple/ForestTemple_Child_Dynamic.bcett.byml.zs").unwrap(), 1);
+        assert_eq!(dynamic(&y, 0, "GetEventName"), "OOTRR_Key_FireTemple_Small");
+        assert_eq!(dynamic(&y, 1, "GetEventName"), "OOTRR_Key_ForestTemple_Big");
+        assert_eq!(sweep(&mut y, "Banc/ForestTemple/ForestTemple_Child_Dynamic.bcett.byml.zs").unwrap(), 0);
+        let mut z: Byml = Byml {
+            root: Node::Map(vec![("Actors".to_string(), Node::Arr(vec![chest(9, "Obj_TBox_A_01")]))]),
+            version: 2,
+            big: false,
+        };
+        if let Node::Map(m) = &mut z.root.get_mut("Actors").unwrap().as_arr_mut().unwrap()[0] {
+            for (k, v) in m.iter_mut() {
+                if k == "Dynamic" {
+                    v.set(DROP, Node::Str(KEY.to_string()));
+                }
+            }
+        }
+        assert!(sweep(&mut z, "Banc/KokiriForest/KokiriForest_Child_Dynamic.bcett.byml.zs").is_err());
+        assert_eq!(sweep(&mut y, "Banc/KokiriForest/x.bcett.byml.zs").unwrap(), 0);
+    }
+
+    #[test]
+    fn item_dungeon_names_map_to_the_key_counts_and_scenes() {
+        assert_eq!(key_dungeon("Ganons Castle"), Some("InsideGanonCastle"));
+        assert_eq!(key_dungeon("Thieves Hideout"), None);
+        assert_eq!(scene_dungeon("Banc/InsideGanonCastle/x.bcett.byml.zs"), Some("InsideGanonCastle"));
+        assert_eq!(scene_dungeon("Banc/GanonCastle/x.bcett.byml.zs"), None);
+        assert!(KEY_DUNGEONS.iter().all(|d| DUNGEONS.contains(d)));
     }
 
     #[test]

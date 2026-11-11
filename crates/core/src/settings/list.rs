@@ -317,6 +317,10 @@ pub fn build() -> Schema {
             .tip("Shortens the waiting time in chest openings and item pickup scenes. The text and the item are the same, only the pauses are shorter."),
     );
     s.push(
+        Setting::toggle(44, "skip_intro", "world", "Skip the opening cutscenes", true)
+            .tip("A new game skips the opening movie and the wake up scene in Link's house, and you get control right away. Experimental, untested in the game."),
+    );
+    s.push(
         Setting::choice(43, "start_reward", "starting", "Start with a reward", "off")
             .tip("Begin the game already holding one random Spiritual Stone or Medallion. The vanilla copy still exists. Experimental, untested in the game.")
             .opt("off", "No reward", "You start with no stones or medallions.")

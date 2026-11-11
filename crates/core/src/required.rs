@@ -7,6 +7,7 @@ use crate::fast;
 use crate::flags_build::LIST_PATH;
 use crate::flow_locations::path_of;
 use crate::hints;
+use crate::intro_skip;
 use crate::progressive::{ANALYZED_TABLE, BIG_FLOW, SETTING_TABLE, SMALL_FLOW};
 use crate::rsizetable::TABLE_PATH;
 use crate::slice::data::Data;
@@ -29,9 +30,11 @@ pub fn list(d: &Data) -> Vec<String> {
         out.insert(s.to_string());
     }
     out.extend(fast::FILES.iter().map(|s| s.to_string()));
+    out.insert(intro_skip::FILE.to_string());
     out.extend(SPOTS.iter().map(|s| s.flow.to_string()));
     out.extend(song_models::SONGS.iter().map(|s| song_models::pack_of(s)));
     out.extend(bomb_lift::PACKS.iter().map(|s| bomb_lift::pack_of(s)));
+    out.insert(crate::dungeon_credit::POUCH_TABLE.to_string());
     out.insert("Pack/ZsDic.pack.zs".to_string());
     out.into_iter().collect()
 }

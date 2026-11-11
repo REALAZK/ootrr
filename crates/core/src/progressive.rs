@@ -368,9 +368,12 @@ pub struct Built {
     pub grown: usize,
 }
 
-pub fn stage(rf: &mut Romfs, used: &BS<(String, Size)>, scale: Option<(f32, i32)>, kids: &[(String, String)]) -> Res<Vec<Out>> {
+pub fn stage(rf: &mut Romfs, used: &BS<(String, Size)>, scale: Option<(f32, i32)>, kids: &[(String, String)], keys: &[&str]) -> Res<Vec<Out>> {
     let mut outs: Vec<Out> = Vec::new();
-    let sizes: BS<Size> = used.iter().map(|u| u.1).collect();
+    let mut sizes: BS<Size> = used.iter().map(|u| u.1).collect();
+    if !keys.is_empty() {
+        sizes.extend([Size::Small, Size::Big]);
+    }
     for s in &sizes {
         let fams: Vec<&String> = used.iter().filter(|u| u.1 == *s).map(|u| &u.0).collect();
         outs.push(rewrite(rf, s.flow(), |raw: &[u8]| {
@@ -378,6 +381,9 @@ pub fn stage(rf: &mut Romfs, used: &BS<(String, Size)>, scale: Option<(f32, i32)
             let flow: &mut Flow = bf.flows.first_mut().ok_or(Error::Format("progressive: the flow file has no flow"))?;
             for fam in &fams {
                 wrap(flow, fam)?;
+            }
+            if !keys.is_empty() {
+                crate::dungeon_credit::credit_keys(flow, keys, *s == Size::Big)?;
             }
             if let Some((factor, min)) = scale {
                 scale_waits(&mut bf, factor, min);
@@ -392,6 +398,12 @@ pub fn stage(rf: &mut Romfs, used: &BS<(String, Size)>, scale: Option<(f32, i32)
             for (fam, s) in used {
                 let e: Option<String> = if analyzed { None } else { Some(entry_name(fam)) };
                 m.entry(*s).or_default().push((event_name(fam, *s), e));
+            }
+            for s in [Size::Small, Size::Big].into_iter().filter(|_| !keys.is_empty()) {
+                for d in keys {
+                    let e: Option<String> = if analyzed { None } else { Some(crate::dungeon_credit::entry_name(d)) };
+                    m.entry(s).or_default().push((crate::dungeon_credit::event_name(d, s), e));
+                }
             }
             m
         };
@@ -455,7 +467,7 @@ pub fn build(romfs: &P, load: &P, name: &str, plans: &[(String, Vec<u64>)], o: &
             return Err(Error::Msg(format!("no chest with hash {h} and a Drop__DropActor field")));
         }
     }
-    outs.extend(stage(&mut rf, &used, o.scale, &[])?);
+    outs.extend(stage(&mut rf, &used, o.scale, &[], &[])?);
     if o.grants {
         let d: Data = Data::load()?;
         let mut gs: Vec<Grant> = Vec::new();

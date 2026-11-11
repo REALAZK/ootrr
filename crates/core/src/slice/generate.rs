@@ -7,7 +7,7 @@ use crate::progressive::family_of;
 use crate::rng::Rng;
 use crate::settings::Settings;
 use crate::settings::seed::SeedFile;
-use crate::slice::data::Data;
+use crate::slice::data::{Data, State};
 use crate::slice::fill::{changed, fill, vanilla_place};
 use crate::slice::logic::world_with;
 use crate::slice::pick::{pick, scoped, Pick};
@@ -66,10 +66,14 @@ pub fn allowed(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> bool {
             let dungeon: bool = w.regions[w.locs[l].region].dungeon.is_some();
             let place: bool = match p.small {
                 Keep::AnyDungeon => dungeon,
-                Keep::Overworld => !dungeon,
                 _ => true,
             };
-            place && i.dungeon.is_some() && d.flow.by_name(name).is_none() && d.cat.by_name(name).is_some_and(|c| c.kind == "chest")
+            place
+                && i.dungeon.is_some()
+                && d.flow.by_name(name).is_none()
+                && !d.special(name)
+                && d.state_of(name) == Some(State::Eligible)
+                && d.cat.by_name(name).is_some_and(|c| c.kind == "chest")
         }
         Some(i) => {
             let name: &str = &w.locs[l].name;
@@ -364,6 +368,60 @@ mod tests {
             for (loc, item) in &g.seed_file.placements {
                 let l: LocId = w.loc(loc).unwrap();
                 assert!(allowed(&d, &w, &p, w.item(item).unwrap(), l), "{item} at {loc}");
+            }
+        }
+    }
+
+    fn rebuilt(d: &Data, p: &Plan, placements: &BM<String, String>) -> bool {
+        let w: World = world_with(d, &p.logic()).unwrap();
+        let mut pl: Placement = vanilla_place(&w, d).unwrap();
+        for (loc, item) in placements {
+            pl.put(w.loc(loc).unwrap(), w.item(item).unwrap());
+        }
+        crate::search::explore(&w, &pl, &[]).won()
+    }
+
+    #[test]
+    fn roaming_small_keys_move_between_dungeons_and_every_seed_is_beatable() {
+        let d: Data = Data::load().unwrap();
+        let mut left: usize = 0;
+        for mode in ["any_dungeon", "keysanity"] {
+            let s: Settings = with(&[("shuffle_chests", "all"), ("shuffle_smallkeys", mode)]);
+            let p: Plan = plan(&s).unwrap();
+            let w: World = world_with(&d, &p.logic()).unwrap();
+            for n in 0..6 {
+                let g: Generated = generate_data(&d, &s, &format!("roam {mode} {n}"), &GenOpts::default()).unwrap();
+                assert!(rebuilt(&d, &p, &g.seed_file.placements), "{mode} {n} is not beatable");
+                for (loc, item) in &g.seed_file.placements {
+                    let Some(i) = d.item(item).filter(|i| i.kind == "SmallKey") else {
+                        continue;
+                    };
+                    let here: Option<&str> = w.regions[w.locs[w.loc(loc).unwrap()].region].dungeon.as_deref();
+                    if mode == "any_dungeon" {
+                        assert!(here.is_some(), "{item} at {loc} is outside a dungeon");
+                    }
+                    if here != i.dungeon.as_deref() {
+                        left += 1;
+                    }
+                }
+            }
+        }
+        assert!(left > 10, "keys never left their own dungeon, {left}");
+    }
+
+    #[test]
+    fn keys_stay_home_when_not_asked_to_roam() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = with(&[("shuffle_chests", "all")]);
+        let p: Plan = plan(&s).unwrap();
+        let w: World = world_with(&d, &p.logic()).unwrap();
+        for n in 0..3 {
+            let g: Generated = generate_data(&d, &s, &format!("home {n}"), &GenOpts::default()).unwrap();
+            for (loc, item) in &g.seed_file.placements {
+                if let Some(i) = d.item(item).filter(|i| i.kind == "SmallKey") {
+                    let here: Option<&str> = w.regions[w.locs[w.loc(loc).unwrap()].region].dungeon.as_deref();
+                    assert_eq!(here, i.dungeon.as_deref(), "{item} at {loc}");
+                }
             }
         }
     }

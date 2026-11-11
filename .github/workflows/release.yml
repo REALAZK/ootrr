@@ -164,9 +164,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           NOTES: |
-            Playtest build, see the changelog channel for what is new. Much of it is untested in the game.
+            Playtest build: skips the intro, fixes seeds that could lock dungeon keys, adds a plandomizer and small keys anywhere (experimental).
 
-            OOTRR ${{ needs.version.outputs.version }} shuffles chests, and optionally boss hearts, songs, story and NPC rewards, with gossip hints, faster pickups, a start reward and bombs that work without Goron's Bracelet. All new options are off by default and experimental.
+            OOTRR ${{ needs.version.outputs.version }} shuffles chests, and optionally boss hearts, songs, story and NPC rewards, with gossip hints, faster pickups, a start reward, an open Kokiri Forest, a plandomizer and small keys in any dungeon or anywhere. The new game intro is skipped by default. Most options other than the intro skip are off by default and experimental.
 
             No game files, keys or dumps are included. You need your own extracted game files.
 
