@@ -125,8 +125,8 @@
     # Enemy killing
     "can_kill_armos": "has_soul(Armos) and (is_adult or Sticks or has_explosives or ((Nuts or Boomerang) and (Kokiri_Sword or Slingshot)) or can_use(Megaton_Hammer))",
     "can_kill_octorok": "has_soul(Octorok) and ((is_child and (Boomerang or Slingshot or Deku_Shield)) or (is_adult and (Bow or Hookshot or Hylian_Shield or can_use(Slingshot) or can_use(Boomerang))))",
-    "can_kill_octorok_with_bombs": "has_soul(Octorok) and (Bomb_Bag or (is_child and (Boomerang or Slingshot or Deku_Shield)) or (is_adult and (Bow or Hookshot or Hylian_Shield or can_use(Slingshot) or can_use(Boomerang))))",
-    "can_kill_octorok_with_bombs_or_magic": "has_soul(Octorok) and (Bomb_Bag or (is_child and (Boomerang or Slingshot or Deku_Shield)) or (is_adult and (Magic_Meter or Bow or Hookshot or Hylian_Shield or can_use(Slingshot) or can_use(Boomerang))))",
+    "can_kill_octorok_with_bombs": "has_soul(Octorok) and (Bombs or (is_child and (Boomerang or Slingshot or Deku_Shield)) or (is_adult and (Bow or Hookshot or Hylian_Shield or can_use(Slingshot) or can_use(Boomerang))))",
+    "can_kill_octorok_with_bombs_or_magic": "has_soul(Octorok) and (Bombs or (is_child and (Boomerang or Slingshot or Deku_Shield)) or (is_adult and (Magic_Meter or Bow or Hookshot or Hylian_Shield or can_use(Slingshot) or can_use(Boomerang))))",
     "can_kill_octorok_with_explosives_or_magic": "has_soul(Octorok) and (has_explosives or (is_child and (Boomerang or Slingshot or Deku_Shield)) or (is_adult and (Magic_Meter or Bow or Hookshot or Hylian_Shield or can_use(Slingshot) or can_use(Boomerang))))",
     "can_kill_beamos": "has_soul(Beamos) and has_explosives",
     "can_kill_beamos_with_bomb_flower": "has_soul(Beamos) and (has_explosives or Progressive_Strength_Upgrade)",

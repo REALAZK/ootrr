@@ -46,6 +46,23 @@ impl Pack {
         Ok(Pack { root })
     }
 
+    pub fn clean(load: &P, title: &str, name: &str) -> Res<()> {
+        if !is_title(title) {
+            return Err(Error::BadPath(title.to_string()));
+        }
+        if !is_name(name) {
+            return Err(Error::BadPath(name.to_string()));
+        }
+        let root: PB = load.join(title.to_ascii_uppercase()).join(name);
+        for d in ["romfs", "exefs"] {
+            let p: PB = root.join(d);
+            if p.is_dir() {
+                fs::remove_dir_all(&p)?;
+            }
+        }
+        Ok(())
+    }
+
     pub fn write_exefs(&self, r: &str, data: &[u8]) -> Res<PB> {
         self.put("exefs", r, data)
     }
@@ -72,6 +89,19 @@ mod tests {
         let pb: PB = std::env::temp_dir().join(format!("ootrr_{}_{}", tag, std::process::id()));
         let _ = fs::remove_dir_all(&pb);
         pb
+    }
+
+    #[test]
+    fn clean_empties_the_two_mod_folders_and_nothing_else() {
+        let load: PB = tmp("clean");
+        let pk: Pack = Pack::create(&load, "0400486024dec000", "Test Mod").unwrap();
+        pk.write_romfs("A/b.bin", b"x").unwrap();
+        fs::write(pk.root.join("notes.txt"), b"keep").unwrap();
+        Pack::clean(&load, "0400486024dec000", "Test Mod").unwrap();
+        assert!(!pk.root.join("romfs").exists());
+        assert!(pk.root.join("notes.txt").is_file());
+        assert!(Pack::clean(&load, "0400486024dec000", "..").is_err());
+        let _ = fs::remove_dir_all(&load);
     }
 
     #[test]
