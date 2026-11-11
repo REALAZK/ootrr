@@ -39,13 +39,18 @@ export function render() {
     const now = match_preset(schema, state.vals);
     fill(
       preset_box,
-      schema.presets.map((p) =>
-        h(
+      schema.presets.map((p) => {
+        const ok = p.supported !== false;
+        const gaps = p.unsupported || [];
+        return h(
           "button",
           {
             type: "button",
-            class: "preset",
-            title: p.tip,
+            class: ok ? "preset" : "preset unsupported",
+            title: ok ? p.tip : `Not available yet. This build cannot apply:
+${gaps.join("
+")}`,
+            disabled: !ok,
             "aria-pressed": now === p.id ? "true" : "false",
             onclick: () => {
               state.vals = from_preset(schema, p);
@@ -54,9 +59,9 @@ export function render() {
             },
           },
           h("b", null, p.name),
-          h("span", null, p.tip.split(". ")[0]),
-        ),
-      ),
+          h("span", null, ok ? p.tip.split(". ")[0] : "Not available yet in this build."),
+        );
+      }),
     );
   }
 

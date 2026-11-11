@@ -177,6 +177,7 @@ details > summary { cursor: pointer; min-height: 44px; display: flex; align-item
 .preset-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); margin-bottom: 12px; }
 .preset { text-align: left; appearance: none; font: inherit; color: var(--text); cursor: pointer; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-height: 44px; }
 .preset[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.preset:disabled { opacity: 0.5; cursor: not-allowed; }
 .preset b { display: block; }
 .preset span { color: var(--muted); font-size: 0.82rem; }
 
