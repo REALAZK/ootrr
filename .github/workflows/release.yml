@@ -164,9 +164,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           NOTES: |
-            OOTRR ${{ needs.version.outputs.version }}
+            Hotfix: 0.2.0 could get stuck on the Loading screen, this fixes it. Playtest build, much of it is untested in the game.
 
-            This is an early version. It shuffles chests, and optionally some story and NPC rewards. The reward option is not tested in the game yet.
+            OOTRR ${{ needs.version.outputs.version }} shuffles chests, and optionally boss hearts, songs, story and NPC rewards, with gossip hints, faster pickups, a start reward and bombs that work without Goron's Bracelet. All new options are off by default and experimental.
 
             No game files, keys or dumps are included. You need your own extracted game files.
 

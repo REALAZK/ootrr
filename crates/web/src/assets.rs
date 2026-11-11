@@ -3,7 +3,7 @@ const JS: &str = "text/javascript; charset=utf-8";
 const CSS: &str = "text/css; charset=utf-8";
 
 #[cfg(test)]
-pub const JS_FILES: [&str; 16] = [
+pub const JS_FILES: [&str; 17] = [
     "/app.js",
     "/js/dom.js",
     "/js/api.js",
@@ -20,6 +20,7 @@ pub const JS_FILES: [&str; 16] = [
     "/js/result.js",
     "/js/theme.js",
     "/js/update.js",
+    "/js/report.js",
 ];
 
 pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
@@ -43,6 +44,7 @@ pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
         "/js/result.js" => (JS, include_str!("../assets/js/result.js")),
         "/js/theme.js" => (JS, include_str!("../assets/js/theme.js")),
         "/js/update.js" => (JS, include_str!("../assets/js/update.js")),
+        "/js/report.js" => (JS, include_str!("../assets/js/report.js")),
         _ => return None,
     };
     Some(r)
@@ -74,6 +76,26 @@ mod tests {
         assert!(!h.contains("style=") && !h.contains("onclick") && !h.contains("<style"));
         assert_eq!(h.matches("<script").count(), 1);
         assert!(h.contains("<script type=\"module\" src=\"/app.js\">"));
+    }
+
+    #[test]
+    fn every_script_parses_as_a_module_when_node_is_installed() {
+        let probe = std::process::Command::new("node").arg("--version").output();
+        if probe.map(|o| !o.status.success()).unwrap_or(true) {
+            return;
+        }
+        let dir = std::env::temp_dir().join(format!("ootrr_js_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut all: Vec<&str> = JS_FILES.to_vec();
+        all.push("/app.js");
+        for (i, p) in all.iter().enumerate() {
+            let f = dir.join(format!("m{i}.mjs"));
+            std::fs::write(&f, get(p).unwrap().1).unwrap();
+            let o = std::process::Command::new("node").arg("--check").arg(&f).output().unwrap();
+            assert!(o.status.success(), "{p}: {}", String::from_utf8_lossy(&o.stderr));
+        }
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

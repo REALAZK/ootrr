@@ -1,4 +1,5 @@
 import { h, fill, notice, copy, save_text } from "./dom.js";
+import { button as report_button } from "./report.js";
 import { post } from "./api.js";
 import { state, touch } from "./store.js";
 import { effective, match_preset, changed } from "./rules.js";
@@ -55,6 +56,7 @@ export function render() {
           { class: "row" },
           h("button", { type: "button", class: "btn primary", onclick: () => save_text(res.file_name || "seed.ootrr", res.seed_text) }, "Download seed file"),
           h("button", { type: "button", class: "btn", onclick: () => copy(res.settings_string) }, "Copy settings string"),
+          report_button(res),
           h("button", { type: "button", class: "btn", onclick: () => go("result") }, "Continue to build"),
         ),
       ),

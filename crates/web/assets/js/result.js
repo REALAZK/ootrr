@@ -3,6 +3,7 @@ import { get, post } from "./api.js";
 import { state } from "./store.js";
 import { go } from "./nav.js";
 import { name_ok } from "./setup.js";
+import { button as report_button } from "./report.js";
 
 const SYMS = { done: ["ok", "✓"], failed: ["bad", "✗"], unavailable: ["wait", "–"], running: ["wait", "…"] };
 
@@ -52,7 +53,10 @@ export function render() {
     for (let i = 0; i < 600; i++) {
       const job = await get(`/api/jobs/${id}`);
       fill(out, h("section", { class: "card" }, h("h2", null, "Build"), job.finished ? null : h("progress", { max: "100", value: String(job.percent), "aria-label": "Build progress" }), steps_view(job), job.message ? notice(job.state === "failed" ? "error" : job.state === "done" ? "ok" : "info", job.message) : null));
-      if (job.finished) return;
+      if (job.finished) {
+        state.build_note = job.message || job.state;
+        return;
+      }
       await new Promise((r) => setTimeout(r, 400));
     }
   }
@@ -103,7 +107,7 @@ export function render() {
       h("h2", null, "Seed"),
       h("dl", { class: "kv" }, h("dt", null, "Seed"), h("dd", { class: "mono" }, res.seed), h("dt", null, "Checksum"), h("dd", { class: "mono" }, res.checksum), h("dt", null, "Placements"), h("dd", null, String(res.placement_count))),
       res.placements_ready ? null : notice("warn", "This seed file has no item placements yet, so a built mod would change nothing."),
-      h("div", { class: "row" }, h("button", { type: "button", class: "btn", onclick: () => save_text(res.file_name || "seed.ootrr", res.seed_text) }, "Download seed file")),
+      h("div", { class: "row" }, h("button", { type: "button", class: "btn", onclick: () => save_text(res.file_name || "seed.ootrr", res.seed_text) }, "Download seed file"), report_button(res)),
     ),
     h(
       "section",

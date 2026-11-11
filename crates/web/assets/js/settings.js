@@ -47,9 +47,7 @@ export function render() {
           {
             type: "button",
             class: ok ? "preset" : "preset unsupported",
-            title: ok ? p.tip : `Not available yet. This build cannot apply:
-${gaps.join("
-")}`,
+            title: ok ? p.tip : `Not available yet. This build cannot apply:\n${gaps.join("\n")}`,
             disabled: !ok,
             "aria-pressed": now === p.id ? "true" : "false",
             onclick: () => {
