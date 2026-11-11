@@ -64,7 +64,7 @@ const USAGE: &str = "usage:
   ootrr calibrate <romfs_root> <load_dir> <mod_name> <area> [--catalog <json>] [--dry]
   ootrr check-msbt <romfs_root> [language ... | all]
   ootrr settings-dump [--compact] [--presets <dir>] [--decode <settings_string>]
-  ootrr serve [--port N] [--lan] [--no-open]
+  ootrr serve [--port N] [--lan] [--no-open] [--no-update-check]
   ootrr generate <settings_string_or_preset_or_file> <seed> <out.ootrr> [--spoiler <file>]
   ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name>
   ootrr slice-scan <romfs_root> <out_json>

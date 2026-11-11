@@ -20,5 +20,6 @@ mod router;
 pub mod server;
 mod state;
 mod token;
+mod update;
 
 pub use server::{DEFAULT_PORT, Handle, Opts, start};

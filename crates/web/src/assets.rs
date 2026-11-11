@@ -3,7 +3,7 @@ const JS: &str = "text/javascript; charset=utf-8";
 const CSS: &str = "text/css; charset=utf-8";
 
 #[cfg(test)]
-pub const JS_FILES: [&str; 15] = [
+pub const JS_FILES: [&str; 16] = [
     "/app.js",
     "/js/dom.js",
     "/js/api.js",
@@ -19,6 +19,7 @@ pub const JS_FILES: [&str; 15] = [
     "/js/viewer.js",
     "/js/result.js",
     "/js/theme.js",
+    "/js/update.js",
 ];
 
 pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
@@ -41,6 +42,7 @@ pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
         "/js/viewer.js" => (JS, include_str!("../assets/js/viewer.js")),
         "/js/result.js" => (JS, include_str!("../assets/js/result.js")),
         "/js/theme.js" => (JS, include_str!("../assets/js/theme.js")),
+        "/js/update.js" => (JS, include_str!("../assets/js/update.js")),
         _ => return None,
     };
     Some(r)

@@ -4,7 +4,7 @@ use crate::error::{Fail, Hr};
 use crate::req::Req;
 use crate::resp::Resp;
 use crate::state::Shared;
-use crate::{api_build, api_fs, api_generate, api_info, api_open, api_seed, api_settings, api_validate, assets, body};
+use crate::{update, api_build, api_fs, api_generate, api_info, api_open, api_seed, api_settings, api_validate, assets, body};
 
 fn need(r: &Req, m: &str) -> Hr<()> {
     if r.method == m {
@@ -29,6 +29,10 @@ fn api(sh: &Shared, r: &Req) -> Hr<Resp> {
         "/api/info" => {
             need(r, "GET")?;
             api_info::info(sh)
+        }
+        "/api/update" => {
+            need(r, "GET")?;
+            update::check(sh)
         }
         "/api/schema" => {
             need(r, "GET")?;
@@ -95,10 +99,9 @@ pub fn handle(sh: &Shared, r: &Req) -> Resp {
 mod tests {
     use super::*;
     use crate::guard::Guard;
-    use crate::jobs::Jobs;
 
     fn sh() -> Shared {
-        Shared { guard: Guard { port: 5000, token: "tok".into(), lan: false }, jobs: Jobs::new() }
+        Shared::new(Guard { port: 5000, token: "tok".into(), lan: false }, false)
     }
 
     fn rq(method: &str, path: &str, extra: &[(&str, &str)], body: &str) -> Req {

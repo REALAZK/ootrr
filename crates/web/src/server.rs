@@ -9,7 +9,6 @@ use ootrr_core::error::{Error, Res};
 
 use crate::error::Fail;
 use crate::guard::Guard;
-use crate::jobs::Jobs;
 use crate::req::{self, Limits};
 use crate::resp::{self, Resp};
 use crate::router;
@@ -25,6 +24,7 @@ pub struct Opts {
     pub port: u16,
     pub lan: bool,
     pub fallback: bool,
+    pub updates: bool,
 }
 
 pub struct Handle {
@@ -98,7 +98,7 @@ pub fn start(o: &Opts) -> Res<Handle> {
     let l: TcpListener = bind(o)?;
     let port: u16 = l.local_addr()?.port();
     let tok: String = token::token();
-    let sh: Arc<Shared> = Arc::new(Shared { guard: Guard { port, token: tok.clone(), lan: o.lan }, jobs: Jobs::new() });
+    let sh: Arc<Shared> = Arc::new(Shared::new(Guard { port, token: tok.clone(), lan: o.lan }, o.updates));
     let stop: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
     let flag: Arc<AtomicBool> = Arc::clone(&stop);
     let active: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));

@@ -29,7 +29,7 @@ mod tests {
     }
 
     fn up() -> Handle {
-        server::start(&Opts { port: 0, lan: false, fallback: false }).unwrap()
+        server::start(&Opts { port: 0, lan: false, fallback: false, updates: false }).unwrap()
     }
 
     fn raw(port: u16, bytes: &[u8]) -> Out {
@@ -368,9 +368,9 @@ mod tests {
     #[test]
     fn binds_loopback_only_by_default_and_the_fallback_port_works() {
         let mut a: Handle = up();
-        let b: Result<Handle, _> = server::start(&Opts { port: a.port, lan: false, fallback: false });
+        let b: Result<Handle, _> = server::start(&Opts { port: a.port, lan: false, fallback: false, updates: false });
         assert!(b.is_err());
-        let mut c: Handle = server::start(&Opts { port: a.port, lan: false, fallback: true }).unwrap();
+        let mut c: Handle = server::start(&Opts { port: a.port, lan: false, fallback: true, updates: false }).unwrap();
         assert_ne!(c.port, a.port);
         assert_eq!(get(&c, "/api/info").status, 200);
         assert!(c.url().starts_with("http://127.0.0.1:"));
@@ -381,7 +381,7 @@ mod tests {
 
     #[test]
     fn lan_mode_still_needs_the_token_and_an_ip_host() {
-        let mut h: Handle = server::start(&Opts { port: 0, lan: true, fallback: false }).unwrap();
+        let mut h: Handle = server::start(&Opts { port: 0, lan: true, fallback: false, updates: false }).unwrap();
         let port: u16 = h.port;
         let t: String = format!("GET /api/info HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n\r\n");
         assert_eq!(raw(port, t.as_bytes()).status, 401);

@@ -6,10 +6,11 @@ struct Args {
     explicit: bool,
     lan: bool,
     open: bool,
+    updates: bool,
 }
 
 fn parse(a: &[String]) -> Res<Args> {
-    let mut o: Args = Args { port: DEFAULT_PORT, explicit: false, lan: false, open: true };
+    let mut o: Args = Args { port: DEFAULT_PORT, explicit: false, lan: false, open: true, updates: true };
     let mut i: usize = 0;
     while i < a.len() {
         match a[i].as_str() {
@@ -21,6 +22,7 @@ fn parse(a: &[String]) -> Res<Args> {
             }
             "--lan" => o.lan = true,
             "--no-open" => o.open = false,
+            "--no-update-check" => o.updates = false,
             other => return Err(Error::Msg(format!("unknown option {other}"))),
         }
         i += 1;
@@ -30,7 +32,7 @@ fn parse(a: &[String]) -> Res<Args> {
 
 pub fn run(a: &[String]) -> Res<()> {
     let o: Args = parse(a)?;
-    let mut h: Handle = start(&Opts { port: o.port, lan: o.lan, fallback: !o.explicit })?;
+    let mut h: Handle = start(&Opts { port: o.port, lan: o.lan, fallback: !o.explicit, updates: o.updates })?;
     let url: String = h.url();
     println!("OOTRR is running at {url}");
     println!("Keep this window open. Press Ctrl+C to stop.");

@@ -23,6 +23,7 @@ pub fn info(sh: &Shared) -> Json {
         .with("os", os.into())
         .with("sep", std::path::MAIN_SEPARATOR.to_string().into())
         .with("lan", sh.guard.lan.into())
+        .with("update_check", sh.updates.into())
         .with("title_id", TITLE_ID.into())
 }
 
@@ -55,11 +56,10 @@ pub fn schema_reply() -> Hr<Json> {
 mod tests {
     use super::*;
     use crate::guard::Guard;
-    use crate::jobs::Jobs;
 
     #[test]
     fn info_has_the_basics_and_no_token() {
-        let sh: Shared = Shared { guard: Guard { port: 1, token: "tok123".into(), lan: false }, jobs: Jobs::new() };
+        let sh: Shared = Shared::new(Guard { port: 1, token: "tok123".into(), lan: false }, true);
         let j: Json = info(&sh);
         assert_eq!(j.get("lan").and_then(|x| x.as_bool()), Some(false));
         assert!(j.get("version").is_some());

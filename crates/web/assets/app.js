@@ -7,6 +7,7 @@ import { render as settings } from "/js/settings.js";
 import { render as generate } from "/js/generate.js";
 import { render as result } from "/js/result.js";
 import { start as start_theme } from "/js/theme.js";
+import { start as start_update } from "/js/update.js";
 
 function fail(msg) {
   fill($("#main"), h("h1", null, "OOTRR"), notice("error", msg));
@@ -29,6 +30,7 @@ async function boot() {
   register("generate", generate);
   register("result", result);
   start();
+  start_update();
   if (here() !== "setup") {
     await probe();
     show();
