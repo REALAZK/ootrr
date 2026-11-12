@@ -446,6 +446,7 @@ mod tests {
         assert!(plan(&s).err().unwrap().to_string().contains("ocarina"));
     }
 
+    #[test]
     fn excluded_locations_pass_through() {
         let mut s: Settings = Settings::default();
         s.set("disabled_locations", Value::set(&["ZD Chest"])).unwrap();

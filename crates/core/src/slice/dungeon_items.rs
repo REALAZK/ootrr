@@ -76,6 +76,10 @@ pub fn free(k: Keep) -> bool {
     !matches!(k, Keep::Vanilla | Keep::Dungeon)
 }
 
+pub fn credited(k: Keep) -> bool {
+    !matches!(k, Keep::Vanilla)
+}
+
 pub fn handles(p: &Plan, kind: &str) -> bool {
     keep_of(p, kind).is_some_and(free)
 }
@@ -124,7 +128,7 @@ pub fn chest_ok(d: &Data, name: &str) -> bool {
 }
 
 pub fn blocked(d: &Data, p: &Plan, kind: &str, name: &str) -> bool {
-    Kind::of(kind).is_some_and(|k| keeps(p, k).into_iter().any(free)) && d.keeps_event(name)
+    Kind::of(kind).is_some_and(|k| keeps(p, k).into_iter().any(credited)) && d.keeps_event(name)
 }
 
 pub fn start_items(d: &Data, p: &Plan) -> Vec<String> {
@@ -176,8 +180,8 @@ fn keeps(p: &Plan, k: Kind) -> Vec<Keep> {
 }
 
 pub fn grants(d: &Data, seed: &SeedFile, p: &Plan) -> Res<Grants> {
-    let skip: Vec<Kind> = KINDS.iter().copied().filter(|k| keeps(p, *k).into_iter().any(free)).collect();
-    let sweep: Vec<Kind> = KINDS.iter().copied().filter(|k| keeps(p, *k).into_iter().any(|x| free(x) && x != Keep::Start)).collect();
+    let skip: Vec<Kind> = KINDS.iter().copied().filter(|k| keeps(p, *k).into_iter().any(credited)).collect();
+    let sweep: Vec<Kind> = KINDS.iter().copied().filter(|k| keeps(p, *k).into_iter().any(|x| credited(x) && x != Keep::Start)).collect();
     let mut credits: BM<u64, (Kind, &'static str)> = BM::new();
     for (loc, item) in &seed.placements {
         let Some(i) = d.item(item) else {
@@ -306,14 +310,18 @@ mod tests {
     }
 
     #[test]
-    fn defaults_add_no_flags_notes_or_grants() {
+    fn defaults_add_no_flags_or_notes_but_credit_every_boss_key_map_and_compass_chest() {
         let p: Plan = plan(&Settings::default()).unwrap();
         assert!(start_flags(&p).is_empty());
         assert!(notes(p.boss, p.ganon, p.map).is_empty());
         assert!(!handles(&p, "BossKey") && !handles(&p, "Map") && !handles(&p, "GanonBossKey"));
         let d: Data = Data::load().unwrap();
         let g: Generated = generate_data(&d, &Settings::default(), "grant default", &GenOpts::default()).unwrap();
-        assert_eq!(grants(&d, &g.seed_file, &p).unwrap(), Grants::default());
+        let gr: Grants = grants(&d, &g.seed_file, &p).unwrap();
+        assert!(gr.active());
+        assert_eq!(gr.skip.len(), KINDS.len());
+        assert_eq!(gr.sweep.len(), KINDS.len());
+        assert!(!gr.credits.is_empty());
         assert!(start_items(&d, &p).is_empty());
     }
 
@@ -530,6 +538,15 @@ mod tests {
         let o: Settings = with(&[("shuffle_bosskeys", "overworld"), ("shuffle_ganon_bosskey", "overworld"), ("shuffle_mapcompass", "keysanity")]);
         let (out, _): (usize, usize) = built_and_checked(&root, &o, "dungeon items overworld", "OOTRR Dungeon Items Overworld Test");
         assert!(out >= 6, "{out}");
+    }
+
+    #[test]
+    fn a_default_build_credits_every_boss_key_map_and_compass_chest() {
+        let Some(root) = dump() else {
+            return;
+        };
+        let (_, entries): (usize, usize) = built_and_checked(&root, &Settings::default(), "default credit", "OOTRR Default Credit Test");
+        assert!(entries > 10, "{entries}");
     }
 
     #[test]
