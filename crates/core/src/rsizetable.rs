@@ -1,8 +1,8 @@
-use std::path::Path as P;
+use std::path::{Path as P, PathBuf as PB};
 
 use crate::error::{Error, Res};
 use crate::romfs::Romfs;
-use crate::zs;
+use crate::zs::{self, Zs};
 
 pub const MAGIC: [u8; 6] = *b"RESTBL";
 pub const HEAD: usize = 22;
@@ -184,6 +184,42 @@ impl Rst {
         }
     }
 
+    /// Keep the larger size for every entry in `other`. Returns how many entries grew or were added.
+    pub fn absorb(&mut self, other: &Rst) -> usize {
+        let mut n: usize = 0;
+        for &(h, sz) in &other.crc {
+            match self.crc.binary_search_by_key(&h, |e| e.0) {
+                Ok(i) => {
+                    if self.crc[i].1 < sz {
+                        self.crc[i].1 = sz;
+                        n += 1;
+                    }
+                }
+                Err(i) => {
+                    self.crc.insert(i, (h, sz));
+                    n += 1;
+                }
+            }
+        }
+        if other.name_len == self.name_len {
+            for (name, sz) in &other.names {
+                match self.names.binary_search_by(|e| e.0.cmp(name)) {
+                    Ok(i) => {
+                        if self.names[i].1 < *sz {
+                            self.names[i].1 = *sz;
+                            n += 1;
+                        }
+                    }
+                    Err(i) => {
+                        self.names.insert(i, (name.clone(), *sz));
+                        n += 1;
+                    }
+                }
+            }
+        }
+        n
+    }
+
     pub fn grow(&mut self, path: &str, old_real: u64, new_real: u64, margin: u32) -> Res<Option<u32>> {
         let cur: u32 = match self.get(path) {
             Some(c) => c,
@@ -202,6 +238,37 @@ impl Rst {
 
 pub fn load(rf: &mut Romfs) -> Res<Rst> {
     Rst::parse(&rf.read_zs(TABLE_PATH)?)
+}
+
+/// Hookshot serves one size table, from the mod whose name sorts last. Raise this table with every other enabled mod's entries so those files still fit.
+/// The second value is the mods whose size table was present but could not be read.
+pub fn fold_mods(table: &mut Rst, mods: &P, skip: &str) -> Res<(usize, Vec<String>)> {
+    let rd: std::fs::ReadDir = match std::fs::read_dir(mods) {
+        Ok(r) => r,
+        Err(_) => return Ok((0, Vec::new())),
+    };
+    let mut n: usize = 0;
+    let mut unread: Vec<String> = Vec::new();
+    for e in rd.flatten() {
+        let name: String = e.file_name().to_string_lossy().into_owned();
+        if name == skip || name.starts_with(['_', '-', '.']) || !e.file_type().map(|t| t.is_dir()).unwrap_or(false) {
+            continue;
+        }
+        let p: PB = e.path().join("romfs").join(TABLE_PATH);
+        let raw: Vec<u8> = match std::fs::read(&p) {
+            Ok(b) if !b.is_empty() => b,
+            _ => continue,
+        };
+        let other: Rst = match Zs::new().decompress(&raw).and_then(|b| Rst::parse(&b)) {
+            Ok(t) => t,
+            Err(_) => {
+                unread.push(name);
+                continue;
+            }
+        };
+        n += table.absorb(&other);
+    }
+    Ok((n, unread))
 }
 
 fn pick(v: &[String], n: usize) -> Vec<&String> {
@@ -370,6 +437,21 @@ mod tests {
         assert_eq!(t.grow("a.bin", 100, 90, 64).unwrap(), Some(10));
         assert_eq!(t.grow("a.bin", 100, 200, 64).unwrap(), Some(10 + 224 - 128 + 64));
         assert_eq!(t.grow("nope.bin", 1, 2, 0).unwrap(), None);
+    }
+
+    #[test]
+    fn absorb_keeps_the_larger_size_and_inserts_a_missing_hash() {
+        let mut a: Rst = table();
+        let mut b: Rst = table();
+        let had: u32 = a.get("a.bin").unwrap();
+        b.set_size("a.bin", had + 50).unwrap();
+        b.set_size("fresh.bin", 7).unwrap();
+        assert_eq!(a.absorb(&b), 2);
+        assert_eq!(a.get("a.bin"), Some(had + 50));
+        assert_eq!(a.get("fresh.bin"), Some(7));
+        let (sorted, _): (bool, bool) = a.sorted();
+        assert!(sorted);
+        assert_eq!(a.absorb(&b), 0);
     }
 
     #[test]

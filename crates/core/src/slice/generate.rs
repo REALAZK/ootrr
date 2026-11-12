@@ -175,6 +175,12 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
         let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
         w.start.push((i, 1));
     }
+    for name in &p.gear {
+        let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
+        if !w.start.iter().any(|(id, _)| *id == i) {
+            w.start.push((i, 1));
+        }
+    }
     let vanilla: Placement = vanilla_place(&w, d)?;
     let pk: Pick = pick(d, &w, &p);
     let ok = |it: ItemId, l: LocId| allowed(d, &w, &p, it, l);

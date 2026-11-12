@@ -9,6 +9,6 @@ pub mod plando;
 pub mod scan;
 pub mod support;
 
-pub use edit::{build, BuildCounts, Built, ChestLine};
+pub use edit::{build, build_for, BuildCounts, Built, ChestLine};
 pub use generate::{generate, generate_with, plando_options, Counts, GenOpts, Generated};
 pub use scan::scan;

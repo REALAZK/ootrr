@@ -27,7 +27,9 @@ function instructions() {
     h(
       "ol",
       null,
-      h("li", null, `Build the mod. It is written to the mod folder you chose, inside a folder named ${state.info.title_id} and then your mod name.`),
+      h("li", null, state.paths.host === "hookshot" || state.paths.host === "nx2navi"
+        ? "Build the mod. It is written as mods/<name>/romfs in the folder you chose. For Hookshot, name it randomizer-<seed> so co-op can match the seed."
+        : `Build the mod. It is written to the mod folder you chose, inside a folder named ${state.info.title_id} and then your mod name.`),
       h("li", null, "Make sure that mod folder is the one your emulator loads mods from."),
       h("li", null, "In the emulator, open the game's properties and tick your mod in the add-ons list."),
       h("li", null, "Start the game from a fresh save."),
@@ -66,7 +68,7 @@ export function render() {
     btn.disabled = true;
     fill(out, h("p", { class: "loading" }, "Starting"));
     try {
-      const r = await post("/api/build", { seed_text: res.seed_text, game_dir: p.game.trim(), mod_dir: p.mod.trim(), mod_name: p.name });
+      const r = await post("/api/build", { seed_text: res.seed_text, game_dir: p.game.trim(), mod_dir: p.mod.trim(), mod_name: p.name, host: p.host || "eden" });
       await poll(r.job_id);
     } catch (e) {
       fill(out, notice("error", e.message));

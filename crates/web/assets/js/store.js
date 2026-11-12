@@ -9,7 +9,7 @@ export const state = {
   vals: {},
   seed: "",
   plando: [],
-  paths: { game: "", mod: "", name: "My Seed" },
+  paths: { game: "", mod: "", name: "My Seed", host: "eden" },
   game_check: null,
   mod_check: null,
   result: null,
@@ -60,9 +60,10 @@ export function restore(schema) {
       .map((p) => ({ location: p.location.slice(0, 120), item: p.item.slice(0, 120) }));
   }
   if (s && s.paths && typeof s.paths === "object") {
-    for (const k of ["game", "mod", "name"]) {
+    for (const k of ["game", "mod", "name", "host"]) {
       if (typeof s.paths[k] === "string") state.paths[k] = s.paths[k].slice(0, 1000);
     }
+    if (!["eden", "hookshot", "nx2navi"].includes(state.paths.host)) state.paths.host = "eden";
   }
   const r = take(sessionStorage, RKEY);
   if (r && typeof r.seed_text === "string") state.result = r;

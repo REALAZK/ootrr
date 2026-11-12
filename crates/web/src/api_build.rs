@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use ootrr_core::TITLE_ID;
 use ootrr_core::json::Json;
+use ootrr_core::modpack::Host;
 use ootrr_core::settings::seed::SeedFile;
 use ootrr_core::slice;
 
@@ -30,6 +31,18 @@ pub struct Plan {
     pub load: PB,
     pub name: String,
     pub target: PB,
+    pub host: Host,
+}
+
+fn mods_slot(md: &PB, game: &PB, romfs: &PB) -> bool {
+    let own: PB = game.join("mods");
+    if md == &own || inside(md, &own) {
+        return true;
+    }
+    romfs.parent().is_some_and(|p| {
+        let m: PB = p.join("mods");
+        (md == &m || inside(md, &m)) && !inside(md, romfs)
+    })
 }
 
 pub fn plan(b: &Json) -> Hr<Plan> {
@@ -39,7 +52,15 @@ pub fn plan(b: &Json) -> Hr<Plan> {
     if !rep.ok {
         return Err(refuse(&format!("Game folder: {}", rep.problems.join(" "))));
     }
+    let host: Host = match body::opt_text(b, "host")? {
+        None | Some("") => Host::Eden,
+        Some(s) => Host::parse(s).ok_or_else(|| refuse("Host: use eden, hookshot or nx2navi."))?,
+    };
     let md: PB = pathsafe::abs(body::short(b, "mod_dir")?)?;
+    let romfs: PB = rep.romfs.clone().unwrap_or_else(|| game.clone());
+    if host.flat() && !md.is_dir() && md.file_name().and_then(|n| n.to_str()) == Some("mods") {
+        fs::create_dir_all(&md).map_err(|_| refuse("Mod folder: could not create the mods folder."))?;
+    }
     if !md.is_dir() {
         return Err(refuse("Mod folder: that folder does not exist. Create it first or pick another one."));
     }
@@ -47,12 +68,13 @@ pub fn plan(b: &Json) -> Hr<Plan> {
     if !pathsafe::mod_name_ok(name) {
         return Err(refuse("Mod name: use 1 to 64 letters, digits, spaces and _ - ! . characters, with no spaces at the ends."));
     }
-    if inside(&md, &game) {
-        return Err(refuse("Mod folder: it may not be inside the game folder."));
+    if inside(&md, &game) || inside(&md, &romfs) {
+        if !host.flat() || !mods_slot(&md, &game, &romfs) {
+            return Err(refuse("Mod folder: it may not be inside the game folder. Hookshot and NX2navi use the game's mods folder."));
+        }
     }
-    let romfs: PB = rep.romfs.unwrap_or_else(|| game.clone());
-    let target: PB = md.join(TITLE_ID).join(name);
-    Ok(Plan { seed, romfs, load: md, name: name.to_string(), target })
+    let target: PB = if host.flat() { md.join(name) } else { md.join(TITLE_ID).join(name) };
+    Ok(Plan { seed, romfs, load: md, name: name.to_string(), target, host })
 }
 
 pub fn run(jobs: &Arc<Jobs>, b: &Json) -> Hr<Json> {
@@ -63,7 +85,7 @@ pub fn run(jobs: &Arc<Jobs>, b: &Json) -> Hr<Json> {
         c.begin(&format!("Seed file checked, {n} placements"));
         c.ok(10);
         c.begin("Read the game files and edit the chests");
-        match slice::build(&p.seed, &p.romfs, &p.load, &p.name) {
+        match slice::build_for(&p.seed, &p.romfs, &p.load, &p.name, p.host) {
             Ok(built) => {
                 c.ok(90);
                 c.begin("Mod files written");
@@ -178,6 +200,24 @@ mod tests {
         }
         assert_eq!(jobs.running(), 0);
         assert_eq!(files_under(&m), 0);
+        let _ = fs::remove_dir_all(&d);
+    }
+
+    #[test]
+    fn hookshot_and_nx2navi_write_inside_the_games_mods_folder() {
+        let d: PB = tmp("flat");
+        let g: PB = game(&d);
+        let m: PB = g.join("mods");
+        fs::create_dir_all(&m).unwrap();
+        let s: String = seed_text();
+        for host in ["hookshot", "nx2navi"] {
+            let body: Json = req(&s, &g, &m, "randomizer-seed").with("host", host.into());
+            let p: Plan = plan(&body).unwrap();
+            assert!(p.target.ends_with("randomizer-seed"), "{}", p.target.display());
+            assert!(!p.target.components().any(|c| c.as_os_str() == TITLE_ID));
+            assert_eq!(p.host.id(), host);
+        }
+        assert!(plan(&req(&s, &g, &m, "x")).is_err());
         let _ = fs::remove_dir_all(&d);
     }
 }

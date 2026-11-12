@@ -47,6 +47,11 @@ pub fn give(raw: &[u8], actor: &str) -> Res<Vec<u8>> {
 }
 
 pub fn stage(rf: &mut Romfs, actor: Option<&str>, flags: &[(String, bool)]) -> Res<Out> {
+    let extra: Vec<&str> = actor.into_iter().collect();
+    stage_all(rf, &extra, flags)
+}
+
+pub fn stage_all(rf: &mut Romfs, actors: &[&str], flags: &[(String, bool)]) -> Res<Out> {
     if !flags.is_empty() {
         let l: FlagList = flags_build::load(rf)?;
         for (n, _) in flags {
@@ -55,8 +60,9 @@ pub fn stage(rf: &mut Romfs, actor: Option<&str>, flags: &[(String, bool)]) -> R
     }
     let raw: Vec<u8> = rf.read(start::MODULE)?;
     let mut a: Ainb = Ainb::parse(&raw)?;
-    if let Some(x) = actor {
-        start::patch(&mut a, None, &[(x.to_string(), 1)])?;
+    let give: Vec<(String, i32)> = actors.iter().map(|x| ((*x).to_string(), 1)).collect();
+    if !give.is_empty() {
+        start::patch(&mut a, None, &give)?;
     }
     start::set_flags(&mut a, flags)?;
     let out: Vec<u8> = a.write()?;

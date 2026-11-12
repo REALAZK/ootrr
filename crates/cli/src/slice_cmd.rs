@@ -2,6 +2,7 @@ use std::fs;
 use std::path::Path as P;
 
 use ootrr_core::error::{Error, Res};
+use ootrr_core::modpack::Host;
 use ootrr_core::json::{self, Json};
 use ootrr_core::settings::presets::{self, Preset};
 use ootrr_core::settings::seed::SeedFile;
@@ -75,11 +76,24 @@ pub fn generate(a: &[String]) -> Res<()> {
 }
 
 pub fn build(a: &[String]) -> Res<()> {
-    let seed: SeedFile = SeedFile::read(P::new(arg(a, 0, "missing seed file")?))?;
-    let romfs: &str = arg(a, 1, "missing romfs_root")?;
-    let load: &str = arg(a, 2, "missing load_dir")?;
-    let name: &str = arg(a, 3, "missing mod_name")?;
-    let b: Built = slice::build(&seed, P::new(romfs), P::new(load), name)?;
+    let mut rest: Vec<String> = Vec::new();
+    let mut host: Host = Host::Eden;
+    let mut i: usize = 0;
+    while i < a.len() {
+        if a[i] == "--host" {
+            let v: &str = a.get(i + 1).map(|s| s.as_str()).ok_or(Error::Format("missing host after --host"))?;
+            host = Host::parse(v).ok_or(Error::Format("--host is eden, hookshot or nx2navi"))?;
+            i += 2;
+            continue;
+        }
+        rest.push(a[i].clone());
+        i += 1;
+    }
+    let seed: SeedFile = SeedFile::read(P::new(arg(&rest, 0, "missing seed file")?))?;
+    let romfs: &str = arg(&rest, 1, "missing romfs_root")?;
+    let load: &str = arg(&rest, 2, "missing load_dir")?;
+    let name: &str = arg(&rest, 3, "missing mod_name")?;
+    let b: Built = slice::build_for(&seed, P::new(romfs), P::new(load), name, host)?;
     let c: &BuildCounts = &b.counts;
     print!("{}", b.report);
     println!("changed {} of {} placed chests", c.changed, c.placed);
