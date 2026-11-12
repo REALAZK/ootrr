@@ -8,6 +8,44 @@ pub struct Pack {
     pub work: PB,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Host {
+    Eden,
+    Hookshot,
+    Nx2navi,
+}
+
+impl Host {
+    pub fn parse(s: &str) -> Option<Host> {
+        match s {
+            "eden" | "lichii" => Some(Host::Eden),
+            "hookshot" => Some(Host::Hookshot),
+            "nx2navi" => Some(Host::Nx2navi),
+            _ => None,
+        }
+    }
+
+    pub fn flat(self) -> bool {
+        matches!(self, Host::Hookshot | Host::Nx2navi)
+    }
+
+    pub fn id(self) -> &'static str {
+        match self {
+            Host::Eden => "eden",
+            Host::Hookshot => "hookshot",
+            Host::Nx2navi => "nx2navi",
+        }
+    }
+}
+
+fn root_of(load: &P, title: &str, name: &str, host: Host) -> PB {
+    if host.flat() {
+        load.join(name)
+    } else {
+        load.join(title.to_ascii_uppercase()).join(name)
+    }
+}
+
 pub const WORK: &str = ".new";
 
 fn is_title(s: &str) -> bool {
@@ -37,26 +75,34 @@ pub(crate) fn rel(r: &str) -> Res<PB> {
 
 impl Pack {
     pub fn create(load: &P, title: &str, name: &str) -> Res<Pack> {
+        Self::create_for(load, title, name, Host::Eden)
+    }
+
+    pub fn create_for(load: &P, title: &str, name: &str, host: Host) -> Res<Pack> {
         if !is_title(title) {
             return Err(Error::BadPath(title.to_string()));
         }
         if !is_name(name) {
             return Err(Error::BadPath(name.to_string()));
         }
-        let root: PB = load.join(title.to_ascii_uppercase()).join(name);
+        let root: PB = root_of(load, title, name, host);
         fs::create_dir_all(root.join("romfs"))?;
         fs::create_dir_all(root.join("exefs"))?;
         Ok(Pack { work: root.clone(), root })
     }
 
     pub fn begin(load: &P, title: &str, name: &str) -> Res<Pack> {
+        Self::begin_for(load, title, name, Host::Eden)
+    }
+
+    pub fn begin_for(load: &P, title: &str, name: &str, host: Host) -> Res<Pack> {
         if !is_title(title) {
             return Err(Error::BadPath(title.to_string()));
         }
         if !is_name(name) {
             return Err(Error::BadPath(name.to_string()));
         }
-        let root: PB = load.join(title.to_ascii_uppercase()).join(name);
+        let root: PB = root_of(load, title, name, host);
         let work: PB = root.join(WORK);
         if work.is_dir() {
             fs::remove_dir_all(&work)?;
@@ -167,6 +213,12 @@ mod tests {
         assert!(pk.root.join("romfs").is_dir());
         assert!(pk.root.join("exefs").is_dir());
         assert!(pk.root.ends_with(P::new("0400486024DEC000").join("Test Mod")));
+        let flat: Pack = Pack::create_for(&load, "0400486024dec000", "randomizer-seed", Host::Hookshot).unwrap();
+        assert!(flat.root.join("romfs").is_dir());
+        assert!(flat.root.ends_with("randomizer-seed"));
+        assert!(!flat.root.to_string_lossy().contains("0400486024DEC000"));
+        let same: Pack = Pack::create_for(&load, "0400486024dec000", "Navi Mod", Host::Nx2navi).unwrap();
+        assert!(same.root.ends_with("Navi Mod"));
         let _ = fs::remove_dir_all(&load);
     }
 

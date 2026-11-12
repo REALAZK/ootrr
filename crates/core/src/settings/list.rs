@@ -120,6 +120,8 @@ fn starting_items() -> Setting {
             ("goron_bracelet", "Goron's Bracelet"),
             ("silver_scale", "Silver Scale"),
             ("adult_wallet", "Adult's Wallet"),
+            ("kokiri_sword", "Kokiri Sword"),
+            ("deku_shield", "Deku Shield"),
         ])
 }
 

@@ -8,7 +8,7 @@ use crate::byml::Byml;
 use crate::dungeon_credit::{key_dungeon, place as place_key, stage_pouch, sweep, KEY_DUNGEONS};
 use crate::flow_locations::{self, Choice, Opts as FlowOpts, Stage};
 use crate::error::{Error as E, Res};
-use crate::modpack::Pack;
+use crate::modpack::{Host, Pack};
 use crate::placement::banc_files;
 use crate::progressive::{needs_every_holder, route, stage as stage_upgrades, tiers, Size};
 use crate::romfs::Romfs;
@@ -378,7 +378,20 @@ fn describe(c: &BuildCounts, root: &P, chests: &[ChestLine], notes: &[String]) -
     out
 }
 
+fn coop_word(seed: &str) -> String {
+    let s: String = seed
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '_' || *c == '-')
+        .take(63)
+        .collect();
+    if s.is_empty() { "seed".to_string() } else { s }
+}
+
 pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built> {
+    build_for(seed, romfs, load, mod_name, Host::Eden)
+}
+
+pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Host) -> Res<Built> {
     let d: Data = Data::load()?;
     let loaded = seed.settings()?;
     let p = plan(&loaded.settings)?;
@@ -427,7 +440,7 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
             }
         }
     }
-    let pk: Pack = Pack::begin(load, TITLE_ID, mod_name)?;
+    let pk: Pack = Pack::begin_for(load, TITLE_ID, mod_name, host)?;
     let mut rst: Option<Rst> = None;
     let mut grown: usize = 0;
     for e in &edits {
@@ -518,8 +531,12 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
     more.extend(crate::door_fix::stage(&mut rf)?);
     let reward: Option<&str> = crate::start_reward::pick(&seed.seed, p.start).map(|(_, a)| a);
     let flags: Vec<(String, bool)> = p.start_flags();
-    if reward.is_some() || !flags.is_empty() {
-        more.push(crate::start_reward::stage(&mut rf, reward, &flags)?);
+    let mut give: Vec<&str> = p.pouch.clone();
+    if let Some(a) = reward {
+        give.push(a);
+    }
+    if !give.is_empty() || !flags.is_empty() {
+        more.push(crate::start_reward::stage_all(&mut rf, &give, &flags)?);
     }
     crate::pot_slice::rows::stage(&mut rf, &mut more, &crate::pot_slice::apply::hashes(&pot_ts))?;
     if scrub_rows == 0 {
@@ -559,7 +576,15 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
             }
         }
     }
-    if let Some(t) = &rst {
+    if host == Host::Hookshot && rst.is_none() {
+        rst = Some(rsizetable::load(&mut rf)?);
+    }
+    let mut unread: Vec<String> = Vec::new();
+    if let Some(t) = &mut rst {
+        if host == Host::Hookshot {
+            let (_n, missed): (usize, Vec<String>) = rsizetable::fold_mods(t, load, mod_name)?;
+            unread = missed;
+        }
         pk.write_romfs(rsizetable::TABLE_PATH, &t.to_zs()?)?;
     }
     let chests: Vec<ChestLine> = lines(&ts, &edits);
@@ -596,10 +621,25 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
             notes.push(format!("  {} | {} | {} ({}) | {} -> {}", c.location, c.file, c.event, c.index, c.old, c.new));
         }
     }
+    if host == Host::Hookshot {
+        notes.push("Written for Hookshot, under mods/<name>/romfs. Name the mod randomizer-<seed> so co-op reads coop-seed.txt. This mod keeps the larger size-table entry from every other mod that is on.".to_string());
+        if !unread.is_empty() {
+            notes.push(format!(
+                "Could not read the size table in: {}. Those entries were not copied, so turn this mod off or fix that table before you play.",
+                unread.join(", ")
+            ));
+        }
+    }
+    if host == Host::Nx2navi {
+        notes.push("Written for NX2navi, under mods/<name>/romfs. Turn it on in the launcher. The higher row in the load order wins a file both mods change.".to_string());
+    }
     if !placed.is_empty() {
         notes.push(format!("{} flow locations hand out upgrade items that the game resolves by ownership, none of these edits is tested in the game yet.", placed.len()));
     }
     pk.commit()?;
+    if host == Host::Hookshot {
+        std::fs::write(pk.root.join("coop-seed.txt"), format!("{}\n", coop_word(&seed.seed)))?;
+    }
     let report: String = describe(&counts, &pk.root, &chests, &notes);
     Ok(Built { root: pk.root, counts, chests, report })
 }

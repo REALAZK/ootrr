@@ -21,7 +21,15 @@ export function render() {
   const name_out = h("div", { "aria-live": "polite", class: "hint" });
 
   const game_in = h("input", { type: "text", id: "game", value: state.paths.game, spellcheck: "false", autocomplete: "off", placeholder: "Folder with the extracted game files" });
-  const mod_in = h("input", { type: "text", id: "mod", value: state.paths.mod, spellcheck: "false", autocomplete: "off", placeholder: "Folder the emulator loads mods from" });
+  const mod_in = h("input", { type: "text", id: "mod", value: state.paths.mod, spellcheck: "false", autocomplete: "off", placeholder: "Folder the game loads mods from" });
+  const host_in = h(
+    "select",
+    { id: "host" },
+    h("option", { value: "eden" }, "Lichii / Eden"),
+    h("option", { value: "hookshot" }, "Hookshot"),
+    h("option", { value: "nx2navi" }, "NX2navi"),
+  );
+  host_in.value = state.paths.host || "eden";
   const name_in = h("input", { type: "text", id: "name", value: state.paths.name, spellcheck: "false", autocomplete: "off", maxlength: "64" });
 
   async function check_game() {
@@ -68,7 +76,9 @@ export function render() {
     }
     const base = state.paths.mod.trim();
     const sep = state.info.sep;
-    fill(name_out, base ? `The mod will go to ${base}${base.endsWith(sep) ? "" : sep}${state.info.title_id}${sep}${n}` : "");
+    const flat = state.paths.host === "hookshot" || state.paths.host === "nx2navi";
+    const mid = flat ? "" : `${state.info.title_id}${sep}`;
+    fill(name_out, base ? `The mod will go to ${base}${base.endsWith(sep) ? "" : sep}${mid}${n}` : "");
   }
 
   const later_game = debounce(check_game, 350);
@@ -87,6 +97,11 @@ export function render() {
   });
   name_in.addEventListener("input", () => {
     state.paths.name = name_in.value;
+    touch();
+    show_name();
+  });
+  host_in.addEventListener("change", () => {
+    state.paths.host = host_in.value;
     touch();
     show_name();
   });
@@ -110,7 +125,15 @@ export function render() {
     "div",
     null,
     h("h1", null, "Setup"),
-    h("p", { class: "muted" }, "Generating a seed needs no game files. Building the mod reads your extracted game folder and writes a new folder for your emulator. Nothing in the game folder is changed."),
+    h("p", { class: "muted" }, "Generating a seed needs no game files. Building the mod reads your extracted game folder and writes a mod. Nothing already in the game folder is changed."),
+    h(
+      "section",
+      { class: "card" },
+      h("h2", null, "Where you play"),
+      h("label", { class: "lbl", for: "host" }, "Game"),
+      host_in,
+      h("p", { class: "hint" }, "Lichii and Eden use their load folder. Hookshot and NX2navi use the mods folder inside the game folder."),
+    ),
     h(
       "section",
       { class: "card" },
@@ -123,7 +146,7 @@ export function render() {
       "section",
       { class: "card" },
       h("h2", null, "Mod folder"),
-      h("label", { class: "lbl", for: "mod" }, "Emulator mod folder"),
+      h("label", { class: "lbl", for: "mod" }, "Mod folder"),
       h("div", { class: "pathrow" }, mod_in, h("button", { type: "button", class: "btn", onclick: () => browse(mod_in, "Pick the mod folder", "mod", check_mod) }, "Browse")),
       mod_out,
       h("label", { class: "lbl", for: "name" }, "Mod name"),

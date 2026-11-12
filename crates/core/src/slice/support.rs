@@ -66,6 +66,8 @@ pub struct Plan {
     pub intro: bool,
     pub start: Reward,
     pub forest: Forest,
+    pub gear: Vec<&'static str>,
+    pub pouch: Vec<&'static str>,
     pub excluded: Vec<String>,
     pub notes: Vec<String>,
     pub drops: crate::pot_slice::Drops,
@@ -73,7 +75,13 @@ pub struct Plan {
     pub remake: bool,
 }
 
-const UNCHANGED: [&str; 25] = [
+const GEAR: &[(&str, &str, &str)] = &[
+    ("kokiri_sword", "Kokiri Sword", "Weapon_Sword_Kokiri"),
+    ("deku_shield", "Deku Shield", "Weapon_Shield_Deku"),
+    ("slingshot", "Slingshot", "Weapon_Range_SlingShot"),
+];
+
+const UNCHANGED: [&str; 24] = [
     "logic_rules",
     "starting_age",
     "open_kakariko",
@@ -92,7 +100,6 @@ const UNCHANGED: [&str; 25] = [
     "triforce_count_per_world",
     "triforce_goal_per_world",
     "starting_hearts",
-    "starting_items",
     "starting_songs",
     "ganon_bosskey_stones",
     "ganon_bosskey_medallions",
@@ -288,6 +295,20 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             Songs::Off
         }
     };
+    let chosen: Vec<String> = s.items("starting_items").map(|v| v.to_vec()).unwrap_or_default();
+    let mut gear: Vec<&'static str> = Vec::new();
+    let mut pouch: Vec<&'static str> = Vec::new();
+    for id in &chosen {
+        match GEAR.iter().find(|(k, _, _)| *k == id) {
+            Some((_, logic, actor)) => {
+                gear.push(*logic);
+                pouch.push(*actor);
+            }
+            None => bad.push(format!(
+                "starting_items includes {id}, which this build cannot give yet (kokiri_sword, deku_shield and slingshot work)"
+            )),
+        }
+    }
     let skulls: crate::slice::skulls::Mode = crate::slice::skulls::mode(s, &mut bad);
     let remake: bool = crate::slice::remake_chests::mode(s, &mut bad);
     let excluded: Vec<String> = s.items("disabled_locations").map(|v| v.to_vec()).unwrap_or_default();
@@ -312,6 +333,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         (fast, "Chest and item pickup scenes are sped up."),
         (intro, "The new game intro is skipped. The opening movie and the wake up scene are bypassed, experimental and untested in the game."),
         (start != Reward::Off, "You start the game with one random Stone or Medallion. Experimental and untested in the game."),
+        (!pouch.is_empty(), "The ticked starting gear is added to the pouch when a new game starts. A copy can still be found in the world."),
         (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
         (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
         (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
@@ -336,7 +358,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if remake {
         notes.push(crate::slice::remake_chests::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, excluded, notes, drops, skulls, remake })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, gear, pouch, excluded, notes, drops, skulls, remake })
 }
 
 #[cfg(test)]
@@ -414,6 +436,16 @@ mod tests {
     }
 
     #[test]
+    fn starting_sword_shield_and_slingshot_are_accepted() {
+        let mut s: Settings = Settings::default();
+        s.set("starting_items", Value::set(&["slingshot", "kokiri_sword", "deku_shield"])).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert_eq!(p.gear, vec!["Slingshot", "Kokiri Sword", "Deku Shield"]);
+        assert_eq!(p.pouch, vec!["Weapon_Range_SlingShot", "Weapon_Sword_Kokiri", "Weapon_Shield_Deku"]);
+        s.set("starting_items", Value::set(&["ocarina"])).unwrap();
+        assert!(plan(&s).err().unwrap().to_string().contains("ocarina"));
+    }
+
     fn excluded_locations_pass_through() {
         let mut s: Settings = Settings::default();
         s.set("disabled_locations", Value::set(&["ZD Chest"])).unwrap();
