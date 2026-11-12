@@ -1,0 +1,118 @@
+{
+"format": 1,
+"note": "Structural event flow edits for the gated flow locations of data/flow_locations.json. They run only when the location receives an item other than its vanilla one, after the ordinary parameter edits of that location. $item stands for the chosen item actor. The locations join the pool only with shuffle_rewards=supported and shuffle_rewards_extra on. Design and evidence in docs/flow_checks.md sections 3, 4 and 8, build notes in docs/flow_checks_built_2.md.",
+"locations": [
+{
+"name": "Kak 20 Gold Skulltula Reward",
+"why": "skip the Stone of Agony help page, the FALSE case of the guide check jumps to the flag write that the TRUE path already implies",
+"ops": [
+{"kind": "retarget", "file": "GatheringTokenGold.bfevfl", "index": 233, "event": "Event377", "case": 1, "old": 237, "new": 234},
+{"kind": "retarget", "file": "GatheringTokenGold.bfevfl", "index": 230, "event": "Event374", "case": 1, "old": 241, "new": 231}
+]
+},
+{
+"name": "GC Rolling Goron as Child",
+"why": "the refusal without a bomb bag (talk event 12) is replaced by the grant talks 75 and 76, so the check only needs the Goron stopped",
+"ops": [
+{"kind": "retarget", "file": "Npc_Goron_006_Child.bfevfl", "index": 3, "event": "Event13", "case": 1, "old": 12, "new": 75},
+{"kind": "retarget", "file": "Npc_Goron_006_Child.bfevfl", "index": 10, "event": "Event12", "case": 1, "old": 12, "new": 76},
+{"kind": "retarget", "file": "Npc_Goron_006_Child.bfevfl", "index": 11, "event": "Event21", "case": 1, "old": 12, "new": 75}
+]
+},
+{
+"name": "DMT Biggoron",
+"why": "nothing is taken from the player (both knife cases go to the neither branch 35) and the sword only hand over with its equip loop is swapped for the entry event 266 uses for the Prescription",
+"ops": [
+{"kind": "retarget", "file": "Npc_Goron_Biggoron_Adult.bfevfl", "index": 57, "event": "Event53", "case": 0, "old": 67, "new": 35},
+{"kind": "retarget", "file": "Npc_Goron_Biggoron_Adult.bfevfl", "index": 58, "event": "Event54", "case": 0, "old": 66, "new": 35},
+{"kind": "swap_sub", "file": "Npc_Goron_Biggoron_Adult.bfevfl", "index": 95, "event": "Event123",
+ "from": "Dm_SY_GetInEvent:GetInEventItemSwordBiggoron", "to": "Dm_SY_GetInEvent:GetInEvent_NotTurnForPosCamera_BigGoron",
+ "params": [["Target", 3], ["ActorName", "$item"], ["ASName", "Handover"], ["Npc_EventStarter", "actor:Npc_Goron_Biggoron_Adult"], ["NpcActorName", "Npc_Goron_Biggoron_Adult"], ["NpcInstanceName", ""]]}
+]
+},
+{
+"name": "GC Medigoron",
+"why": "one sale only: the offer no longer closes on the Biggoron Sword (event 17), the stock check asks the dead talk flag instead of the knife (event 2), the shop sets that flag after the hand over and keeps a broken knife, the shop item and its display model follow the chosen item",
+"ops": [
+{"kind": "retarget", "file": "Npc_Goron_Medigoron_Adult.bfevfl", "index": 17, "event": "Event19", "case": 0, "old": 23, "new": 14},
+{"kind": "query", "file": "Npc_Goron_Medigoron_Adult.bfevfl", "index": 2, "event": "Event6",
+ "from": "PouchSystemActor.EventQueryIsExistInPouch", "to": "GameDataActor.EventQueryIsGameDataBool",
+ "params": [["GameDataName", "HaveTalked_Special.Npc_Goron_Medigoron_Adult_Talk_Event26"], ["Index", -1]]},
+{"kind": "set", "file": "Npc_Goron_Medigoron_Adult.bfevfl", "index": 6, "event": "Event11", "param": "ActorName", "old": "Shop_Sword_Giant", "new": "$item"},
+{"kind": "rename_actor", "file": "Npc_Goron_Medigoron_Adult.bfevfl", "old": "Item_Sword_Giant", "new": "$item"},
+{"kind": "insert_set", "file": "SimpleShop.bfevfl", "index": 112, "event": "Event119", "flag": "HaveTalked_Special.Npc_Goron_Medigoron_Adult_Talk_Event26"},
+{"kind": "retarget", "file": "SimpleShop.bfevfl", "index": 36, "event": "Event25", "case": 0, "old": 37, "new": 19}
+]
+},
+{
+"name": "Kak Anju as Adult",
+"why": "trade quest hand in: the first time grant of Item_PocketEgg is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Hylia_049_Adult.bfevfl", "index": 223, "event": "Event264", "param": "ReveiveItem", "old": "Item_PocketEgg", "new": "$item"}
+]
+},
+{
+"name": "Kak Anju Trade Pocket Cucco",
+"why": "trade quest hand in: the first time grant of Item_CojiroCucco is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Hylia_049_Adult.bfevfl", "index": 194, "event": "Event234", "param": "ReveiveItem", "old": "Item_CojiroCucco", "new": "$item"}
+]
+},
+{
+"name": "LW Trade Cojiro",
+"why": "trade quest hand in: the first time grant of Item_OddMushroom is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Hylia_017_Adult.bfevfl", "index": 72, "event": "Event100", "param": "ReveiveItem", "old": "Item_OddMushroom", "new": "$item"}
+]
+},
+{
+"name": "Kak Granny Trade Odd Mushroom",
+"why": "trade quest hand in: the first time grant of Item_OddPowder is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Hylia_053_Adult.bfevfl", "index": 127, "event": "Event167", "param": "ReveiveItem", "old": "Item_OddPowder", "new": "$item"}
+]
+},
+{
+"name": "LW Trade Odd Potion",
+"why": "trade quest hand in: the first time grant of Item_PoacherSaw is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Kokiri_Fado_Adult.bfevfl", "index": 122, "event": "Event123", "param": "ActorName", "old": "Item_PoacherSaw", "new": "$item"}
+]
+},
+{
+"name": "GV Trade Poachers Saw",
+"why": "trade quest hand in: the first time grant of Item_BrokenSword is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Hylia_012_Adult.bfevfl", "index": 113, "event": "Event58", "param": "ReveiveItem", "old": "Item_BrokenSword", "new": "$item"}
+]
+},
+{
+"name": "DMT Trade Broken Sword",
+"why": "trade quest hand in: the first time grant of Item_Prescription is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Goron_Biggoron_Adult.bfevfl", "index": 266, "event": "Event232", "param": "ActorName", "old": "Item_Prescription", "new": "$item"}
+]
+},
+{
+"name": "ZD Trade Prescription",
+"why": "trade quest hand in: the first time grant of Item_EyeballFrog is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Zora_KingZora_adult.bfevfl", "index": 174, "event": "Event131", "param": "ActorName", "old": "Item_EyeballFrog", "new": "$item"}
+]
+},
+{
+"name": "LH Trade Eyeball Frog",
+"why": "trade quest hand in: the first time grant of Item_EyeDrop is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Npc_Hylia_045_Adult.bfevfl", "index": 182, "event": "Event26", "param": "ReveiveItem", "old": "Item_EyeDrop", "new": "$item"}
+]
+},
+{
+"name": "DMT Trade Eyedrops",
+"why": "trade quest hand in: the first time grant of Item_ClaimCheck is cloned so the shuffled item follows it once, the vanilla grant, removal and step request stay, the spoil retry grants stay vanilla",
+"ops": [
+{"kind": "clone_sub", "file": "Dm_DeathMtTrail_0050.bfevfl", "index": 5, "event": "Event21", "param": "ActorName", "old": "Item_ClaimCheck", "new": "$item"}
+]
+}
+]
+}

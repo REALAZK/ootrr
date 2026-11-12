@@ -1,4 +1,4 @@
-use std::collections::BTreeMap as BM;
+use std::collections::{BTreeMap as BM, HashMap as HM};
 use std::fmt::Write as W;
 
 use crate::error::{Error as E, Res};
@@ -8,12 +8,13 @@ use crate::rng::Rng;
 use crate::settings::Settings;
 use crate::settings::seed::SeedFile;
 use crate::slice::data::{Data, State};
-use crate::slice::fill::{changed, fill, vanilla_place};
+use crate::slice::fill::{changed, fill_ranked, vanilla_place};
 use crate::slice::logic::world_with;
 use crate::slice::pick::{pick, scoped, Pick};
+use crate::slice::pickups as pu;
 use crate::slice::plando::{loc_of, resolve, Entry};
 use crate::start_reward::pick as pick_start;
-use crate::slice::support::{plan, Keep, Plan, Songs};
+use crate::slice::support::{plan, Keep, Mode, Plan, Songs};
 use crate::spoiler::{playthrough, Spoiler};
 use crate::world::{LocId, Placement, World};
 
@@ -54,13 +55,49 @@ pub fn is_song(actor: &str) -> bool {
     actor.starts_with("Item_Melody_") && actor != "Item_Melody_ScarecrowSong"
 }
 
+fn by_place(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> Option<bool> {
+    let name: &str = &w.locs[l].name;
+    let item: &str = &w.items.names[it];
+    if p.remake && crate::slice::remake_overworld::keeps_out(d, name, item) {
+        return Some(false);
+    }
+    if p.world != Mode::Off {
+        if let Some(ok) = pu::at(d, name, item) {
+            return Some(ok);
+        }
+        if pu::keeps_out(d, name, item) {
+            return Some(false);
+        }
+    }
+    if let Some(ok) = crate::pot_slice::rules::at(d, name, item) {
+        return Some(ok);
+    }
+    if p.skulls != crate::slice::skulls::Mode::Off {
+        if let Some(ok) = crate::slice::skulls::accepts(d, w, it, l) {
+            return Some(ok);
+        }
+    }
+    if pu::WORLD_ONLY.contains(&item) || d.pots.only.contains(item) {
+        return Some(false);
+    }
+    None
+}
+
 pub fn allowed(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> bool {
+    if d.item(&w.items.names[it]).is_some_and(|i| !crate::flow_extra::trade::keeps(d, &w.locs[l].name, i)) {
+        return false;
+    }
+    if let Some(ok) = by_place(d, w, p, it, l) {
+        return ok;
+    }
     match d.item(&w.items.names[it]) {
         Some(i) if scoped(p, &i.kind) => {
             i.dungeon.is_some()
                 && i.dungeon.as_deref() == w.regions[w.locs[l].region].dungeon.as_deref()
                 && (d.flow.by_name(&w.locs[l].name).is_none() || d.flow_accepts(i))
+                && !crate::slice::dungeon_items::blocked(d, p, &i.kind, &w.locs[l].name)
         }
+        Some(i) if crate::slice::dungeon_items::handles(p, &i.kind) => crate::slice::dungeon_items::allowed(d, w, p, i, l),
         Some(i) if p.keys_roam() && i.kind == "SmallKey" => {
             let name: &str = &w.locs[l].name;
             let dungeon: bool = w.regions[w.locs[l].region].dungeon.is_some();
@@ -85,7 +122,10 @@ pub fn allowed(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> bool {
                 return false;
             }
             i.actor.is_some()
-                && (d.flow.by_name(name).is_none() || (d.flow_accepts(i) && !up))
+                && crate::slice::flow_rules::allows(d, name, i)
+                && (!p.extra || crate::flow_extra::fits(d, name, i))
+                && (!p.scrubs || crate::scrubs_a::fits(d, name, i))
+                && (!p.scrubs_b || crate::scrubs_b::fits(d, name, i))
                 && !(up && ((d.keeps_event(name) && !d.special(name)) || heart_loc))
         }
         None => false,
@@ -175,6 +215,10 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
         let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
         w.start.push((i, 1));
     }
+    for name in crate::slice::dungeon_items::start_items(d, &p) {
+        let i: ItemId = w.item(&name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
+        w.start.push((i, 1));
+    }
     for name in &p.gear {
         let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
         if !w.start.iter().any(|(id, _)| *id == i) {
@@ -183,11 +227,14 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     }
     let vanilla: Placement = vanilla_place(&w, d)?;
     let pk: Pick = pick(d, &w, &p);
+    if p.world != Mode::Off && !pk.free.iter().any(|l| pu::listed(d, &w.locs[*l].name)) {
+        p.notes.retain(|n| n != pu::NOTE);
+    }
     let ok = |it: ItemId, l: LocId| allowed(d, &w, &p, it, l);
     for l in &pk.free {
         if let Some(i) = vanilla.get(*l)
             && !ok(i, *l)
-            && !(p.keys_roam() && d.item(&w.items.names[i]).is_some_and(|x| x.kind == "SmallKey"))
+            && !d.item(&w.items.names[i]).is_some_and(|x| crate::slice::dungeon_items::exempt(&p, &x.kind))
         {
             return Err(E::Msg(format!(
                 "the vanilla item {} of {} is not allowed there under these settings",
@@ -211,8 +258,14 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     let got: Placement = if pk.free.is_empty() {
         vanilla.clone()
     } else {
-        fill(&w, &vanilla, &pk.free, &ok, &mut rng, o.tries, &plan, !p.keys_roam())?
+        let caps: HM<LocId, usize> = crate::pot_slice::rules::caps(d, &w, &pk.free, &vanilla, &ok);
+        let rank = |l: LocId| caps.get(&l).copied().unwrap_or(0);
+        let r: Option<&dyn Fn(LocId) -> usize> = if caps.is_empty() { None } else { Some(&rank) };
+        fill_ranked(&w, &vanilla, &pk.free, &ok, &mut rng, o.tries, &plan, !p.keys_roam(), r)?
     };
+    if p.skulls != crate::slice::skulls::Mode::Off {
+        crate::slice::skulls::check_tokens(&w, &vanilla, &got)?;
+    }
     let mut map: BM<String, String> = BM::new();
     let mut moved: Vec<String> = Vec::new();
     for l in &pk.free {
@@ -232,7 +285,8 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     };
     let seed_file: SeedFile = SeedFile::new(seed, s, &d.scan.game, map)?;
     let (sp, spheres): (Option<String>, Steps) = if o.spoiler {
-        let (t, st): (String, Steps) = spoiler_text(&w, &vanilla, &got, &pk)?;
+        let (mut t, st): (String, Steps) = spoiler_text(&w, &vanilla, &got, &pk)?;
+        t.push_str(&crate::slice::skulls::spoiler(d, &w, &p, &pk.free, &got));
         (Some(t), st)
     } else {
         (None, Vec::new())
@@ -296,6 +350,7 @@ mod tests {
     fn all_chests() -> Settings {
         let mut s: Settings = Settings::default();
         s.set("shuffle_chests", Value::s("all")).unwrap();
+        s.set(crate::slice::remake_chests::SETTING, Value::s("on")).unwrap();
         s
     }
 
@@ -549,7 +604,7 @@ mod tests {
             let g: Generated = generate_data(&d, &s, &format!("dungeon items {n}"), &GenOpts::default()).unwrap();
             for (loc, item) in &g.seed_file.placements {
                 if d.flow.by_name(loc).is_some() {
-                    assert!(d.item(item).is_some_and(|i| d.flow_accepts(i)), "{loc} holds {item}");
+                    assert!(d.item(item).is_some_and(|i| d.flow_accepts(i)) || d.vanilla_of(loc) == Some(item.as_str()), "{loc} holds {item}");
                 }
             }
         }

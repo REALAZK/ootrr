@@ -183,11 +183,13 @@
             "Ganons Castle Light Trial Third Right Chest": "True",
             "Ganons Castle Light Trial Invisible Enemies Chest": "
                 logic_lens_castle or can_use(Lens_of_Truth)",
+            "Ganons Castle Light Trial Lullaby Room Invisible Chest": "
+                logic_lens_castle or can_use(Lens_of_Truth)",
             "Ganons Castle Light Trial Lullaby Chest": "
                 (Small_Key_Ganons_Castle, 1) and can_play(Zeldas_Lullaby)"
         },
         "exits": {
-            "Ganons Castle Light Trial Boulder Room": "(Small_Key_Ganons_Castle, 2)"
+            "Ganons Castle Light Trial Boulder Room": "(Small_Key_Ganons_Castle, 1)"
         }
     },
     {

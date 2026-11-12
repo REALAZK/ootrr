@@ -15,6 +15,7 @@
         "dungeon": "Dodongos Cavern",
         "locations": {
             "Dodongos Cavern Map Chest": "can_blast_or_smash or Progressive_Strength_Upgrade",
+            "Dodongos Cavern Lobby Bombable Chest": "has_explosives",
             "Dodongos Cavern Deku Scrub Lobby": "can_stun_deku or Progressive_Strength_Upgrade",
             "Dodongos Cavern Gossip Stone": "here(can_blast_or_smash or Progressive_Strength_Upgrade)",
             "Gossip Stone Fairy": "
@@ -35,6 +36,7 @@
         "dungeon": "Dodongos Cavern",
         "locations": {
             "Dodongos Cavern Lower Lizalfos Hidden Recovery Heart": "True",
+            "Dodongos Cavern Lower Lizalfos Chest": "is_adult or Sticks or Slingshot or Bombs or Kokiri_Sword",
             "Dodongos Cavern Right Side Pot 1": "True",
             "Dodongos Cavern Right Side Pot 2": "True",
             "Dodongos Cavern Right Side Pot 3": "True",
@@ -89,6 +91,7 @@
         "dungeon": "Dodongos Cavern",
         "locations": {
             "Dodongos Cavern Bomb Flower Platform Chest": "True",
+            "Dodongos Cavern Staircase Top Bombable Chest": "has_explosives",
             "Dodongos Cavern Deku Scrub Near Bomb Bag Right": "
                 can_blast_or_smash or
                 (logic_dc_scrub_room and is_adult and Progressive_Strength_Upgrade)",
@@ -129,6 +132,7 @@
         "dungeon": "Dodongos Cavern",
         "locations": {
             "Dodongos Cavern Lizalfos Upper Recovery Heart 1": "True",
+            "Dodongos Cavern Upper Lizalfos Chest": "is_adult or Sticks or Slingshot or Bombs or Kokiri_Sword",
             "Dodongos Cavern Lizalfos Upper Recovery Heart 2": "True"
         },
         "exits": {

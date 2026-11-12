@@ -1,0 +1,41 @@
+{
+  "format": 1,
+  "note": "Identifiers only. Business scrubs of group B: menu scrubs that become one time sales. Each scrub gets a new entry OOTRR_Scrub_<key> in Enemy_Scrub_Business_Common, two RSDB rows copied from Enemy_Scrub_Business_Heart_02 and its placements point their Banc TalkEventName (and AttackedEventName where they have one) at that row. ScrubBusiness_ShopItemActorName0 becomes Obj_Heart_Piece so the Pouch ladder takes the heart rung, like the crater scrub. location is empty when the OoTR mapping is undecided, flag is empty when no spare flag is given yet. Both must be set before a scrub can join the pool.",
+  "flow": "Enemy_Scrub_Business_Common.bfevfl",
+  "template": "Enemy_Scrub_Business_Heart_02",
+  "label": "EventFlowMsg/Enemy_Event:Enemy_Scrub_Business_Heart_01",
+  "scrubs": [
+    {"key": "LwGrottoRear", "step": 3, "location": "LW Deku Scrub Grotto Rear", "flag": "HavePlayedEvent.Enemy_Scrub_Business_DekuStick_01", "price": 30, "why": "child seed scrub and adult arrow scrub in the same spot of the Lost Woods scrub grotto, OoTR LW Deku Scrub Grotto Rear", "placements": [
+      {"file": "Banc/LostWood/LostWood_Child_Static.bcett.byml.zs", "hash": "2214083465643671502", "talk": "Enemy_Scrub_Business_DekuSeed_01", "attacked": ""},
+      {"file": "Banc/LostWood/LostWood_Adult_Static.bcett.byml.zs", "hash": "14619830301496284497", "talk": "Enemy_Scrub_Business_Arrow_01", "attacked": ""}
+    ]},
+    {"key": "Jabu", "step": 4, "location": "Jabu Jabus Belly Deku Scrub", "flag": "HavePlayedEvent.Enemy_Scrub_Business_RedPotion_01", "price": 20, "why": "the only scrub inside Jabu Jabu, OoTR Jabu Jabus Belly Deku Scrub", "placements": [
+      {"file": "Banc/InsideJabuJabuBelly/InsideJabuJabuBelly_Static.bcett.byml.zs", "hash": "9496373148524757782", "talk": "Enemy_Scrub_Business_Item", "attacked": "Enemy_Scrub_Business_Item"}
+    ]},
+    {"key": "Dodongo", "step": 4, "location": "", "flag": "", "price": 20, "why": "one remake scrub (room 7) against four OoTR Dodongos Cavern scrubs, the mapping is undecided", "placements": [
+      {"file": "Banc/DodongoCavern/DodongoCavern_Static.bcett.byml.zs", "hash": "7388739057158296701", "talk": "Enemy_Scrub_Business_Item", "attacked": "Enemy_Scrub_Business_Item"}
+    ]},
+    {"key": "Well", "step": 5, "location": "", "flag": "", "price": 30, "why": "remake only scrub, OoTR has no Bottom of the Well scrub, a new logic location would change every seed", "placements": [
+      {"file": "Banc/BottomOfTheWell/BottomOfTheWell_Static.bcett.byml.zs", "hash": "15945446340598299551", "talk": "Enemy_Scrub_Business_GreenPotion_01", "attacked": ""}
+    ]},
+    {"key": "Shadow", "step": 5, "location": "", "flag": "", "price": 30, "why": "remake only scrub, OoTR has no Shadow Temple scrub, a new logic location would change every seed", "placements": [
+      {"file": "Banc/ShadowTemple/ShadowTemple_Static.bcett.byml.zs", "hash": "8721287453021850502", "talk": "Enemy_Scrub_Business_GreenPotion_01", "attacked": ""}
+    ]},
+    {"key": "HfSeeds", "step": 6, "location": "", "flag": "", "price": 30, "why": "one of three Hyrule Field grotto scrubs, both the LLR and the LH grotto of OoTR sell seeds, nuts and bombs, the positions do not tell which grotto it is", "placements": [
+      {"file": "Banc/HyruleField/HyruleField_Child_Static.bcett.byml.zs", "hash": "12901354557574090016", "talk": "Enemy_Scrub_Business_DekuSeed_01", "attacked": ""}
+    ]},
+    {"key": "HfNuts", "step": 6, "location": "", "flag": "", "price": 20, "why": "one of three Hyrule Field grotto scrubs, LLR or LH grotto is undecided", "placements": [
+      {"file": "Banc/HyruleField/HyruleField_Child_Static.bcett.byml.zs", "hash": "17418042722045679657", "talk": "Enemy_Scrub_Business_DekuNuts_01", "attacked": ""}
+    ]},
+    {"key": "HfBombs", "step": 6, "location": "", "flag": "", "price": 35, "why": "one of three Hyrule Field grotto scrubs, LLR or LH grotto is undecided", "placements": [
+      {"file": "Banc/HyruleField/HyruleField_Child_Static.bcett.byml.zs", "hash": "16672855544778411393", "talk": "Enemy_Scrub_Business_Bomb_01", "attacked": ""}
+    ]},
+    {"key": "LwPotion", "step": 7, "location": "", "flag": "", "price": 30, "why": "two variants in one spot near the Deku Theater, two OoTR theater scrubs against four remake candidates and the items do not match, undecided", "placements": [
+      {"file": "Banc/LostWood/LostWood_Child_Static.bcett.byml.zs", "hash": "15048088372638595204", "talk": "Enemy_Scrub_Business_Potion", "attacked": "Enemy_Scrub_Business_Potion"},
+      {"file": "Banc/LostWood/LostWood_Child_Static.bcett.byml.zs", "hash": "11385057993574159532", "talk": "Enemy_Scrub_Business_Potion", "attacked": "Enemy_Scrub_Business_Potion"}
+    ]},
+    {"key": "LwBug", "step": 7, "location": "", "flag": "", "price": 30, "why": "bug scrub near the Deku Theater, the same undecided theater mapping", "placements": [
+      {"file": "Banc/LostWood/LostWood_Child_Static.bcett.byml.zs", "hash": "2569517939889411425", "talk": "Enemy_Scrub_Business_Item_SellBug", "attacked": "Enemy_Scrub_Business_Item_SellBug"}
+    ]}
+  ]
+}

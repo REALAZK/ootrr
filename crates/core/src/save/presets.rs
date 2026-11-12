@@ -214,6 +214,7 @@ fn songs() -> Vec<Op> {
     let mut out: Vec<Op> = Vec::new();
     got("Item_Ocarina_Time", 1, &mut out);
     out.push(on("HavePreparedToPlayOcarina".to_string()));
+    out.push(("PlayerStatus.EquipOcarina".to_string(), Val::Str("Item_Ocarina_Time".to_string())));
     for s in SONG_NAMES {
         out.push(on(format!("IsGet.Item_Melody_{s}")));
     }

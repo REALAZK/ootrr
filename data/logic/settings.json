@@ -17,7 +17,7 @@
   "deadly_bonks": "none",
   "disable_trade_revert": false,
   "dungeon_shortcuts": [],
-  "ensure_tod_access": false,
+  "ensure_tod_access": true,
   "entrance_shuffle": false,
   "fire_key_layout": "vanilla",
   "fix_broken_drops": false,

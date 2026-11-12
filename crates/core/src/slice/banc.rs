@@ -13,6 +13,7 @@ pub struct Found {
     pub drop: Option<String>,
     pub event: bool,
     pub check: bool,
+    pub sub: bool,
 }
 
 pub fn actors(y: &Byml) -> &[Node] {
@@ -41,6 +42,7 @@ pub fn describe(file: &str, a: &Node) -> Found {
             .map(|s| s.to_string()),
         event: has("GetEventName"),
         check: has("Drop__CheckActor") || has("Drop__DropActor_Substitute"),
+        sub: has("Drop__DropActor_Substitute"),
     }
 }
 
@@ -83,6 +85,9 @@ pub fn set_drop_ev(y: &mut Byml, hash: u64, old: &str, new: &str, ev: Option<Ev>
             )));
         }
         d.set("Drop__DropActor", Node::Str(new.to_string()));
+        if d.get("Drop__DropActor_Substitute").is_some() {
+            d.set("Drop__DropActor_Substitute", Node::Str(new.to_string()));
+        }
         if ev == Some(Ev::Strip) {
             d.remove("GetEventName");
         }
@@ -150,6 +155,32 @@ mod tests {
         assert!(set_drop(&mut y, 1, "A", "Y").is_err());
         assert!(set_drop(&mut y, 2, "B", "Y").is_err());
         assert_eq!(set_drop(&mut y, 9, "A", "Y").unwrap(), 0);
+    }
+
+    #[test]
+    fn a_check_chest_gets_the_new_item_on_both_branches() {
+        let dy: Vec<(String, Node)> = vec![
+            ("Drop__CheckActor".to_string(), Node::Str("TBox_Shield_Deku".to_string())),
+            ("Drop__DropActor".to_string(), Node::Str("TBox_Shield_Deku".to_string())),
+            ("Drop__DropActor_Substitute".to_string(), Node::Str("TBox_Rupee_Blue".to_string())),
+        ];
+        let a: Node = Node::Map(vec![
+            ("Dynamic".to_string(), Node::Map(dy)),
+            ("Gyaml".to_string(), Node::Str("Obj_TBox_A_06".to_string())),
+            ("Hash".to_string(), Node::U64(5)),
+        ]);
+        let mut y: Byml = file(vec![a, actor(1, "A", false)]);
+        let f: Found = find(&y, "x", 5).remove(0);
+        assert!(f.check && f.sub);
+        assert!(!find(&y, "x", 1)[0].sub);
+        assert!(set_drop(&mut y, 5, "TBox_Rupee_Blue", "Item_Hookshot").is_err());
+        assert_eq!(set_drop(&mut y, 5, "TBox_Shield_Deku", "Item_Hookshot").unwrap(), 1);
+        let d: &Node = actors(&y)[0].get("Dynamic").unwrap();
+        assert_eq!(d.get("Drop__DropActor").and_then(|v| v.as_str()), Some("Item_Hookshot"));
+        assert_eq!(d.get("Drop__DropActor_Substitute").and_then(|v| v.as_str()), Some("Item_Hookshot"));
+        assert_eq!(d.get("Drop__CheckActor").and_then(|v| v.as_str()), Some("TBox_Shield_Deku"));
+        set_drop(&mut y, 1, "A", "Z").unwrap();
+        assert!(actors(&y)[1].get("Dynamic").unwrap().get("Drop__DropActor_Substitute").is_none());
     }
 
     #[test]

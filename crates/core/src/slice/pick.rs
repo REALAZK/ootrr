@@ -1,6 +1,7 @@
 use std::collections::BTreeMap as BM;
 
 use crate::slice::data::{Data, State};
+use crate::slice::pickups as pu;
 use crate::slice::support::{Keep, Mode, Plan, Songs};
 use crate::world::{LocId, World};
 
@@ -50,6 +51,12 @@ fn reason(d: &Data, w: &World, p: &Plan, name: &str) -> Option<String> {
     if p.excluded.iter().any(|e| e == name) {
         return Some("excluded by the player".to_string());
     }
+    if !p.remake && crate::slice::remake_chests::gated(name) {
+        return Some(crate::slice::remake_chests::OFF.to_string());
+    }
+    if !p.remake && crate::slice::held_chests::gated(name) {
+        return Some(crate::slice::remake_chests::OFF.to_string());
+    }
     let dungeon: bool = w.regions[w.locs[l].region].dungeon.is_some();
     match (p.chests, dungeon) {
         (Mode::Off, _) => return Some("chest shuffle is off".to_string()),
@@ -95,7 +102,13 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
             if l.cat == "song" && p.songs != Songs::Off {
                 continue;
             }
-            if !d.flow_ok(&l.name) {
+            if crate::scrubs_a::is_a(l) && !p.scrubs {
+                continue;
+            }
+            if crate::scrubs_b::is_b(l) && !p.scrubs_b {
+                continue;
+            }
+            if !d.flow_ok(&l.name) || !crate::flow_extra::open(l, p) {
                 *left.entry("reward event is not supported yet".to_string()).or_insert(0) += 1;
                 continue;
             }
@@ -138,6 +151,11 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
             }
         }
     }
+    pu::select(d, w, p, &mut free, &mut left, &mut flow);
+    flow += crate::pot_slice::pick::add(d, w, p, &mut free, &mut left);
+    let (sk, n): (Vec<LocId>, usize) = crate::slice::skulls::pick(d, w, p, &mut left);
+    free.extend(sk);
+    flow += n;
     free.sort_unstable();
     free.dedup();
     Pick { free, left, flow }

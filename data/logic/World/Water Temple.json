@@ -51,7 +51,8 @@
         "dungeon": "Water Temple",
         "locations": {
             "Water Temple Map Chest": "Raise_Water_Level",
-            "Water Temple Compass Chest": "(can_play(Zeldas_Lullaby) or Iron_Boots) and Hookshot",
+            "Water Temple Compass Chest": "at('Water Temple Dark Link Region', True)",
+            "Water Temple Compass Room Chest": "(can_play(Zeldas_Lullaby) or Iron_Boots) and Hookshot",
             "Water Temple L1 Torch Pot 1": "(Iron_Boots and Hookshot) or can_play(Zeldas_Lullaby)",
             "Water Temple L1 Torch Pot 2": "(Iron_Boots and Hookshot) or can_play(Zeldas_Lullaby)",
             "Water Temple Near Compass Pot 1": "(can_play(Zeldas_Lullaby) or Iron_Boots) and Hookshot",
@@ -75,18 +76,18 @@
                 (Child_Water_Temple and Sticks and Kokiri_Sword and Magic_Meter)",
             "Water Temple GS Central Pillar": "
                 ((Longshot or (logic_water_central_gs_fw and Hookshot and can_use(Farores_Wind))) and
-                    (water_keys(5) or Bow or can_use(Dins_Fire))) or
+                    (water_keys(4) or Bow or can_use(Dins_Fire))) or
                 (logic_water_central_gs_irons and Hookshot and Iron_Boots and
                     (Bow or can_use(Dins_Fire))) or
                 (logic_water_central_gs_fw and Child_Water_Temple and Boomerang and can_use(Farores_Wind) and
-                    Raise_Water_Level and (water_keys(5) or Sticks or can_use(Dins_Fire)))"
+                    Raise_Water_Level and (water_keys(4) or Sticks or can_use(Dins_Fire)))"
         },
         "exits": {
             "Water Temple South Basement": "
                 has_explosives and (Iron_Boots or can_dive) and (Hookshot or Hover_Boots)",
             "Water Temple Middle Water Level": "
                 Bow or can_use(Dins_Fire) or (Child_Water_Temple and Sticks) or
-                (water_keys(5) and Hookshot)",
+                (water_keys(4) and Hookshot)",
             "Water Temple Cracked Wall": "
                 Raise_Water_Level and
                 (logic_water_cracked_wall_nothing or (logic_water_cracked_wall_hovers and Hover_Boots))",
@@ -118,7 +119,7 @@
         "dungeon": "Water Temple",
         "locations": {
             "Water Temple Central Pillar Chest": "
-                (water_keys(5) or Bow or can_use(Dins_Fire)) and
+                (water_keys(4) or Bow or can_use(Dins_Fire)) and
                 Iron_Boots and Zora_Tunic and Hookshot"
         },
         "exits": {
@@ -130,10 +131,7 @@
     },
     {
         "region_name": "Water Temple Cracked Wall",
-        "dungeon": "Water Temple",
-        "locations": {
-            "Water Temple Cracked Wall Chest": "has_explosives"
-        }
+        "dungeon": "Water Temple"
     },
     {
         "region_name": "Water Temple Central Bow Target",
@@ -156,7 +154,7 @@
         },
         "exits": {
             "Water Temple Boss Key Chest Room": "
-                water_keys(5) and
+                water_keys(4) and
                 (logic_water_bk_jump_dive or Iron_Boots) and
                 (logic_water_north_basement_ledge_jump or Hover_Boots or
                     (has_explosives and Progressive_Strength_Upgrade))"
@@ -182,7 +180,7 @@
                 (logic_water_falling_platform_gs_boomerang and can_use(Boomerang))"
         },
         "exits": {
-            "Water Temple Dark Link Region": "can_use(Hookshot) and water_keys(5)"
+            "Water Temple Dark Link Region": "can_use(Hookshot) and water_keys(4)"
         }
     },
     {
@@ -201,7 +199,6 @@
         "region_name": "Water Temple River",
         "dungeon": "Water Temple",
         "locations": {
-            "Water Temple River Chest": "Bow",
             "Water Temple River Recovery Heart 1": "True",
             "Water Temple River Recovery Heart 2": "True",
             "Water Temple River Recovery Heart 3": "True",

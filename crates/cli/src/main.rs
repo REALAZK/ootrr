@@ -6,11 +6,13 @@ mod check_catalog;
 mod check_msbt;
 mod check_rstbl;
 mod check_sarc;
+mod door_fix_cmd;
 mod entrance_cmd;
 mod entrance_json;
 mod event_chests_cmd;
 mod flags_cmd;
 mod flow_cmd;
+mod flow_sim_cmd;
 mod game_cmd;
 mod hints_cmd;
 mod intro_cmd;
@@ -18,10 +20,13 @@ mod items_cmd;
 mod key_credit_cmd;
 mod logic_cmd;
 mod pot_cmd;
+mod pot_scan_cmd;
+mod pots_persist_cmd;
 mod progressive_cmd;
 mod save_cmd;
 mod serve_cmd;
 mod settings_cmd;
+mod teleport_cmd;
 mod slice_cmd;
 
 use std::env;
@@ -58,7 +63,14 @@ const USAGE: &str = "usage:
   ootrr flow-scale <romfs_root> <load_dir> <mod_name> <factor> <min_frames> <relative_path>...
   ootrr flow-force <romfs_root> <load_dir> <mod_name> <relative_path> <event_name> <case_value> [<event_name> <case_value>]...
   ootrr intro-skip <romfs_root> <load_dir> <mod_name> [--movie-only | --scene-only | --hold | --hold-and-scene]
+  ootrr door-fix <romfs_root> <load_dir> <mod_name>
   ootrr flow-rewards <romfs_root> <out_json>
+  ootrr flow-sim <romfs_root> <flow> <entry> [--set name=value]... [--own Item[:n]]... [--choose n]... [--hour h] [--follow] [--verbose] [--mod dir] [--patch doorfix] [--nodep Challenge] [--never lit,!lit] [--expect rule] [--compare] [--run Flow:Entry]...
+  ootrr flow-vocab <romfs_root>
+  ootrr flow-sim-scan <romfs_root> [paths_per_entry] [--adult]
+  ootrr tp-chests <romfs_root> <out_tsv> [map_filter]
+  ootrr tp-picks <romfs_root> <out_tsv> <banc_hash_pairs_tsv>
+  ootrr tp-build <romfs_root> <load_dir> <mod_name> <start|coords> <dests_tsv> [--flag NAME] [--rot deg|rad]
   ootrr flow-locations-report [--tests] [--all]
   ootrr flow-locations-check <romfs_root> [flags_json]
   ootrr flow-apply <romfs_root> <load_dir> <mod_name> [--untested] <location=Item_Actor>...
@@ -71,6 +83,8 @@ const USAGE: &str = "usage:
   ootrr generate <settings_string_or_preset_or_file> <seed> <out.ootrr> [--spoiler <file>] [--plando Location=Item]... [--plando-file <file>]
   ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|nx2navi]
   ootrr slice-scan <romfs_root> <out_json>
+  ootrr pot-scan <romfs_root> <out_json>
+  ootrr pots-persist <romfs_root> <load_dir> <mod_name>
   ootrr flags-build <romfs_root> <out_json>
   ootrr flags-lookup <flags_json> <name_or_hash> ...
   ootrr flags-check <romfs_root> <flags_json>
@@ -309,6 +323,7 @@ fn main() -> ExitCode {
         Some("flow-durations") => check_bfevfl::durations(&a[1..]),
         Some("flow-scale") => check_bfevfl::scale(&a[1..]),
         Some("intro-skip") => intro_cmd::run(&a[1..]),
+        Some("door-fix") => door_fix_cmd::run(&a[1..]),
         Some("progressive") => progressive_cmd::run(&a[1..]),
         Some("key-credit") => key_credit_cmd::run(&a[1..]),
         Some("boss-heart") => boss_heart_cmd::run(&a[1..]),
@@ -316,6 +331,12 @@ fn main() -> ExitCode {
         Some("check-game") => game_cmd::check(&a[1..]),
         Some("pot-set") => pot_cmd::run(&a[1..]),
         Some("flow-rewards") => check_bfevfl::catalog(&a[1..]),
+        Some("flow-sim") => flow_sim_cmd::run(&a[1..]),
+        Some("flow-vocab") => flow_sim_cmd::vocab(&a[1..]),
+        Some("flow-sim-scan") => flow_sim_cmd::scan(&a[1..]),
+        Some("tp-chests") => teleport_cmd::chests(&a[1..]),
+        Some("tp-picks") => teleport_cmd::picks(&a[1..]),
+        Some("tp-build") => teleport_cmd::build(&a[1..]),
         Some("flow-locations-report") => flow_cmd::report(&a[1..]),
         Some("flow-locations-check") => flow_cmd::check(&a[1..]),
         Some("flow-apply") => flow_cmd::run_apply(&a[1..]),
@@ -333,6 +354,8 @@ fn main() -> ExitCode {
         Some("generate") => slice_cmd::generate(&a[1..]),
         Some("build") => slice_cmd::build(&a[1..]),
         Some("slice-scan") => slice_cmd::scan_cmd(&a[1..]),
+        Some("pot-scan") => pot_scan_cmd::run(&a[1..]),
+        Some("pots-persist") => pots_persist_cmd::run(&a[1..]),
         Some("flags-build") => flags_cmd::build(&a[1..]),
         Some("flags-lookup") => flags_cmd::lookup(&a[1..]),
         Some("flags-check") => flags_cmd::check(&a[1..]),

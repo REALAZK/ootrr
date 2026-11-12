@@ -14,7 +14,7 @@ Generate: settings and a seed it will create a seed file.
 
 Build: a seed file plus your own extracted game folder produce a mod folder. Lichii and Eden take `load/<title id>/<name>/romfs`. Hookshot and NX2navi take the game's `mods` folder, and the mod is `mods/<name>/romfs`. Choose the game on the Setup page, or pass `--host hookshot` or `--host nx2navi` to `ootrr build`. A Hookshot mod also writes `coop-seed.txt` and keeps the larger resource-size entry from every other mod that is on. Name that mod `randomizer-<seed>` so Hookshot co-op can tell the seeds apart.
 
-Starting items can include the Kokiri sword, the Deku shield and the slingshot. A new game adds those to the pouch. Pots, crates, business scrubs and freestanding ground items are still settings this build does not shuffle.
+Starting items can include the Kokiri sword, the Deku shield and the slingshot. A new game adds those to the pouch. Other starting items, and business scrubs, are still settings this build does not apply.
 
 New here? Follow the [full tutorial with screenshots](https://docs.google.com/document/d/19bxnx9MBVK9WNcX4B0JpQdvWd249YmhNvEfIP1zRMug/edit?usp=sharing), from installing to playing in Lichii.
 

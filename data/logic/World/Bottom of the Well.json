@@ -74,7 +74,7 @@
         },
         "exits": {
             "Bottom of the Well Left Side": "True",
-            "Bottom of the Well Behind Locked Doors": "(Small_Key_Bottom_of_the_Well, 3)"
+            "Bottom of the Well Behind Locked Doors": "(Small_Key_Bottom_of_the_Well, 2)"
         }
     },
     {

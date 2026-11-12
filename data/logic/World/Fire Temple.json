@@ -108,6 +108,8 @@
         "locations": {
             "Fire Temple Boulder Maze Upper Chest": "True",
             "Fire Temple Boulder Maze Shortcut Chest": "has_explosives",
+            "Fire Temple Scarecrow Ledge Second Chest": "can_use(Scarecrow) or (logic_fire_scarecrow and Longshot)",
+            "Fire Temple Scarecrow Ledge Third Chest": "can_use(Scarecrow) or (logic_fire_scarecrow and Longshot)",
             "Fire Temple Scarecrow Chest": "
                 can_use(Scarecrow) or (logic_fire_scarecrow and Longshot)",
             "Fire Temple Moving Fire Room Recovery Heart 1": "True",

@@ -13,6 +13,7 @@
         "dungeon": "Jabu Jabus Belly",
         "locations": {
             "Jabu Jabus Belly Boomerang Chest": "True",
+            "Jabu Jabus Belly Basement 2 Octoroks Chest": "can_use(Boomerang)",
             "Jabu Jabus Belly Deku Scrub": "
                 can_stun_deku and
                 (can_dive or is_child or logic_jabu_alcove_jump_dive or can_use(Iron_Boots))",

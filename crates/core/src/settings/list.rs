@@ -222,7 +222,7 @@ pub fn build() -> Schema {
     s.push(
         where_checks(
             Setting::choice(12, "shuffle_freestanding_items", "shuffle", "Freestanding items", "off")
-                .tip("Which rupees, hearts and heart pieces lying on the ground hold random items."),
+                .tip("Which rupees, hearts and heart pieces lying on the ground hold random items. Only heart pieces, rupees and recovery hearts can be placed there. Experimental, untested in the game."),
         ),
     );
     s.push(
@@ -300,6 +300,26 @@ pub fn build() -> Schema {
             .opt("supported", "Supported rewards", "The rewards whose event the tool can edit. Experimental, none of these edits are tested in the game yet."),
     );
     s.push(
+        Setting::toggle(51, "shuffle_rewards_extra", "shuffle", "More NPC rewards", false)
+            .tip("Also shuffle the rewards that need bigger event edits: the 20 token Skulltula reward, Biggoron and Medigoron. Experimental, none of these edits are tested in the game yet.")
+            .when("shuffle_rewards", "supported"),
+    );
+    s.push(
+        Setting::toggle(53, "shuffle_trade_checks", "shuffle", "Adult trade quest checks", false)
+            .tip("Each of the ten adult trade quest hand ins also gives one shuffled item the first time. The trade items themselves stay in their vanilla order. Experimental, none of these edits are tested in the game yet.")
+            .when("shuffle_rewards", "supported"),
+    );
+    s.push(
+        Setting::toggle(54, "shuffle_scrubs_a", "shuffle", "One time scrub sales", false)
+            .tip("Also shuffle the Business Scrubs that already sell one item once: the Death Mountain Crater heart scrub and the Lost Woods stick and nut bag scrubs. The price stays and the sale text still names the old item. Experimental, none of these edits are tested in the game yet.")
+            .when("shuffle_rewards", "supported"),
+    );
+    s.push(
+        Setting::toggle(56, "shuffle_scrubs_b", "shuffle", "Menu scrubs as one time sales", false)
+            .tip("Also shuffle the Business Scrubs in the Lost Woods scrub grotto and in Jabu Jabu's Belly. A scrub that holds another item sells it once for 20 or 30 rupees instead of its menu, and its sale text still names a heart piece. Experimental, none of these edits are tested in the game yet.")
+            .when("shuffle_rewards", "supported"),
+    );
+    s.push(
         Setting::toggle(39, "shuffle_boss_hearts", "shuffle", "Boss Heart Containers", false)
             .tip("Whether the Heart Containers that bosses leave behind join the item pool. Each one becomes a chest that holds a random item. Experimental, untested in the game."),
     );
@@ -329,6 +349,19 @@ pub fn build() -> Schema {
             .opt("stone", "A Spiritual Stone", "One random Spiritual Stone.")
             .opt("medal", "A Medallion", "One random Medallion.")
             .opt("any", "Either", "One random Stone or Medallion."),
+    );
+    s.push(
+        Setting::choice(52, "shuffle_skulltulas", "shuffle", "Gold Skulltulas", "off")
+            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can only drop items that the game has a pickup for, and it stays dead once killed. Experimental, untested in the game.")
+            .opt("off", "Vanilla", "Every skulltula drops its token.")
+            .opt("pinned", "Confident matches", "Only the skulltulas whose remake actor is known for sure are shuffled.")
+            .opt("matched", "Confident and pooled", "Also the pools of skulltulas that share the same logic, so a mixed up pairing cannot matter."),
+    );
+    s.push(
+        Setting::choice(55, "shuffle_remake_chests", "shuffle", "Remake chests", "off")
+            .tip("Whether the chests that only the remake has, and the dungeon and overworld chests newly paired with their OoTR spot, join the item pool. Their rules come from research. Seven overworld chests whose spot is unproven only take items that are not progression. Experimental, untested in the game.")
+            .opt("off", "Vanilla", "These chests keep their original items.")
+            .opt("on", "Shuffled", "These chests hold random items."),
     );
     s.push(starting_items());
     s.push(starting_songs());

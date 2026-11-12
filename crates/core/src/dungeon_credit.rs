@@ -54,9 +54,9 @@ pub const KEY_DUNGEONS: [&str; 8] = [
     "InsideGanonCastle",
 ];
 pub const DROP: &str = "Drop__DropActor";
-const HOLDER: &str = "GameDataActor";
+pub const HOLDER: &str = "GameDataActor";
 const ADD: &str = "EventTriggerAddOrSubGameDataInt";
-const SET: &str = "EventTriggerSetGameDataBool";
+pub const SET: &str = "EventTriggerSetGameDataBool";
 const ROOT_ENTRY: &str = "Success_";
 const PREFIX: &str = "Success_Key_";
 const ADDED: [&str; 2] = [HOLDER, TALKER];
@@ -111,11 +111,11 @@ pub fn flag(d: &str, member: &str) -> String {
     format!("DungeonInfo.{d}.{member}")
 }
 
-fn idx(n: usize) -> Res<u16> {
+pub fn idx(n: usize) -> Res<u16> {
     u16::try_from(n).map_err(|_| Error::Format("dungeon credit: index does not fit in 16 bits"))
 }
 
-fn push(f: &mut Flow, kind: Kind) -> Res<u16> {
+pub fn push(f: &mut Flow, kind: Kind) -> Res<u16> {
     let i: u16 = idx(f.events.len())?;
     f.events.push(Event { name: format!("Key{i}"), kind });
     Ok(i)
@@ -140,7 +140,7 @@ fn holder(f: &mut Flow, who: &str) -> Res<usize> {
     Ok(f.actors.len() - 1)
 }
 
-fn action_slot(f: &mut Flow, who: &str, name: &str) -> Res<(u16, u16)> {
+pub fn action_slot(f: &mut Flow, who: &str, name: &str) -> Res<(u16, u16)> {
     let i: usize = holder(f, who)?;
     let a: &mut Actor = &mut f.actors[i];
     let j: usize = match a.actions.iter().position(|x| x == name) {
@@ -163,7 +163,7 @@ fn add_int(name: String) -> Cont {
     }
 }
 
-fn set_bool(name: String) -> Cont {
+pub fn set_bool(name: String) -> Cont {
     Cont {
         items: vec![
             ("Index".to_string(), Val::Int(-1)),

@@ -29,6 +29,7 @@ fn once(
     pool: &[ItemId],
     allow: &dyn Fn(ItemId, LocId) -> bool,
     rng: &mut Rng,
+    rank: Option<&dyn Fn(LocId) -> usize>,
 ) -> Res<Placement> {
     let mut place: Placement = fixed.clone();
     let mut items: Vec<ItemId> = pool.to_vec();
@@ -43,6 +44,9 @@ fn once(
     assumed.add_all(&prog);
     for it in items {
         rng.shuffle(&mut open);
+        if let Some(r) = rank {
+            open.sort_by_key(|l| r(*l));
+        }
         let pick: Option<usize> = if w.items.adv[it] {
             assumed.remove(it);
             let mut mx: Search = assumed.clone();
@@ -85,6 +89,20 @@ pub fn fill(
     plan: &[(LocId, ItemId)],
     check_vanilla: bool,
 ) -> Res<Placement> {
+    fill_ranked(w, vanilla, free, allow, rng, tries, plan, check_vanilla, None)
+}
+
+pub fn fill_ranked(
+    w: &World,
+    vanilla: &Placement,
+    free: &[LocId],
+    allow: &dyn Fn(ItemId, LocId) -> bool,
+    rng: &mut Rng,
+    tries: u32,
+    plan: &[(LocId, ItemId)],
+    check_vanilla: bool,
+    rank: Option<&dyn Fn(LocId) -> usize>,
+) -> Res<Placement> {
     let mut fixed: Placement = vanilla.clone();
     let mut pool: Vec<ItemId> = Vec::with_capacity(free.len());
     for l in free {
@@ -115,7 +133,7 @@ pub fn fill(
         if n >= base && !won.is_empty() {
             break;
         }
-        match once(w, &fixed, &open, &pool, allow, rng) {
+        match once(w, &fixed, &open, &pool, allow, rng, rank) {
             Ok(p) => {
                 won.push(p);
                 if won.len() >= WINS as usize {

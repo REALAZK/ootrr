@@ -9,6 +9,9 @@
     "Golden_Gauntlets": "(Progressive_Strength_Upgrade, 3)",
     "Scarecrow": "Progressive_Hookshot and can_play(Scarecrow_Song)",
     "Distant_Scarecrow": "(Progressive_Hookshot, 2) and can_play(Scarecrow_Song)",
+    "skip_to_day": "True",
+    "skip_to_night": "'Zelda Met'",
+    "skip_to_dampe": "'Zelda Met'",
     # Items can be directly aliased, so all occurrences of that item name get replaced,
     # but make sure that inside the rule you use the string 'item' form
     # to avoid infinite recursion.
@@ -166,24 +169,25 @@
 
     # Bridge Requirements
     "has_all_stones": "Kokiri_Emerald and Goron_Ruby and Zora_Sapphire",
+    "story_stones": "'Defeat King Dodongo' and 'Defeat Barinade' and at('HC Garden Skippable Locations', is_child)",
     "has_all_medallions": "Forest_Medallion and Fire_Medallion and Water_Medallion and Shadow_Medallion and Spirit_Medallion and Light_Medallion",
     "can_open_door_of_time": "(
         (open_door_of_time == 'open') or
         (open_door_of_time == 'sot' and can_play(Song_of_Time)) or
         (open_door_of_time == 'oot_sot' and (Ocarina, 2) and can_play(Song_of_Time)) or
-        (open_door_of_time == 'stones' and has_all_stones) or
-        (open_door_of_time == 'stones_sot' and has_all_stones and can_play(Song_of_Time)) or
-        (open_door_of_time == 'stones_oot_sot' and has_all_stones and (Ocarina, 2) and can_play(Song_of_Time)))",
+        (open_door_of_time == 'stones' and story_stones) or
+        (open_door_of_time == 'stones_sot' and story_stones and can_play(Song_of_Time)) or
+        (open_door_of_time == 'stones_oot_sot' and story_stones and (Ocarina, 2) and can_play(Song_of_Time)))",
     "can_build_rainbow_bridge": "(
         (bridge == 'open') or
-        (bridge == 'vanilla' and Shadow_Medallion and Spirit_Medallion and Light_Arrows) or
+        (bridge == 'vanilla' and 'Light Arrows Scene Done') or
         (bridge == 'stones' and has_stones(bridge_stones)) or
         (bridge == 'medallions' and has_medallions(bridge_medallions)) or
         (bridge == 'dungeons' and has_dungeon_rewards(bridge_rewards)) or
         (bridge == 'tokens' and (Gold_Skulltula_Token, bridge_tokens)) or
         (bridge == 'hearts' and has_hearts(bridge_hearts)))",
     "can_trigger_lacs": "(
-        (lacs_condition == 'vanilla' and Shadow_Medallion and Spirit_Medallion) or
+        (lacs_condition == 'vanilla' and 'Defeat Bongo Bongo' and 'Defeat Twinrova') or
         (lacs_condition == 'stones' and has_stones(lacs_stones)) or
         (lacs_condition == 'medallions' and has_medallions(lacs_medallions)) or
         (lacs_condition == 'dungeons' and has_dungeon_rewards(lacs_rewards)) or

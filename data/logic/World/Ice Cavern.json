@@ -54,6 +54,7 @@
         "locations": {
             "Ice Cavern Compass Chest": "True",
             "Ice Cavern Freestanding PoH": "True",
+            "Ice Cavern Push Block Room Chest": "can_play(Song_of_Time)",
             "Ice Cavern Push Block Room Red Rupee 1": "can_play(Song_of_Time) or can_use(Boomerang)",
             "Ice Cavern Push Block Room Red Rupee 2": "can_play(Song_of_Time) or can_use(Boomerang)",
             "Ice Cavern Push Block Room Red Rupee 3": "can_play(Song_of_Time) or can_use(Boomerang)",
@@ -74,6 +75,9 @@
     {
         "region_name": "Ice Cavern End",
         "dungeon": "Ice Cavern",
+        "events": {
+            "Water Temple Gate Open": "is_adult or Slingshot or Sticks or Kokiri_Sword or can_use(Dins_Fire)"
+        },
         "locations": {
             "Ice Cavern Iron Boots Chest": "
                 is_adult or Slingshot or Sticks or Kokiri_Sword or can_use(Dins_Fire)",
