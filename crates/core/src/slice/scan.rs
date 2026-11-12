@@ -9,6 +9,7 @@ use crate::romfs::Romfs;
 use crate::slice::banc::{find, fingerprint, Found};
 use crate::slice::data::{Data, Row, Scan, State};
 use crate::slice::logic::world;
+use crate::slice::pickups as pu;
 use crate::world::World;
 
 fn judge(d: &Data, l: &Loc, found: &[Found], missing: bool) -> State {
@@ -20,6 +21,10 @@ fn judge(d: &Data, l: &Loc, found: &[Found], missing: bool) -> State {
     }
 }
 
+pub fn rewritable(f: &Found) -> bool {
+    f.gyaml.starts_with("Obj_TBox_A_06") && f.sub && f.drop.is_some()
+}
+
 fn judge_plain(d: &Data, l: &Loc, found: &[Found], missing: bool) -> State {
     if missing || found.is_empty() {
         return State::Mismatch;
@@ -27,7 +32,7 @@ fn judge_plain(d: &Data, l: &Loc, found: &[Found], missing: bool) -> State {
     if found.iter().any(|f| f.event) {
         return State::Event;
     }
-    if found.iter().any(|f| f.check) {
+    if found.iter().any(|f| f.check && !rewritable(f)) {
         return State::Check;
     }
     if found.iter().any(|f| !f.gyaml.starts_with("Obj_TBox")) {
@@ -82,7 +87,7 @@ pub fn scan(root: &P) -> Res<Scan> {
     let mut cache: HM<String, Byml> = HM::new();
     let mut rows: Vec<Row> = Vec::new();
     let mut files: BS<String> = BS::new();
-    for l in d.cat.locs.iter().filter(|l| l.kind == "chest" && l.via == Via::Drop) {
+    for l in d.cat.locs.iter().filter(|l| l.kind == "chest" && l.via == Via::Drop && !pu::is_held(&l.name)) {
         let mut found: Vec<Found> = Vec::new();
         let mut missing: bool = false;
         for r in &l.refs {
@@ -142,4 +147,24 @@ pub fn summary(s: &Scan) -> String {
         out.push_str(&format!("{}: {} ({})\n", st.name(), n, st.why()));
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn found(gyaml: &str, check: bool, sub: bool) -> Found {
+        Found { file: "f".to_string(), gyaml: gyaml.to_string(), pos: Vec::new(), drop: Some("TBox_Shield_Deku".to_string()), event: false, check, sub }
+    }
+
+    #[test]
+    fn only_a_06_chests_with_both_branches_are_rewritable() {
+        assert!(rewritable(&found("Obj_TBox_A_06", true, true)));
+        assert!(rewritable(&found("Obj_TBox_A_06_NoBake", true, true)));
+        assert!(!rewritable(&found("Obj_TBox_A_06", true, false)));
+        assert!(!rewritable(&found("Obj_TBox_A_01", true, true)));
+        let mut f: Found = found("Obj_TBox_A_06", true, true);
+        f.drop = None;
+        assert!(!rewritable(&f));
+    }
 }

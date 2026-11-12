@@ -1,0 +1,33 @@
+{
+"format": 1,
+"note": "Gold Skulltula shuffle data. contested lists catalog matches of grade item or forced that the 2026-11-11 actor research pairs with another remake hash, they stay vanilla. pickups maps an OoTR item to the shipped world pickup actor a skulltula drops for it, every actor checked against Pack/Actor of build 1.1.1. Items missing here cannot be placed at a skulltula. See docs/skulltulas.md.",
+"contested": [
+"LH GS Lab Wall",
+"LH GS Tree",
+"Shadow Temple GS Invisible Blades Room",
+"Shadow Temple GS Triple Giant Pot",
+"Water Temple GS Central Pillar"
+],
+"pickups": {
+"Gold Skulltula Token": "Obj_Token_Gold",
+"Rupee (1)": "Obj_Rupee_Green",
+"Rupees (5)": "Obj_Rupee_Blue",
+"Rupees (20)": "Obj_Rupee_Red",
+"Rupees (50)": "Obj_Rupee_Purple",
+"Rupees (200)": "Obj_Rupee_Gold",
+"Recovery Heart": "Obj_Heart",
+"Piece of Heart": "Obj_Heart_Piece",
+"Piece of Heart (Out of Logic)": "Obj_Heart_Piece",
+"Heart Container": "Obj_Heart_Container",
+"Deku Shield": "Obj_Shield_Deku",
+"Hylian Shield": "Obj_Shield_Hylian",
+"Goron Tunic": "Obj_Armor_Goron",
+"Zora Tunic": "Obj_Armor_Zora",
+"Fire Arrows": "Obj_Arrow_Fire",
+"Deku Stick (1)": "Obj_DekuStick",
+"Deku Nuts (5)": "Obj_DekuNut",
+"Deku Nuts (10)": "Obj_DekuNut",
+"Deku Seeds (30)": "Obj_DekuSeed",
+"Bomb (1)": "Obj_Bomb"
+}
+}

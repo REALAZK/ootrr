@@ -1,0 +1,507 @@
+{
+  "format": 1,
+  "game": "oot-remake:4358156a1f17e3c3",
+  "files": [
+    "Banc/BottomOfTheWell/BottomOfTheWell_Dynamic.bcett.byml.zs",
+    "Banc/BottomOfTheWell/BottomOfTheWell_Static.bcett.byml.zs",
+    "Banc/DodongoCavern/DodongoCavern_Dynamic.bcett.byml.zs",
+    "Banc/DodongoCavern/DodongoCavern_Static.bcett.byml.zs",
+    "Banc/FireTemple/FireTemple_Static.bcett.byml.zs",
+    "Banc/ForestTemple/ForestTemple_Dynamic.bcett.byml.zs",
+    "Banc/ForestTemple/ForestTemple_Static.bcett.byml.zs",
+    "Banc/GerudoFortress/GerudoFortress_Adult_Dynamic.bcett.byml.zs",
+    "Banc/GoronCity/GoronCity_Child_Static.bcett.byml.zs",
+    "Banc/IceCavern/IceCavern_Dynamic.bcett.byml.zs",
+    "Banc/InsideGanonCastle/InsideGanonCastle_Static.bcett.byml.zs",
+    "Banc/InsideJabuJabuBelly/InsideJabuJabuBelly_Static.bcett.byml.zs",
+    "Banc/KokiriForest/KokiriForest_Adult_Dynamic.bcett.byml.zs",
+    "Banc/KokiriForest/KokiriForest_Child_Dynamic.bcett.byml.zs",
+    "Banc/Market/Market_Child_Static.bcett.byml.zs",
+    "Banc/ShadowTemple/ShadowTemple_Dynamic.bcett.byml.zs",
+    "Banc/ShadowTemple/ShadowTemple_Static.bcett.byml.zs",
+    "Banc/SpiritTemple/SpiritTemple_Dynamic.bcett.byml.zs",
+    "Banc/SpiritTemple/SpiritTemple_Static.bcett.byml.zs",
+    "Banc/WaterTemple/WaterTemple_Dynamic.bcett.byml.zs",
+    "Banc/WaterTemple/WaterTemple_Static.bcett.byml.zs",
+    "Banc/ZoraFountain/ZoraFountain_Adult_Dynamic.bcett.byml.zs",
+    "Banc/ZoraFountain/ZoraFountain_Child_Dynamic.bcett.byml.zs"
+  ],
+  "locations": [
+    {
+      "name": "Bottom of the Well Basement Pot 10",
+      "state": "eligible"
+    },
+    {
+      "name": "Bottom of the Well Basement Pot 11",
+      "state": "eligible"
+    },
+    {
+      "name": "Bottom of the Well Basement Pot 6",
+      "state": "eligible"
+    },
+    {
+      "name": "Bottom of the Well Left Side Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Bottom of the Well Left Side Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Bottom of the Well Near Entrance Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Bottom of the Well Near Entrance Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Blade Room Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Last Block Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Lower Lizalfos Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Lower Lizalfos Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Lower Lizalfos Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Lower Lizalfos Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Right Side Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Right Side Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Right Side Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Right Side Pot 5",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Right Side Pot 6",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Single Eye Switch Room Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Staircase Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Staircase Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Staircase Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Dodongos Cavern Torch Room Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Fire Temple Flame Maze Left Side Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Fire Temple Flame Maze Left Side Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Fire Temple Hammer Staircase Small Wooden Crate 1",
+      "state": "unmapped"
+    },
+    {
+      "name": "Fire Temple Hammer Staircase Small Wooden Crate 2",
+      "state": "unmapped"
+    },
+    {
+      "name": "Fire Temple Near Boss Pot 1",
+      "state": "special"
+    },
+    {
+      "name": "Fire Temple Near Boss Pot 2",
+      "state": "special"
+    },
+    {
+      "name": "Fire Temple Near Boss Pot 3",
+      "state": "special"
+    },
+    {
+      "name": "Fire Temple Near Boss Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Blue Poe Room Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Blue Poe Room Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Blue Poe Room Pot 3",
+      "state": "special"
+    },
+    {
+      "name": "Forest Temple Center Room Left Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Center Room Left Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Center Room Left Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Center Room Right Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Center Room Right Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Green Poe Room Pot 1",
+      "state": "special"
+    },
+    {
+      "name": "Forest Temple Green Poe Room Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Upper Stalfos Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Upper Stalfos Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Upper Stalfos Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Forest Temple Upper Stalfos Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "GC Boulder Maze Crate",
+      "state": "eligible"
+    },
+    {
+      "name": "GF Above Jail Crate",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Fire Trial Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Fire Trial Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Forest Trial Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Forest Trial Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Light Trial Boulder Pot",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Shadow Trial Like Like Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Shadow Trial Like Like Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Shadow Trial Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Shadow Trial Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Ganons Castle Water Trial Fairy Pot Drop",
+      "state": "eligible"
+    },
+    {
+      "name": "Hideout 2 Torch Jail Pot 2",
+      "state": "pooled"
+    },
+    {
+      "name": "Hideout 4 Torch Jail Pot 1",
+      "state": "pooled"
+    },
+    {
+      "name": "Hideout Break Room Pot 2",
+      "state": "pooled"
+    },
+    {
+      "name": "Ice Cavern Hall Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Ice Cavern Hall Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Ice Cavern Near End Pot 2",
+      "state": "special"
+    },
+    {
+      "name": "Jabu Jabus Belly Above Big Octo Pot 1",
+      "state": "special"
+    },
+    {
+      "name": "Jabu Jabus Belly Above Big Octo Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Jabu Jabus Belly Above Big Octo Pot 3",
+      "state": "special"
+    },
+    {
+      "name": "Jabu Jabus Belly Barinade Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Jabu Jabus Belly Barinade Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Jabu Jabus Belly Barinade Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Jabu Jabus Belly Barinade Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "Jabu Jabus Belly Barinade Pot 5",
+      "state": "eligible"
+    },
+    {
+      "name": "Jabu Jabus Belly Barinade Pot 6",
+      "state": "eligible"
+    },
+    {
+      "name": "KF House of Twins Pot 1",
+      "state": "pooled"
+    },
+    {
+      "name": "KF House of Twins Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "KF Know it All House Pot 1",
+      "state": "pooled"
+    },
+    {
+      "name": "KF Know it All House Pot 2",
+      "state": "pooled"
+    },
+    {
+      "name": "Market Dog Lady House Crate",
+      "state": "eligible"
+    },
+    {
+      "name": "Market Guard House Adult Pot 10",
+      "state": "unmapped"
+    },
+    {
+      "name": "Shadow Temple After Wind Flying Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple After Wind Flying Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple After Wind Pot 1",
+      "state": "pooled"
+    },
+    {
+      "name": "Shadow Temple Falling Spikes Lower Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Falling Spikes Lower Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Map Chest Room Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Map Chest Room Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Near Boss Pot 2",
+      "state": "pooled"
+    },
+    {
+      "name": "Shadow Temple Spike Walls Pot",
+      "state": "pooled"
+    },
+    {
+      "name": "Shadow Temple Whispering Walls Flying Pot",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Whispering Walls Front Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Whispering Walls Front Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Whispering Walls Left Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Whispering Walls Left Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Whispering Walls Left Pot 3",
+      "state": "eligible"
+    },
+    {
+      "name": "Shadow Temple Whispering Walls Near Dead Hand Pot",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Adult Climb Flying Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Adult Climb Flying Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Beamos Hall Pot",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Big Mirror Flying Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Big Mirror Flying Pot 5",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Big Mirror Flying Pot 6",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Central Chamber Flying Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Child Anubis Pot 2",
+      "state": "unmapped"
+    },
+    {
+      "name": "Spirit Temple Child Anubis Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Child Bridge Flying Pot 1",
+      "state": "unmapped"
+    },
+    {
+      "name": "Spirit Temple Child Bridge Flying Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Hall After Sun Block Room Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Spirit Temple Hall After Sun Block Room Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Water Temple Behind Gate Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Water Temple Behind Gate Pot 4",
+      "state": "eligible"
+    },
+    {
+      "name": "Water Temple L1 Torch Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Water Temple L1 Torch Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Water Temple Like Like Pot 1",
+      "state": "special"
+    },
+    {
+      "name": "Water Temple Like Like Pot 2",
+      "state": "special"
+    },
+    {
+      "name": "Water Temple Main Room L2 Pot 1",
+      "state": "eligible"
+    },
+    {
+      "name": "Water Temple Main Room L2 Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "Water Temple Near Boss Pot 1",
+      "state": "special"
+    },
+    {
+      "name": "Water Temple Near Boss Pot 2",
+      "state": "special"
+    },
+    {
+      "name": "ZF Hidden Cave Pot 2",
+      "state": "eligible"
+    },
+    {
+      "name": "ZF Hidden Cave Pot 3",
+      "state": "eligible"
+    }
+  ]
+}

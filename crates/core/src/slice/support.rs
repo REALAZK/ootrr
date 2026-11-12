@@ -1,5 +1,7 @@
 use crate::error::{Error as E, Res};
 use crate::settings::{Settings, Value};
+use crate::slice::dungeon_items as di;
+use crate::slice::pickups as pu;
 use crate::start_reward::Reward;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -16,11 +18,14 @@ pub enum Keep {
     Dungeon,
     AnyDungeon,
     Anywhere,
+    Overworld,
+    Regional,
+    Start,
 }
 
 impl Keep {
     pub fn roams(self) -> bool {
-        matches!(self, Keep::AnyDungeon | Keep::Anywhere)
+        matches!(self, Keep::AnyDungeon | Keep::Anywhere | Keep::Overworld | Keep::Regional)
     }
 }
 
@@ -49,7 +54,12 @@ pub struct Plan {
     pub map: Keep,
     pub ganon: Keep,
     pub rewards: bool,
+    pub extra: bool,
+    pub trade: bool,
+    pub scrubs: bool,
+    pub scrubs_b: bool,
     pub hearts: bool,
+    pub world: Mode,
     pub songs: Songs,
     pub hints: bool,
     pub fast: bool,
@@ -58,6 +68,9 @@ pub struct Plan {
     pub forest: Forest,
     pub excluded: Vec<String>,
     pub notes: Vec<String>,
+    pub drops: crate::pot_slice::Drops,
+    pub skulls: crate::slice::skulls::Mode,
+    pub remake: bool,
 }
 
 const UNCHANGED: [&str; 25] = [
@@ -88,7 +101,7 @@ const UNCHANGED: [&str; 25] = [
     "ganon_bosskey_hearts",
 ];
 
-const OFF_ONLY: [&str; 4] = ["shuffle_pots", "shuffle_crates", "shuffle_scrubs", "shuffle_freestanding_items"];
+const OFF_ONLY: [&str; 1] = ["shuffle_scrubs"];
 
 pub fn show(v: &Value) -> String {
     match v {
@@ -99,15 +112,13 @@ pub fn show(v: &Value) -> String {
     }
 }
 
-fn keep(s: &Settings, id: &str, roam: bool, bad: &mut Vec<String>) -> Keep {
+const SMALL_OK: [&str; 4] = ["vanilla", "dungeon", "any_dungeon", "keysanity"];
+
+fn keep(s: &Settings, id: &str, ok: &[&str], bad: &mut Vec<String>) -> Keep {
     match s.text(id) {
-        Ok("vanilla") => Keep::Vanilla,
-        Ok("dungeon") => Keep::Dungeon,
-        Ok("any_dungeon") if roam => Keep::AnyDungeon,
-        Ok("keysanity") if roam => Keep::Anywhere,
+        Ok(v) if ok.contains(&v) => di::keep_value(v),
         Ok(v) => {
-            let ok: &str = if roam { "vanilla, dungeon, any_dungeon and keysanity" } else { "vanilla and dungeon" };
-            bad.push(format!("{id} is {v}, which this build cannot place yet (only {ok} work)"));
+            bad.push(format!("{id} is {v}, which this build cannot place yet (only {} work)", di::listed(ok)));
             Keep::Vanilla
         }
         Err(e) => {
@@ -142,11 +153,13 @@ impl Plan {
     }
 
     pub fn start_flags(&self) -> Vec<(String, bool)> {
-        match self.forest {
+        let mut out: Vec<(String, bool)> = match self.forest {
             Forest::Closed => Vec::new(),
             Forest::ClosedDeku => vec![(EXIT_WALL.to_string(), false)],
             Forest::Open => vec![(MIDO_WALL.to_string(), false), (EXIT_WALL.to_string(), false)],
-        }
+        };
+        out.extend(di::start_flags(self));
+        out
     }
 
     pub fn logic(&self) -> Vec<(&'static str, &'static str)> {
@@ -189,10 +202,12 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         Err(e) => bad.push(e.to_string()),
     }
     let chests: Mode = chest_mode(s, &mut bad);
-    let small: Keep = keep(s, "shuffle_smallkeys", true, &mut bad);
-    let boss: Keep = keep(s, "shuffle_bosskeys", false, &mut bad);
-    let map: Keep = keep(s, "shuffle_mapcompass", false, &mut bad);
-    let ganon: Keep = keep(s, "shuffle_ganon_bosskey", false, &mut bad);
+    let world: Mode = pu::mode(s, &mut bad);
+    let drops: crate::pot_slice::Drops = crate::pot_slice::plan::read(s, &mut bad);
+    let small: Keep = keep(s, "shuffle_smallkeys", &SMALL_OK, &mut bad);
+    let boss: Keep = keep(s, "shuffle_bosskeys", &di::BOSS_OK, &mut bad);
+    let map: Keep = keep(s, "shuffle_mapcompass", &di::MAP_OK, &mut bad);
+    let ganon: Keep = keep(s, "shuffle_ganon_bosskey", &di::GANON_OK, &mut bad);
     let rewards: bool = match s.text("shuffle_rewards") {
         Ok("off") => false,
         Ok("supported") => true,
@@ -205,6 +220,18 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             false
         }
     };
+    let extra: bool = rewards
+        && s.flag(crate::flow_extra::SETTING).unwrap_or_else(|e| {
+            bad.push(e.to_string());
+            false
+        });
+    let trade: bool = rewards
+        && s.flag(crate::flow_extra::trade::SETTING).unwrap_or_else(|e| {
+            bad.push(e.to_string());
+            false
+        });
+    let scrubs: bool = crate::scrubs_a::read(s, rewards, &mut bad);
+    let scrubs_b: bool = crate::scrubs_b::read(s, rewards, &mut bad);
     let hearts: bool = s.flag("shuffle_boss_hearts").unwrap_or_else(|e| {
         bad.push(e.to_string());
         false
@@ -261,6 +288,8 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             Songs::Off
         }
     };
+    let skulls: crate::slice::skulls::Mode = crate::slice::skulls::mode(s, &mut bad);
+    let remake: bool = crate::slice::remake_chests::mode(s, &mut bad);
     let excluded: Vec<String> = s.items("disabled_locations").map(|v| v.to_vec()).unwrap_or_default();
     if !bad.is_empty() {
         let lines: Vec<String> = bad.iter().map(|b| format!("  {b}")).collect();
@@ -279,18 +308,35 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     for (on, text) in [
         (hearts, "Boss Heart Containers are shuffled. Each becomes a chest, experimental and untested in the game."),
         (songs != Songs::Off, "Songs are shuffled. The song lessons are edited, experimental and untested in the game."),
+        (world != Mode::Off, pu::NOTE),
         (fast, "Chest and item pickup scenes are sped up."),
         (intro, "The new game intro is skipped. The opening movie and the wake up scene are bypassed, experimental and untested in the game."),
         (start != Reward::Off, "You start the game with one random Stone or Medallion. Experimental and untested in the game."),
         (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
         (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
         (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
+        (extra, "Kak 20 Gold Skulltula Reward, DMT Biggoron and GC Medigoron are shuffled with structural event edits. Experimental and untested in the game."),
+        (trade, "The ten adult trade quest hand ins each give one extra shuffled item the first time. The trade chain itself stays vanilla. Experimental and untested in the game."),
     ] {
         if on {
             notes.push(text.to_string());
         }
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, hearts, songs, hints, fast, intro, start, forest, excluded, notes })
+    notes.extend(di::notes(boss, ganon, map));
+    notes.extend(drops.notes());
+    if skulls != crate::slice::skulls::Mode::Off {
+        notes.push(crate::slice::skulls::NOTE.to_string());
+    }
+    if scrubs {
+        notes.push(crate::scrubs_a::NOTE.to_string());
+    }
+    if scrubs_b {
+        notes.push(crate::scrubs_b::NOTE.to_string());
+    }
+    if remake {
+        notes.push(crate::slice::remake_chests::NOTE.to_string());
+    }
+    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, excluded, notes, drops, skulls, remake })
 }
 
 #[cfg(test)]
@@ -322,12 +368,12 @@ mod tests {
     #[test]
     fn unsupported_values_are_named_not_ignored() {
         let mut s: Settings = Settings::default();
-        s.set("shuffle_pots", Value::s("all")).unwrap();
+        s.set("shuffle_scrubs", Value::s("low")).unwrap();
         s.set("shuffle_smallkeys", Value::s("remove")).unwrap();
         s.set("bridge", Value::s("open")).unwrap();
         s.set("starting_hearts", Value::Int(5)).unwrap();
         let e: String = plan(&s).err().unwrap().to_string();
-        assert!(e.contains("shuffle_pots is all"));
+        assert!(e.contains("shuffle_scrubs is low"));
         assert!(e.contains("shuffle_smallkeys is remove"));
         assert!(e.contains("bridge is open"));
         assert!(e.contains("starting_hearts is 5"));
@@ -349,8 +395,8 @@ mod tests {
         s.set("shuffle_smallkeys", Value::s("overworld")).unwrap();
         assert!(plan(&s).is_err());
         s.set("shuffle_smallkeys", Value::s("dungeon")).unwrap();
-        s.set("shuffle_bosskeys", Value::s("keysanity")).unwrap();
-        assert!(plan(&s).err().unwrap().to_string().contains("shuffle_bosskeys is keysanity"));
+        s.set("shuffle_ganon_bosskey", Value::s("medallions")).unwrap();
+        assert!(plan(&s).err().unwrap().to_string().contains("shuffle_ganon_bosskey is medallions"));
     }
 
     #[test]

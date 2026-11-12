@@ -21,7 +21,7 @@ pub const PAGE: &str = "{0.4}";
 pub const WIDTH: usize = 56;
 pub const LINES: usize = 2;
 pub const PAGES: usize = 3;
-pub const SKIP: [&str; 5] = ["SmallKey", "BossKey", "GanonBossKey", "Map", "Compass"];
+pub const SKIP: [&str; 6] = ["SmallKey", "BossKey", "GanonBossKey", "Map", "Compass", "Token"];
 pub const MINOR: [&str; 4] = ["Piece of Heart", "Piece of Heart (Out of Logic)", "Piece of Heart (Treasure Chest Game)", "Heart Container"];
 
 const PREFIXES: [(&str, &str); 22] = [

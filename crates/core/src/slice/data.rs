@@ -13,7 +13,7 @@ pub const CATALOG_JSON: &str = include_str!("../../../../data/locations.json");
 pub const REMAKE_JSON: &str = include_str!("../../../../data/remake_vanilla.json");
 pub const EVENTS_JSON: &str = include_str!("../../../../data/event_chests.json");
 
-pub const HELD: [u64; 1] = [6859289214373847284];
+pub const HELD: [u64; 0] = [];
 
 pub const SEP: &str = " @ ";
 
@@ -28,6 +28,7 @@ pub struct Item {
     pub conf: String,
     pub dungeon: Option<String>,
     pub tiers: Vec<String>,
+    pub world: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -120,6 +121,7 @@ pub struct Data {
     pub vanilla: HM<String, String>,
     pub cat: Catalog,
     pub scan: Scan,
+    pub pots: crate::pot_slice::PotData,
 }
 
 fn text(j: &Json, k: &str) -> Res<String> {
@@ -152,6 +154,11 @@ pub fn parse_items(t: &str) -> Res<Vec<Item>> {
             dungeon: opt(e, "dungeon"),
             tiers: e
                 .get("tiers")
+                .and_then(|v| v.as_arr())
+                .map(|a| a.iter().filter_map(|x| x.as_str().map(|s| s.to_string())).collect())
+                .unwrap_or_default(),
+            world: e
+                .get("world")
                 .and_then(|v| v.as_arr())
                 .map(|a| a.iter().filter_map(|x| x.as_str().map(|s| s.to_string())).collect())
                 .unwrap_or_default(),
@@ -234,6 +241,7 @@ impl Data {
             vanilla: parse_vanilla(vanilla)?,
             cat: Catalog::parse(cat)?,
             scan: parse_scan(scan)?,
+            pots: crate::pot_slice::PotData::default(),
         })
     }
 
@@ -248,26 +256,7 @@ impl Data {
     }
 
     pub fn flow_ok(&self, name: &str) -> bool {
-        let Some(l) = self.flow.by_name(name) else {
-            return false;
-        };
-        if !l.supported || l.conf == "guess" || l.edits.is_empty() {
-            return false;
-        }
-        let Some(actor) = l.item.as_deref() else {
-            return false;
-        };
-        if !self.flow.usable(actor) {
-            return false;
-        }
-        match self.vanilla_of(name).and_then(|v| self.item(v)) {
-            Some(i) => {
-                family_of(&i.tiers).is_none()
-                    && (i.actor.as_deref() == Some(actor) || i.tiers.iter().any(|t| t == actor))
-                    && self.flow_accepts(i)
-            }
-            None => false,
-        }
+        crate::slice::flow_rules::ok(self, name)
     }
 
     pub fn song_ok(&self, name: &str) -> bool {
@@ -290,7 +279,7 @@ impl Data {
     }
 
     pub fn load() -> Res<Data> {
-        Data::new(ITEMS_JSON, VANILLA_JSON, SLICE_JSON, CATALOG_JSON)?.with_events(EVENTS_JSON)?.with_remake(REMAKE_JSON)?.with_flow()
+        Data::new(ITEMS_JSON, VANILLA_JSON, SLICE_JSON, CATALOG_JSON)?.with_events(EVENTS_JSON)?.with_remake(REMAKE_JSON)?.with_flow()?.with_pots()
     }
 
     pub fn event_mode(&self, hash: u64) -> Option<Ev> {
@@ -333,9 +322,13 @@ impl Data {
     }
 
     pub fn grants(&self, family: &'static str) -> Vec<Grant> {
+        self.grants_except(family, &|_| false)
+    }
+
+    pub fn grants_except(&self, family: &'static str, skip: &dyn Fn(&str) -> bool) -> Vec<Grant> {
         let mut out: Vec<Grant> = Vec::new();
         for l in &self.flow.locs {
-            if !l.supported || self.vanilla_of(&l.name).and_then(|v| self.family(v)) != Some(family) {
+            if !l.supported || skip(&l.name) || self.vanilla_of(&l.name).and_then(|v| self.family(v)) != Some(family) {
                 continue;
             }
             for e in l.edits.iter().filter(|e| e.role == "grant") {

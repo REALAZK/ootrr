@@ -244,7 +244,7 @@ mod tests {
     #[test]
     fn the_shipped_file_loads_and_is_complete() {
         let t: Table = load().unwrap();
-        assert_eq!(t.items.len(), 286);
+        assert_eq!(t.items.len(), 289);
         let c = t.counts();
         assert_eq!(c.mapped + c.logic + c.unmapped, c.total);
         assert!(c.mapped >= 190);

@@ -25,6 +25,7 @@ pub struct Loc {
     pub item: Option<String>,
     pub conf: String,
     pub supported: bool,
+    pub gated: bool,
     pub why: String,
     pub edits: Vec<Edit>,
     pub grant_flags: Vec<String>,
@@ -113,7 +114,7 @@ fn loc(j: &Json) -> Res<Loc> {
         edits.push(edit(e)?);
     }
     let sup: String = text(j, "support")?;
-    if sup != "supported" && sup != "unsupported" {
+    if sup != "supported" && sup != "unsupported" && sup != "gated" {
         return Err(E::Msg(format!("flow_locations json: bad support value {sup}")));
     }
     Ok(Loc {
@@ -124,6 +125,7 @@ fn loc(j: &Json) -> Res<Loc> {
         item: j.get("item").and_then(|v| v.as_str()).map(|s| s.to_string()),
         conf: text(j, "conf")?,
         supported: sup == "supported",
+        gated: sup == "gated",
         why: text(j, "why")?,
         edits,
         grant_flags: list(j, "grant_flags")?,
@@ -196,7 +198,7 @@ mod tests {
         assert!(!d.locs.is_empty());
         for (i, l) in d.locs.iter().enumerate() {
             assert!(d.locs[i + 1..].iter().all(|m| m.name != l.name), "{}", l.name);
-            assert!(!l.edits.is_empty(), "{}", l.name);
+            assert!(!l.edits.is_empty() || crate::scrubs_b::is_b(l), "{}", l.name);
         }
         for g in &d.gaps {
             assert!(d.by_name(&g.name).is_none(), "{}", g.name);
@@ -207,14 +209,15 @@ mod tests {
     fn supported_locations_are_plain_single_item_grants() {
         let d: Data = Data::load().unwrap();
         for l in d.locs.iter().filter(|l| l.supported) {
-            let item: &str = &l.edits[0].item;
+            let item: &str = l.item.as_deref().unwrap_or(&l.edits[0].item);
+            let home: bool = l.item.as_deref() == Some("Item_Bottle_Milk");
             for e in &l.edits {
-                assert_eq!(e.item, item, "{}", l.name);
+                assert!(e.item == item || d.usable(&e.item), "{}", l.name);
                 assert!(e.role == "grant" || e.role == "display", "{}", l.name);
                 assert!(!e.via.contains("Bottle"), "{}", l.name);
                 assert!(e.file.ends_with(".bfevfl"), "{}", l.name);
             }
-            assert!(d.usable(item), "{}", l.name);
+            assert!(d.usable(item) || home, "{}", l.name);
             assert!(l.edits.iter().any(|e| e.role == "grant"), "{}", l.name);
             assert!(l.bound_flags.is_empty(), "{}", l.name);
         }

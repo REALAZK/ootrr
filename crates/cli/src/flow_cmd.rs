@@ -193,7 +193,7 @@ pub fn run_verify(a: &[String]) -> Res<()> {
     } else {
         let d: Data = Data::load()?;
         let (ch, _, _): (Vec<Change>, usize, Vec<String>) = plan(&d, &cs, &o)?;
-        Some(ch.iter().map(Diff::of).collect())
+        Some(ch.iter().filter(|c| ootrr_core::flow_extra::trade::plain(c)).map(Diff::of).collect())
     };
     let c: Checked = verify(P::new(root), P::new(modf), want.as_deref())?;
     print_checked(&c);

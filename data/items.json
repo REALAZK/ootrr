@@ -7,6 +7,7 @@
 {"name":"Bombchus (10)","kind":"Item","adv":true,"actor":"Item_BombchuBundle_Medium","conf":"exact","mode":"bundle","qty":10,"via":{"chest":"guess","flow":"seen"}},
 {"name":"Boomerang","kind":"Item","adv":true,"actor":"Item_Boomerang","conf":"exact","mode":"actor","via":{"chest":"seen"}},
 {"name":"Deku Stick (1)","kind":"Item","adv":false,"actor":"Item_DekuStick","conf":"exact","mode":"actor","world":["Obj_DekuStick"],"qty":1,"via":{"chest":"guess","world":"seen"},"why":"single stick, Item_DekuStickBundle_Small holds 3"},
+{"name":"Deku Sticks (3)","kind":"Item","adv":false,"actor":"Item_DekuStickBundle_Small","conf":"exact","mode":"bundle","qty":3,"via":{"chest":"seen"},"why":"remake only chest item with no OoTR name, PouchActorInfo BundleActorNum 3 of Item_DekuStick, held by the Deku Tree Basement Chest"},
 {"name":"Lens of Truth","kind":"Item","adv":true,"actor":"Item_GlassTruth","conf":"exact","mode":"actor","via":{"chest":"seen","flow":"seen"},"why":"worn as a head slot item in the remake, the pickup actor is Item_GlassTruth"},
 {"name":"Megaton Hammer","kind":"Item","adv":true,"actor":"Item_Hammer","conf":"exact","mode":"actor","via":{"chest":"seen"}},
 {"name":"Cojiro","kind":"Item","adv":true,"actor":"Item_CojiroCucco","conf":"exact","mode":"actor","via":{"flow":"seen"},"why":"trade quest step, the events give and take it"},
@@ -53,6 +54,7 @@
 {"name":"Small Key","kind":"SmallKey","adv":true,"actor":"Item_Dungeon_SmallKey","conf":"exact","mode":"generic","world":["Obj_Dungeon_SmallKey"],"via":{"chest":"seen","world":"seen"},"why":"generic small key counted per dungeon, the dungeon comes from where it is picked up"},
 {"name":"Weird Egg","kind":"Item","adv":true,"actor":"Item_WeirdEgg","conf":"exact","mode":"actor","via":{"flow":"seen"}},
 {"name":"Recovery Heart","kind":"Item","adv":false,"actor":"Obj_Heart","conf":"exact","mode":"actor","qty":1,"via":{"chest":"guess","world":"seen"},"why":"one heart restore, PouchActorInfo HitPointRecover is 4 quarter hearts"},
+{"name":"Magic Jar (Large)","kind":"Item","adv":false,"actor":"Tbox_MagicJar_Large","conf":"exact","mode":"actor","via":{"chest":"seen"},"why":"remake only chest item with no OoTR name, a magic refill with PouchActorInfo MPRecover 120, held by the Shadow Temple Spike Walls Left Chest"},
 {"name":"Arrows (5)","kind":"Item","adv":false,"actor":"TBox_ArrowBundle_Medium","conf":"exact","mode":"bundle","qty":5,"via":{"chest":"seen"}},
 {"name":"Arrows (10)","kind":"Item","adv":false,"actor":"TBox_ArrowBundle_Large","conf":"exact","mode":"bundle","qty":10,"via":{"chest":"seen"}},
 {"name":"Arrows (30)","kind":"Item","adv":false,"actor":"TBox_ArrowBundle_Large","conf":"approx","mode":"bundle","qty":10,"via":{"chest":"seen"},"why":"the largest chest bundle holds 10, Shop_ArrowBundle_02 holds 30"},
@@ -287,6 +289,7 @@
 {"name":"Fire Medallion","kind":"DungeonReward","adv":true,"actor":"Item_Medal_Fire","conf":"exact","mode":"actor","via":{"flow":"seen"},"why":"boss reward given by a cutscene flow, an _ImportantMenu pack is its menu icon"},
 {"name":"Water Medallion","kind":"DungeonReward","adv":true,"actor":"Item_Medal_Water","conf":"exact","mode":"actor","via":{"flow":"seen"},"why":"boss reward given by a cutscene flow, an _ImportantMenu pack is its menu icon"},
 {"name":"Shadow Medallion","kind":"DungeonReward","adv":true,"actor":"Item_Medal_Shadow","conf":"exact","mode":"actor","via":{"flow":"seen"},"why":"boss reward given by a cutscene flow, an _ImportantMenu pack is its menu icon"},
-{"name":"Spirit Medallion","kind":"DungeonReward","adv":true,"actor":"Item_Medal_Spirit","conf":"exact","mode":"actor","via":{"flow":"seen"},"why":"boss reward given by a cutscene flow, an _ImportantMenu pack is its menu icon"}
+{"name":"Spirit Medallion","kind":"DungeonReward","adv":true,"actor":"Item_Medal_Spirit","conf":"exact","mode":"actor","via":{"flow":"seen"},"why":"boss reward given by a cutscene flow, an _ImportantMenu pack is its menu icon"},
+{"name":"Business Scrub Seed","kind":"Item","adv":false,"actor":"Item_ScrubBusinessSeed","conf":"exact","mode":"actor","qty":1,"via":{"chest":"seen","flow":"seen"},"why":"remake only item with no OoTR counterpart, PouchActorInfo row Item_ScrubBusinessSeed has BundleActorNum 1 and FixedMaxNum 30 and AssignableItem ScrubBusinessSeed, so a chest gives one seed that is used from the item menu to summon a Business Scrub who sells goods, it is not slingshot ammo"}
 ]
 }

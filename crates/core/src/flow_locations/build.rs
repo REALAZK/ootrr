@@ -5,7 +5,7 @@ use std::path::{Path as P, PathBuf as PB};
 use crate::TITLE_ID;
 use crate::error::{Error as E, Res};
 use crate::flow_locations::data::{path_of, Data, Edit, Loc};
-use crate::flow_locations::edit::{dict_id, edit_bytes, Req};
+use crate::flow_locations::edit::{dict_id, Req};
 use crate::modpack::Pack;
 use crate::romfs::Romfs;
 use crate::rsizetable::{self, Rst};
@@ -77,7 +77,7 @@ fn pick<'a>(d: &'a Data, c: &Choice, o: &Opts) -> Res<&'a Loc> {
     let l: &Loc = d
         .by_name(&c.location)
         .ok_or_else(|| E::Msg(format!("{} is not a flow location this build knows", c.location)))?;
-    if !l.supported && !(o.songs && l.cat == "song") {
+    if !l.supported && !l.gated && !(o.songs && l.cat == "song") {
         return Err(E::Msg(format!("{} is not supported, {}", l.name, l.why)));
     }
     Ok(l)
@@ -111,6 +111,20 @@ pub fn plan(d: &Data, cs: &[Choice], o: &Opts) -> Res<(Vec<Change>, usize, Vec<S
                 untested.push(c.item.clone());
             }
         }
+        if crate::flow_extra::trade::is(&l.name) {
+            if l.item.as_deref() == Some(c.item.as_str()) {
+                same += 1;
+            } else {
+                out.extend(crate::flow_extra::trade::changes(l, &c.item)?);
+            }
+            continue;
+        }
+        if !o.untested && crate::flow_extra::trade::chain(&c.item) && l.item.as_deref() != Some(c.item.as_str()) {
+            return Err(E::Msg(format!(
+                "{} is a trade quest item, it shares one menu slot with the chain and may only stay at its own location, so {} refuses it. Pass the untested option to try it anyway",
+                c.item, l.name
+            )));
+        }
         for e in &l.edits {
             if e.item == c.item {
                 same += 1;
@@ -135,7 +149,7 @@ pub fn plan(d: &Data, cs: &[Choice], o: &Opts) -> Res<(Vec<Change>, usize, Vec<S
 
 fn reqs(changes: &[Change]) -> BM<String, Vec<Req>> {
     let mut by: BM<String, Vec<Req>> = BM::new();
-    for c in changes {
+    for c in changes.iter().filter(|c| crate::flow_extra::trade::plain(c)) {
         by.entry(c.file.clone()).or_default().push(Req {
             index: c.index,
             event: c.event.clone(),
@@ -182,13 +196,19 @@ fn describe(a: &Applied, extra: &[String]) -> String {
 pub fn stage(rf: &mut Romfs, d: &Data, cs: &[Choice], o: &Opts) -> Res<Stage> {
     let (changes, same, untested): (Vec<Change>, usize, Vec<String>) = plan(d, cs, o)?;
     let by: BM<String, Vec<Req>> = reqs(&changes);
+    let extra: BM<String, Vec<crate::flow_extra::Op>> = crate::flow_extra::ops_for(&changes)?;
+    let mut names: Vec<&String> = by.keys().chain(extra.keys()).collect();
+    names.sort();
+    names.dedup();
     let mut files: Vec<StagedFile> = Vec::new();
-    for (file, rs) in &by {
+    for file in names {
+        let rs: &[Req] = by.get(file).map(|v| v.as_slice()).unwrap_or(&[]);
+        let os: &[crate::flow_extra::Op] = extra.get(file).map(|v| v.as_slice()).unwrap_or(&[]);
         let path: String = path_of(file);
         let z: Vec<u8> = rf.read(&path)?;
         let id: u32 = dict_id(&z).unwrap_or(FRAME_DICT);
         let raw: Vec<u8> = rf.zs.decompress(&z)?;
-        let out: Vec<u8> = edit_bytes(&raw, rs)?;
+        let out: Vec<u8> = crate::flow_extra::edit_bytes(&raw, rs, os)?;
         files.push(StagedFile { path, z: zs::compress_raw(&out, Some(id))?, old: raw.len(), new: out.len() });
     }
     Ok(Stage { files, changes, same, untested })

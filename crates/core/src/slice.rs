@@ -1,12 +1,22 @@
 pub mod banc;
 pub mod data;
+pub mod dungeon_items;
 pub mod edit;
 pub mod fill;
+pub mod flow_pool;
+pub mod flow_rules;
+pub mod flow_wrap;
 pub mod generate;
+pub mod held_chests;
 pub mod logic;
 pub mod pick;
+pub mod pickups;
 pub mod plando;
+pub mod remake_chests;
+pub mod remake_overworld;
 pub mod scan;
+pub mod skull_edit;
+pub mod skulls;
 pub mod support;
 
 pub use edit::{build, BuildCounts, Built, ChestLine};

@@ -141,10 +141,11 @@
         "region_name": "Gerudo Training Ground Like Like Room",
         "dungeon": "Gerudo Training Ground",
         "locations": {
-            "Gerudo Training Ground Heavy Block First Chest": "True",
+            "Gerudo Training Ground Heavy Block First Chest": "can_use(Bow) or can_use(Slingshot)",
             "Gerudo Training Ground Heavy Block Second Chest": "True",
             "Gerudo Training Ground Heavy Block Third Chest": "True",
-            "Gerudo Training Ground Heavy Block Fourth Chest": "True"
+            "Gerudo Training Ground Heavy Block Fourth Chest": "True",
+            "Gerudo Training Ground Heavy Block Fifth Chest": "True"
         }
     },
     {
