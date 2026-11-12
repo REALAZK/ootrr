@@ -164,7 +164,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           NOTES: |
-            Playtest build: skips the intro, fixes seeds that could lock dungeon keys, adds a plandomizer and small keys anywhere (experimental).
+            Pre-release for testing. Adds many new experimental shuffles, all off by default: Gold Skulltulas, pots, crates, heart pieces and freestanding items, more NPC rewards, the adult trade quest, one time and menu scrubs, remake only dungeon and overworld chests, and boss keys, Ganon's key, maps and compasses anywhere. Fixes the Water Temple, Bottom of the Well and Ganon's Castle key counts and trade items that overwrote each other. Nothing new has been tested in game yet. Seeds made with 0.2.2 will not build with this version, generate them again. The Door of Time block is not fixed in this release.
 
             OOTRR ${{ needs.version.outputs.version }} shuffles chests, and optionally boss hearts, songs, story and NPC rewards, with gossip hints, faster pickups, a start reward, an open Kokiri Forest, a plandomizer and small keys in any dungeon or anywhere. The new game intro is skipped by default. Most options other than the intro skip are off by default and experimental.
 
