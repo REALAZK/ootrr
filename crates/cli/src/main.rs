@@ -7,6 +7,7 @@ mod check_msbt;
 mod check_rstbl;
 mod check_sarc;
 mod door_fix_cmd;
+mod door_open_cmd;
 mod entrance_cmd;
 mod entrance_json;
 mod event_chests_cmd;
@@ -64,6 +65,7 @@ const USAGE: &str = "usage:
   ootrr flow-force <romfs_root> <load_dir> <mod_name> <relative_path> <event_name> <case_value> [<event_name> <case_value>]...
   ootrr intro-skip <romfs_root> <load_dir> <mod_name> [--movie-only | --scene-only | --hold | --hold-and-scene]
   ootrr door-fix <romfs_root> <load_dir> <mod_name>
+  ootrr door-open <romfs_root> <load_dir> <mod_name>
   ootrr flow-rewards <romfs_root> <out_json>
   ootrr flow-sim <romfs_root> <flow> <entry> [--set name=value]... [--own Item[:n]]... [--choose n]... [--hour h] [--follow] [--verbose] [--mod dir] [--patch doorfix] [--nodep Challenge] [--never lit,!lit] [--expect rule] [--compare] [--run Flow:Entry]...
   ootrr flow-vocab <romfs_root>
@@ -324,6 +326,7 @@ fn main() -> ExitCode {
         Some("flow-scale") => check_bfevfl::scale(&a[1..]),
         Some("intro-skip") => intro_cmd::run(&a[1..]),
         Some("door-fix") => door_fix_cmd::run(&a[1..]),
+        Some("door-open") => door_open_cmd::run(&a[1..]),
         Some("progressive") => progressive_cmd::run(&a[1..]),
         Some("key-credit") => key_credit_cmd::run(&a[1..]),
         Some("boss-heart") => boss_heart_cmd::run(&a[1..]),

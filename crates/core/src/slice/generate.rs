@@ -87,6 +87,11 @@ pub fn allowed(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> bool {
     if d.item(&w.items.names[it]).is_some_and(|i| !crate::flow_extra::trade::keeps(d, &w.locs[l].name, i)) {
         return false;
     }
+    if crate::slice::edit::skipped_locations(p).contains(&w.locs[l].name.as_str())
+        && !d.item(&w.items.names[it]).is_some_and(|i| i.actor.is_some() || !i.tiers.is_empty())
+    {
+        return false;
+    }
     if let Some(ok) = by_place(d, w, p, it, l) {
         return ok;
     }
@@ -211,6 +216,14 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
         named.push(w.locs[l].name.clone());
     }
     p.excluded = named;
+    if p.kakariko {
+        for e in crate::start_state::KAKARIKO_EXCLUDED {
+            let name: String = w.locs[loc_of(&w, e)?].name.clone();
+            if !p.excluded.contains(&name) {
+                p.excluded.push(name);
+            }
+        }
+    }
     if let Some((name, _)) = pick_start(seed, p.start) {
         let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
         w.start.push((i, 1));
@@ -397,7 +410,7 @@ mod tests {
     #[test]
     fn progression_is_shuffled_and_always_beatable() {
         let d: Data = synthetic();
-        let w: World = world(&d).unwrap();
+        let w: World = world_with(&d, &crate::slice::support::plan(&all_chests()).unwrap().logic()).unwrap();
         let mut moved: usize = 0;
         for n in 0..12 {
             let g: Generated = generate_data(&d, &all_chests(), &format!("p{n}"), &GenOpts::default()).unwrap();
@@ -677,6 +690,61 @@ mod tests {
                 assert!(g.report.contains("Kokiri Forest starts open"));
             }
         }
+    }
+
+    #[test]
+    fn an_open_kakariko_only_places_giveable_items_at_the_skipped_checks() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = with(&[("shuffle_rewards", "supported"), ("shuffle_songs", "anywhere")]);
+        for n in 0..3 {
+            let g: Generated = generate_data(&d, &s, &format!("kak {n}"), &GenOpts::default()).unwrap();
+            assert!(g.report.contains("Kakariko gate starts open"));
+            let p: Plan = plan(&s).unwrap();
+            let locs: Vec<&str> = crate::slice::edit::skipped_locations(&p);
+            assert_eq!(locs.len(), 2);
+            for loc in &locs {
+                if let Some(item) = g.seed_file.placements.get(*loc) {
+                    assert!(d.item(item).is_some_and(|i| i.actor.is_some() || !i.tiers.is_empty()), "seed kak {n}: {loc} holds {item}");
+                }
+            }
+            let state = crate::slice::edit::start_state(&d, &g.seed_file, &p).unwrap();
+            assert_eq!(state.items.len(), 1 + 2);
+            assert_eq!(state.steps.len(), 6);
+            if let Some(item) = g.seed_file.placements.get("HC Malon Egg") {
+                assert!(!d.item(item).is_some_and(|i| i.adv), "seed kak {n}: the egg check holds {item}");
+            }
+        }
+        let off: Settings = with(&[("open_kakariko", "zelda")]);
+        let g: Generated = generate_data(&d, &off, "kak off", &GenOpts::default()).unwrap();
+        assert!(!g.report.contains("Kakariko gate starts open"));
+        let p: Plan = plan(&off).unwrap();
+        assert!(crate::slice::edit::skipped_locations(&p).is_empty());
+        assert!(crate::slice::edit::start_state(&d, &g.seed_file, &p).unwrap().is_empty());
+        let vanilla: Vec<String> = crate::slice::edit::skipped_items(&d, &g.seed_file, &crate::start_state::KAKARIKO_LOCATIONS).unwrap();
+        assert_eq!(vanilla, vec!["Item_ZeldaLetter", "Item_Melody_ZeldaLullaby"]);
+    }
+
+    #[test]
+    fn two_progressive_ocarinas_given_at_the_start_become_both_tiers() {
+        let d: Data = Data::load().unwrap();
+        let mut g: Generated = generate_data(&d, &Settings::default(), "tiers", &GenOpts::default()).unwrap();
+        g.seed_file.placements.insert("LW Gift from Saria".to_string(), "Ocarina".to_string());
+        g.seed_file.placements.insert("HF Ocarina of Time Item".to_string(), "Ocarina".to_string());
+        let given: Vec<String> = crate::slice::edit::skipped_items(&d, &g.seed_file, &["LW Gift from Saria", "HF Ocarina of Time Item"]).unwrap();
+        assert_eq!(given, vec!["Item_Ocarina_Fairy", "Item_Ocarina_Time"]);
+    }
+
+    #[test]
+    fn an_open_door_of_time_is_the_default_and_can_be_turned_off() {
+        let d: Data = Data::load().unwrap();
+        for n in 0..2 {
+            let g: Generated = generate_data(&d, &Settings::default(), &format!("door {n}"), &GenOpts::default()).unwrap();
+            assert!(g.report.contains("Door of Time starts open"));
+        }
+        let mut s: Settings = Settings::default();
+        s.set("open_door_of_time", Value::Bool(false)).unwrap();
+        let g: Generated = generate_data(&d, &s, "door off", &GenOpts::default()).unwrap();
+        assert!(!g.report.contains("Door of Time starts open"));
     }
 
     #[test]

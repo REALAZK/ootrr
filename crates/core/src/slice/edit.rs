@@ -391,6 +391,45 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
     build_for(seed, romfs, load, mod_name, Host::Eden)
 }
 
+/// The item actors the skipped story would have handed out at `locs`: the placed item, or the
+/// vanilla one when the location is not shuffled. Each must have an actor the pouch can take.
+/// A progressive item given more than once steps through its tiers, so two ocarinas become the
+/// fairy one and the Ocarina of Time.
+pub fn skipped_items(d: &Data, seed: &SeedFile, locs: &[&str]) -> Res<Vec<String>> {
+    let mut out: Vec<String> = Vec::new();
+    let mut given: BM<String, usize> = BM::new();
+    for loc in locs {
+        let l = d.flow.by_name(loc).ok_or_else(|| E::Msg(format!("{loc} is not in the flow location list")))?;
+        let Some(name) = seed.placements.get(*loc) else {
+            out.push(l.item.clone().ok_or_else(|| E::Msg(format!("{loc} has no vanilla item actor")))?);
+            continue;
+        };
+        let i = d.item(name).ok_or_else(|| E::Msg(format!("{loc} holds {name}, which is not an item")))?;
+        let k: usize = *given.get(name).unwrap_or(&0);
+        let actor: Option<String> = if i.tiers.is_empty() { i.actor.clone() } else { i.tiers.get(k).cloned() };
+        let actor: String = actor.ok_or_else(|| E::Msg(format!("{loc} holds {name}, which cannot be given when a new game starts")))?;
+        given.insert(name.clone(), k + 1);
+        out.push(actor);
+    }
+    Ok(out)
+}
+
+/// The story state a plan writes at new game. The Door of Time is not driven this way: moving
+/// its quest past Zelda's escape would turn the Ocarina of Time into a starting item, so the
+/// door keeps its logic edits instead.
+pub fn start_state(d: &Data, seed: &SeedFile, p: &crate::slice::support::Plan) -> Res<crate::start_state::Ops> {
+    let mut ops: crate::start_state::Ops = crate::start_state::Ops::default();
+    if p.kakariko {
+        ops.extend(crate::start_state::kakariko(&skipped_items(d, seed, &crate::start_state::KAKARIKO_LOCATIONS)?));
+    }
+    Ok(ops)
+}
+
+/// The locations whose items a plan gives at new game instead of in the world.
+pub fn skipped_locations(p: &crate::slice::support::Plan) -> Vec<&'static str> {
+    if p.kakariko { crate::start_state::KAKARIKO_LOCATIONS.to_vec() } else { Vec::new() }
+}
+
 pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Host) -> Res<Built> {
     let d: Data = Data::load()?;
     let loaded = seed.settings()?;
@@ -529,6 +568,9 @@ pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Hos
     }
     more.extend(crate::bomb_lift::stage(&mut rf)?);
     more.extend(crate::door_fix::stage(&mut rf)?);
+    if p.door {
+        more.extend(crate::door_open::stage(&mut rf)?);
+    }
     let reward: Option<&str> = crate::start_reward::pick(&seed.seed, p.start).map(|(_, a)| a);
     let flags: Vec<(String, bool)> = p.start_flags();
     let mut give: Vec<&str> = p.pouch.clone();
@@ -559,8 +601,10 @@ pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Hos
     if p.fast {
         extra += crate::fast::apply(&mut rf, &pk)?;
     }
-    if p.intro {
-        let (outs, _): (Vec<crate::staging::Out>, crate::intro_skip::Report) = crate::intro_skip::stage(&mut rf, crate::intro_skip::Opts::FULL)?;
+    let state: crate::start_state::Ops = start_state(&d, seed, &p)?;
+    if p.intro || !state.is_empty() {
+        let o: crate::intro_skip::Opts = if p.intro { crate::intro_skip::Opts::FULL } else { crate::intro_skip::Opts::default() };
+        let (outs, _): (Vec<crate::staging::Out>, crate::intro_skip::Report) = crate::intro_skip::stage_with(&mut rf, o, &state)?;
         for o in outs {
             pk.write_romfs(&o.path, &o.z)?;
             extra += 1;
@@ -601,6 +645,14 @@ pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Hos
     let mut notes: Vec<String> = p.notes.clone();
     if p.world != crate::slice::support::Mode::Off && !seed.placements.keys().any(|k| pu::listed(&d, k)) {
         notes.retain(|n| n != pu::NOTE);
+    }
+    if !state.is_empty() {
+        notes.push(format!(
+            "A new game writes the skipped story: {} quest steps, {} flags, and these items: {}.",
+            state.steps.len(),
+            state.flags.len(),
+            state.items.join(", ")
+        ));
     }
     notes.extend(crate::slice::skull_edit::notes(&skull_drops));
     notes.extend(crate::scrubs_b::notes(&scrub_jobs));

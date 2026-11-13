@@ -219,13 +219,24 @@ pub fn unlock(raw: &[u8]) -> Res<Vec<u8>> {
 }
 
 pub fn stage(rf: &mut Romfs, o: Opts) -> Res<(Vec<Out>, Report)> {
+    stage_with(rf, o, &crate::start_state::Ops::default())
+}
+
+/// Stages the intro skip and, in the same rewrite of the opening flow, the start state writes.
+pub fn stage_with(rf: &mut Romfs, o: Opts, state: &crate::start_state::Ops) -> Res<(Vec<Out>, Report)> {
     let mut outs: Vec<Out> = Vec::new();
     let mut r: Report = Report::default();
-    if o.movie || o.scene {
+    if o.movie || o.scene || !state.is_empty() {
         let mut got: Report = Report::default();
         outs.push(staging::rewrite(rf, FILE, |raw| {
             let mut b: Bf = Bf::parse(raw)?;
-            got = patch(&mut b, o)?;
+            if o.movie || o.scene {
+                got = patch(&mut b, o)?;
+            }
+            if !state.is_empty() {
+                let f: &mut Flow = b.flows.iter_mut().find(|x| x.name == FLOW).ok_or(Error::Format("start state: no OpeningEvent flow"))?;
+                got.added_events += crate::start_state::patch(f, state)?;
+            }
             b.write()
         })?);
         r = got;

@@ -169,14 +169,14 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::choice(4, "open_kakariko", "world", "Kakariko Gate", "open")
-            .tip("Whether the gate to Kakariko Village needs Zelda's Letter.")
-            .opt("open", "Open", "The gate is open from the start.")
+            .tip("Whether the gate to Kakariko Village needs Zelda's Letter. Open also skips the castle visit: a new game starts after Zelda and Impa, with their two items already given. Experimental, untested in the game.")
+            .opt("open", "Open", "The gate is open from the start and the castle visit is skipped. Zelda's Letter and the Song from Impa, or whatever is placed there, are given when a new game starts.")
             .opt("zelda", "Zelda's Letter", "The gate opens when you show the letter.")
             .opt("closed", "Closed", "The gate stays closed until the story opens it."),
     );
     s.push(
         Setting::toggle(5, "open_door_of_time", "world", "Open Door of Time", true)
-            .tip("Start with the Door of Time already open, so the Ocarina and songs are not needed to reach the Master Sword."),
+            .tip("Start with the Door of Time already open, so the Ocarina and the Song of Time are not needed to reach the Master Sword. Experimental, untested in the game."),
     );
     s.push(
         Setting::choice(6, "zora_fountain", "world", "Zora's Fountain", "closed")

@@ -150,6 +150,17 @@ mod tests {
     }
 
     #[test]
+    fn an_open_door_of_time_reaches_the_master_sword_without_the_song_of_time() {
+        let d: Data = Data::load().unwrap();
+        let closed: World = world(&d).unwrap();
+        let s: Search = explore(&closed, &vanilla_without(&closed, &d, &["Song of Time"]), &gauntlets(&closed));
+        assert!(!seen(&s, &closed, "Master Sword Pedestal"));
+        let open: World = world_with(&d, &[("open_door_of_time", "open")]).unwrap();
+        let s: Search = explore(&open, &vanilla_without(&open, &d, &["Song of Time"]), &gauntlets(&open));
+        assert!(seen(&s, &open, "Master Sword Pedestal"));
+    }
+
+    #[test]
     fn every_audit_gate_can_be_satisfied_in_the_vanilla_world() {
         let d: Data = Data::load().unwrap();
         let w: World = world(&d).unwrap();

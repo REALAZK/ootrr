@@ -34,6 +34,8 @@ Everything is optional and off unless noted. All of these are experimental and s
 - Skip the opening cutscenes (on by default): a new game goes straight to the first moment you control Link.
 - Small keys in any dungeon or anywhere, counted for the dungeon each key belongs to (experimental).
 - Kokiri Forest can start open (open, or open exit with the Deku Tree still closed).
+- The Kakariko gate can start open (on by default), which also skips the castle visit: a new game sets the castle, Door of Time and Fire Stone quests to the state after Impa's send off and the guard, marks Saria's house scenes, the owl and Talon's castle scene as played, opens the Threads of Time menu, and gives the items of Zelda's Letter and the Song from Impa. Malon's egg can no longer be collected and never holds an important item. These writes go into the opening event flow, next to the game's own first quest step.
+- The Door of Time can start open (on by default): the Temple of Time logic modules are edited so the door is always open and the Master Sword can be drawn without the Door of Time quest, a new game sets the door's opened flag, and the logic places items accordingly. The quest is left alone so Zelda's escape and the Song of Time stay checks, and drawing the sword before the quest reached the door no longer completes the quest, since a completed quest would hide those two checks. `ootrr door-open` writes a test mod with only those edits.
 - A plandomizer on the Generate page, or --plando Location=Item on the command line, to fix chosen items at chosen locations. The seed is only made if it can still be beaten.
 
 ## Troubleshooting

@@ -38,6 +38,7 @@ pub enum Forest {
 
 pub const MIDO_WALL: &str = "KokiriForest_Npc_Kokiri_Mido_Child_Blocker";
 pub const EXIT_WALL: &str = "KokiriForest_Npc_Kokiri_007_Child_Blocker_00";
+pub const DOOR_OPENED: &str = "Market_Child_TimeTempleDoor_Opened";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Songs {
@@ -66,6 +67,8 @@ pub struct Plan {
     pub intro: bool,
     pub start: Reward,
     pub forest: Forest,
+    pub door: bool,
+    pub kakariko: bool,
     pub gear: Vec<&'static str>,
     pub pouch: Vec<&'static str>,
     pub excluded: Vec<String>,
@@ -81,11 +84,9 @@ const GEAR: &[(&str, &str, &str)] = &[
     ("slingshot", "Slingshot", "Weapon_Range_SlingShot"),
 ];
 
-const UNCHANGED: [&str; 24] = [
+const UNCHANGED: [&str; 22] = [
     "logic_rules",
     "starting_age",
-    "open_kakariko",
-    "open_door_of_time",
     "zora_fountain",
     "gerudo_fortress",
     "bridge",
@@ -165,6 +166,9 @@ impl Plan {
             Forest::ClosedDeku => vec![(EXIT_WALL.to_string(), false)],
             Forest::Open => vec![(MIDO_WALL.to_string(), false), (EXIT_WALL.to_string(), false)],
         };
+        if self.door {
+            out.push((DOOR_OPENED.to_string(), true));
+        }
         out.extend(di::start_flags(self));
         out
     }
@@ -175,6 +179,13 @@ impl Plan {
             Forest::ClosedDeku => vec![("open_forest", "closed_deku")],
             Forest::Open => vec![("open_forest", "open")],
         };
+        if self.door {
+            out.push(("open_door_of_time", "open"));
+        }
+        if self.kakariko {
+            out.push(("open_kakariko", "open"));
+            out.push(("skip_child_zelda", "true"));
+        }
         if self.keys_roam() {
             out.extend(KEY_LAYOUTS.iter().map(|k| (*k, "shuffled")));
         }
@@ -282,6 +293,22 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             Forest::Closed
         }
     };
+    let door: bool = s.flag("open_door_of_time").unwrap_or_else(|e| {
+        bad.push(e.to_string());
+        false
+    });
+    let kakariko: bool = match s.text("open_kakariko") {
+        Ok("open") => true,
+        Ok("zelda") => false,
+        Ok(v) => {
+            bad.push(format!("open_kakariko is {v}, which this build cannot apply yet (only open and zelda work)"));
+            false
+        }
+        Err(e) => {
+            bad.push(e.to_string());
+            false
+        }
+    };
     let songs: Songs = match s.text("shuffle_songs") {
         Ok("off") => Songs::Off,
         Ok("own") => Songs::Own,
@@ -336,6 +363,8 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         (!pouch.is_empty(), "The ticked starting gear is added to the pouch when a new game starts. A copy can still be found in the world."),
         (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
         (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
+        (kakariko, "The Kakariko gate starts open and the castle visit is skipped. A new game sets the castle quest complete, the Door of Time quest past Impa's send off, the Fire Stone quest past the gate and the gate guard's flag, and gives the items of Zelda's Letter and the Song from Impa. Experimental and untested in the game."),
+        (door, "The Door of Time starts open. The Temple of Time logic is edited so the door is always open and the Master Sword can be drawn without the Door of Time quest, and the door's opened flag is set when a new game starts, so the Ocarina and the Song of Time are not needed to reach the Master Sword. The quest itself is left alone, so Zelda's escape and the Song of Time stay checks. Experimental and untested in the game."),
         (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
         (extra, "Kak 20 Gold Skulltula Reward, DMT Biggoron and GC Medigoron are shuffled with structural event edits. Experimental and untested in the game."),
         (trade, "The ten adult trade quest hand ins each give one extra shuffled item the first time. The trade chain itself stays vanilla. Experimental and untested in the game."),
@@ -358,7 +387,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if remake {
         notes.push(crate::slice::remake_chests::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, gear, pouch, excluded, notes, drops, skulls, remake })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, door, kakariko, gear, pouch, excluded, notes, drops, skulls, remake })
 }
 
 #[cfg(test)]
@@ -372,9 +401,28 @@ mod tests {
         assert_eq!(p.small, Keep::Dungeon);
         assert_eq!(p.map, Keep::Dungeon);
         assert!(p.intro);
-        assert_eq!(p.notes.len(), 2);
+        assert_eq!(p.notes.len(), 4);
         assert!(p.notes.iter().any(|n| n.contains("bridge=medallions")));
         assert!(p.notes.iter().any(|n| n.contains("intro is skipped")));
+        assert!(p.notes.iter().any(|n| n.contains("Door of Time starts open")));
+        assert!(p.notes.iter().any(|n| n.contains("Kakariko gate starts open")));
+    }
+
+    #[test]
+    fn the_kakariko_setting_becomes_logic_values_and_a_note() {
+        let mut s: Settings = Settings::default();
+        s.set("open_door_of_time", Value::Bool(false)).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert!(p.kakariko);
+        assert_eq!(p.logic(), vec![("open_kakariko", "open"), ("skip_child_zelda", "true")]);
+        assert!(p.start_flags().is_empty());
+        s.set("open_kakariko", Value::s("zelda")).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert!(!p.kakariko);
+        assert!(p.logic().is_empty());
+        assert!(!p.notes.iter().any(|n| n.contains("Kakariko")));
+        s.set("open_kakariko", Value::s("closed")).unwrap();
+        assert!(plan(&s).err().unwrap().to_string().contains("open_kakariko is closed"));
     }
 
     #[test]
@@ -404,6 +452,8 @@ mod tests {
     #[test]
     fn small_keys_can_roam_and_the_logic_is_told_to_count_them_strictly() {
         let mut s: Settings = Settings::default();
+        s.set("open_door_of_time", Value::Bool(false)).unwrap();
+        s.set("open_kakariko", Value::s("zelda")).unwrap();
         assert!(!plan(&s).unwrap().keys_roam());
         assert!(plan(&s).unwrap().logic().is_empty());
         for v in ["any_dungeon", "keysanity"] {
@@ -422,8 +472,25 @@ mod tests {
     }
 
     #[test]
+    fn the_door_of_time_setting_becomes_a_start_flag_and_a_logic_value() {
+        let mut s: Settings = Settings::default();
+        s.set("open_kakariko", Value::s("zelda")).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert_eq!(p.start_flags(), vec![(DOOR_OPENED.to_string(), true)]);
+        assert_eq!(p.logic(), vec![("open_door_of_time", "open")]);
+        assert!(p.notes.iter().any(|n| n.contains("Door of Time starts open")));
+        s.set("open_door_of_time", Value::Bool(false)).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert!(p.start_flags().is_empty());
+        assert!(p.logic().is_empty());
+        assert!(!p.notes.iter().any(|n| n.contains("Door of Time")));
+    }
+
+    #[test]
     fn the_forest_setting_becomes_start_flags_and_a_logic_value() {
         let mut s: Settings = Settings::default();
+        s.set("open_door_of_time", Value::Bool(false)).unwrap();
+        s.set("open_kakariko", Value::s("zelda")).unwrap();
         assert!(plan(&s).unwrap().start_flags().is_empty());
         s.set("open_forest", Value::s("closed_deku")).unwrap();
         let p: Plan = plan(&s).unwrap();
