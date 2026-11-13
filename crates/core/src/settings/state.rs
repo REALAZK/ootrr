@@ -15,6 +15,14 @@ impl Schema {
         out
     }
 
+    pub fn wire_defaults(&self) -> Vals {
+        let mut out: Vals = Map::new();
+        for s in &self.settings {
+            out.insert(s.id.clone(), s.wire_value().clone());
+        }
+        out
+    }
+
     pub fn enabled(&self, s: &Setting, v: &Vals) -> bool {
         for d in &s.deps {
             match v.get(&d.on) {

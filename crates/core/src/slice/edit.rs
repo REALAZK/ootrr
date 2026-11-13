@@ -761,8 +761,10 @@ mod tests {
         use crate::settings::Settings;
         use crate::slice::generate::{generate_data, GenOpts};
         let d: Data = Data::load().unwrap();
+        let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", crate::settings::Value::s("off")).unwrap();
         for n in 0..3 {
-            let g = generate_data(&d, &Settings::default(), &format!("tiers {n}"), &GenOpts::default()).unwrap();
+            let g = generate_data(&d, &s, &format!("tiers {n}"), &GenOpts::default()).unwrap();
             let given: BM<String, String> = actors_for(&d, &g.seed_file).unwrap();
             let mut before: Vec<String> = Vec::new();
             let mut after: Vec<String> = Vec::new();
@@ -816,6 +818,7 @@ mod tests {
         use crate::slice::generate::{generate_data, GenOpts};
         let d: Data = Data::load().unwrap();
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set("shuffle_pots", Value::s("all")).unwrap();
         for n in 0..3 {
             let g = generate_data(&d, &s, &format!("potpool {n}"), &GenOpts::default()).unwrap();
@@ -843,7 +846,9 @@ mod tests {
             assert!(d.flow.usable(&c.item), "{} -> {}", c.location, c.item);
             assert!(d.flow_ok(&c.location), "{}", c.location);
         }
-        let off = generate_data(&d, &Settings::default(), "rewards", &GenOpts::default()).unwrap();
+        let mut vanilla: Settings = Settings::default();
+        vanilla.set("shuffle_rewards", Value::s("off")).unwrap();
+        let off = generate_data(&d, &vanilla, "rewards", &GenOpts::default()).unwrap();
         let (_, _, none): (Vec<Target>, usize, Vec<Choice>) = targets(&d, &off.seed_file).unwrap();
         assert!(none.is_empty());
     }

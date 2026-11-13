@@ -73,7 +73,7 @@ impl Schema {
         let mut body: Vec<u8> = Vec::new();
         for s in order {
             let x: &Value = n.get(&s.id).ok_or(Error::Format("setting vanished during encoding"))?;
-            if x == &s.default || !self.enabled(s, &n) {
+            if x == s.wire_value() || !self.enabled(s, &n) {
                 continue;
             }
             let p: Vec<u8> = self.enc(s, x)?;
@@ -171,7 +171,7 @@ impl Schema {
         if tag(body) != ck {
             return Err(Error::Format("settings string checksum mismatch, it was mistyped or damaged"));
         }
-        let mut v: Vals = self.defaults();
+        let mut v: Vals = self.wire_defaults();
         let mut w: Vec<String> = Vec::new();
         let mut r: Rd = Rd::new(body);
         let mut last: Option<u64> = None;

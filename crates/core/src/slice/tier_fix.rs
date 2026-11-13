@@ -162,7 +162,7 @@ mod tests {
             ("dungeons", "off", "off", "matched", 10),
         ];
         for (chests, free, pots, skulls, k) in sets {
-            let s: Settings = with(&[("shuffle_chests", chests), ("shuffle_freestanding_items", free), ("shuffle_pots", pots), ("shuffle_crates", pots), ("shuffle_skulltulas", skulls)]);
+            let s: Settings = with(&[("shuffle_rewards", "off"), ("shuffle_chests", chests), ("shuffle_freestanding_items", free), ("shuffle_pots", pots), ("shuffle_crates", pots), ("shuffle_skulltulas", skulls)]);
             for n in 0..k {
                 let g: Generated = generate_data(&d, &s, &format!("wide tiers {chests} {free} {pots} {skulls} {n}"), &GenOpts::default()).unwrap();
                 seeds += 1;

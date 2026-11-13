@@ -213,6 +213,7 @@ mod tests {
         };
         let d: Data = Data::load().unwrap();
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set("shuffle_skulltulas", Value::s("matched")).unwrap();
         let g: Generated = generate_data(&d, &s, "kit build 1", &GenOpts::default()).unwrap();
         let mut rf: Romfs = Romfs::open(&root).unwrap();

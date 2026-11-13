@@ -1,4 +1,4 @@
-use super::model::{Group, Schema, Setting, Tag};
+use super::model::{Group, Schema, Setting, Tag, Value};
 
 pub const SCHEMA_VERSION: u32 = 1;
 
@@ -294,14 +294,20 @@ pub fn build() -> Schema {
             .tip("How many heart containers you begin with."),
     );
     s.push(
-        Setting::choice(38, "shuffle_rewards", "shuffle", "Story and NPC rewards", "off")
-            .tip("Whether the items that boss rooms, NPCs, minigames and Great Fairies hand out are shuffled. Songs are never shuffled yet.")
+        Setting::choice(38, "shuffle_rewards", "shuffle", "Story and NPC rewards", "supported")
+            .wire_as(Value::s("off"))
+            .tip("Whether the items that NPCs, minigames, Great Fairies and story scenes hand out are shuffled. This is on by default but still experimental, none of these edits are tested in the game yet. The Spiritual Stones and Medallions from the bosses and Rauru stay in place unless Stones and Medallions is also on. Songs have their own setting.")
             .opt("off", "Vanilla", "These rewards keep their original items.")
             .opt("supported", "Supported rewards", "The rewards whose event the tool can edit. Experimental, none of these edits are tested in the game yet."),
     );
     s.push(
         Setting::toggle(51, "shuffle_rewards_extra", "shuffle", "More NPC rewards", false)
             .tip("Also shuffle the rewards that need bigger event edits: the 20 token Skulltula reward, Biggoron and Medigoron. Experimental, none of these edits are tested in the game yet.")
+            .when("shuffle_rewards", "supported"),
+    );
+    s.push(
+        Setting::toggle(74, "shuffle_dungeon_rewards", "shuffle", "Stones and Medallions", false)
+            .tip("Also shuffle the three Spiritual Stones and six Medallions that the bosses and Rauru hand out. When this is off, every boss and Rauru give their usual Stone or Medallion, and no Stone or Medallion turns up anywhere else. Experimental, none of these edits are tested in the game yet.")
             .when("shuffle_rewards", "supported"),
     );
     s.push(
@@ -352,7 +358,7 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::choice(52, "shuffle_skulltulas", "shuffle", "Gold Skulltulas", "off")
-            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can drop items that the game has a pickup for and key items whose pickup pack is built, as a kit pickup that plays the get window. It is only saved once its item is picked up. Experimental, untested in the game.")
+            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can drop items that the game has a pickup for and key items whose pickup pack is built, as a kit pickup that plays the get window. A killed skulltula stays gone only once its dropped item is picked up, and it comes back if the item is left behind. Experimental, untested in the game.")
             .opt("off", "Vanilla", "Every skulltula drops its token.")
             .opt("pinned", "Confident matches", "Only the skulltulas whose remake actor is known for sure are shuffled.")
             .opt("matched", "Confident and pooled", "Also the pools of skulltulas that share the same logic, so a mixed up pairing cannot matter."),

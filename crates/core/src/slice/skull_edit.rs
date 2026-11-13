@@ -193,6 +193,7 @@ mod tests {
     fn a_generated_seed_turns_into_drops_with_world_pickups_only() {
         let d: Data = Data::load().unwrap();
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set("shuffle_skulltulas", Value::s("matched")).unwrap();
         let mut seen: usize = 0;
         for n in 0..3 {

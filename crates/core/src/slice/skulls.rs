@@ -256,6 +256,7 @@ mod tests {
 
     fn with(v: &str) -> Settings {
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set(SETTING, Value::s(v)).unwrap();
         s
     }

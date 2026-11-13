@@ -115,6 +115,11 @@ impl Schema {
             {
                 out.push(format!("disabled value is invalid: {e}"));
             }
+            if let Some(x) = &s.wire
+                && let Err(e) = s.check(x)
+            {
+                out.push(format!("string baseline is invalid: {e}"));
+            }
             if let Some(b) = &s.max_by {
                 match seen.iter().find(|x| &x.id == b) {
                     Some(t) if t.kind == Kind::Number && s.kind == Kind::Number => {

@@ -39,6 +39,8 @@ pub enum Forest {
 pub const MIDO_WALL: &str = "KokiriForest_Npc_Kokiri_Mido_Child_Blocker";
 pub const EXIT_WALL: &str = "KokiriForest_Npc_Kokiri_007_Child_Blocker_00";
 pub const KAKARIKO: (&str, &str) = ("open_kakariko", "open");
+pub const DUNGEON_REWARDS: &str = "shuffle_dungeon_rewards";
+pub const DUNGEON_REWARD_CAT: &str = "dungeon_reward";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Songs {
@@ -55,6 +57,7 @@ pub struct Plan {
     pub map: Keep,
     pub ganon: Keep,
     pub rewards: bool,
+    pub dungeon_rewards: bool,
     pub extra: bool,
     pub trade: bool,
     pub scrubs: bool,
@@ -249,6 +252,11 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             false
         }
     };
+    let dungeon_rewards: bool = rewards
+        && s.flag(DUNGEON_REWARDS).unwrap_or_else(|e| {
+            bad.push(e.to_string());
+            false
+        });
     let extra: bool = rewards
         && s.flag(crate::flow_extra::SETTING).unwrap_or_else(|e| {
             bad.push(e.to_string());
@@ -412,7 +420,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if treasure {
         notes.push(crate::slice::treasure::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure })
 }
 
 #[cfg(test)]

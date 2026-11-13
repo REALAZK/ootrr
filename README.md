@@ -27,7 +27,8 @@ The mod build needs your own extracted copy of the game with the 1.1.1 update in
 Everything is optional and off unless noted. All of these are experimental and some have not been played in the game yet.
 
 - Chest shuffle, dungeon item placement and progressive upgrades (Hookshot, Strength, bags, wallets, scales and more).
-- Boss and NPC rewards, boss heart containers as chests, and songs shuffled among the song teachers or anywhere.
+- Story and NPC rewards (on by default, experimental and untested in the game). The Spiritual Stones and Medallions stay with the bosses and Rauru unless Stones and Medallions is also on.
+- Boss heart containers as chests, and songs shuffled among the song teachers or anywhere.
 - Gossip stones that tell you where an important item lies, without the Mask of Truth.
 - Start with one random Spiritual Stone or Medallion.
 - Faster chest and item pickup scenes.

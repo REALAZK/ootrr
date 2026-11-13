@@ -88,6 +88,7 @@ mod tests {
     fn seeds_never_put_a_counted_item_on_a_spot_that_exists_twice() {
         let d: Data = Data::load().unwrap();
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set(pickups::SETTING, Value::s("all")).unwrap();
         s.set("shuffle_pots", Value::s("all")).unwrap();
         let mut twice: usize = 0;

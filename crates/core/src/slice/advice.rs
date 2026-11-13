@@ -85,7 +85,7 @@ mod tests {
 
     #[test]
     fn plando_and_cancel_messages_pass_through() {
-        let p: Plan = plan_of(&[]);
+        let p: Plan = plan_of(&[("shuffle_rewards", "off")]);
         assert_eq!(explain(&p, E::Msg("plando: x".into())).to_string(), "plando: x");
         assert_eq!(explain(&p, E::Msg(STOPPED.into())).to_string(), STOPPED);
         assert_eq!(explain(&p, E::Msg("no spot for X among 3 free locations".into())).to_string(), "No seed was made with these settings, no spot for X among 3 free locations. Try another seed text.");

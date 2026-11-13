@@ -211,7 +211,7 @@ mod tests {
 
     fn wide() -> Settings {
         let mut s: Settings = Settings::default();
-        for (k, v) in [("shuffle_chests", "all"), ("shuffle_freestanding_items", "all"), ("shuffle_pots", "all"), ("shuffle_crates", "all"), ("shuffle_skulltulas", "matched")] {
+        for (k, v) in [("shuffle_rewards", "off"), ("shuffle_chests", "all"), ("shuffle_freestanding_items", "all"), ("shuffle_pots", "all"), ("shuffle_crates", "all"), ("shuffle_skulltulas", "matched")] {
             s.set(k, crate::settings::Value::s(v)).unwrap();
         }
         s

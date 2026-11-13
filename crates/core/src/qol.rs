@@ -283,9 +283,20 @@ mod tests {
         let Some(root) = dump() else {
             return;
         };
-        let out: std::path::PathBuf = built(&root, &Settings::default(), "qol default", "OOTRR Qol Default Test");
+        let out: std::path::PathBuf = built(&root, &with(&[("shuffle_rewards", Value::s("off"))]), "qol default", "OOTRR Qol Default Test");
         for f in files() {
             assert!(!at(&out, &f).exists(), "{f}");
+        }
+        let out: std::path::PathBuf = built(&root, &Settings::default(), "qol default", "OOTRR Qol Rewards Default Test");
+        let mut rf: Romfs = Romfs::open(&root).unwrap();
+        for f in files() {
+            if f == poe::FILE && at(&out, &f).is_file() {
+                let z: Vec<u8> = std::fs::read(at(&out, &f)).unwrap();
+                let b: crate::bfevfl::Bf = crate::bfevfl::Bf::parse(&rf.zs.decompress(&z).unwrap()).unwrap();
+                assert_eq!(poe::sites(&b.flows[0], poe::OLD).len(), poe::SITES);
+            } else {
+                assert!(!at(&out, &f).exists(), "{f}");
+            }
         }
     }
 
@@ -335,7 +346,7 @@ mod tests {
             let z: Vec<u8> = std::fs::read(at(p, poe::FILE)).unwrap();
             Bf::parse(&rf.zs.decompress(&z).unwrap()).unwrap()
         };
-        let base: Vec<(&str, Value)> = vec![("shuffle_rewards", Value::s("supported"))];
+        let base: Vec<(&str, Value)> = vec![("shuffle_rewards", Value::s("supported")), ("shuffle_dungeon_rewards", Value::Bool(true))];
         let mut on: Vec<(&str, Value)> = base.clone();
         on.push((POE, Value::Bool(true)));
         let a: std::path::PathBuf = built(&root, &with(&base), "qol poe", "OOTRR Qol Poe Off Test");

@@ -53,9 +53,7 @@ mod tests {
 
     fn with(rewards: bool, b: Option<bool>) -> Settings {
         let mut s: Settings = Settings::default();
-        if rewards {
-            s.set("shuffle_rewards", Value::s("supported")).unwrap();
-        }
+        s.set("shuffle_rewards", Value::s(if rewards { "supported" } else { "off" })).unwrap();
         if let Some(x) = b {
             s.set(SETTING, Value::Bool(x)).unwrap();
         }
@@ -69,7 +67,8 @@ mod tests {
         assert!(!plan(&with(true, Some(false))).unwrap().scrubs_b);
         assert!(plan(&with(true, Some(true))).unwrap().scrubs_b);
         assert!(plan(&with(true, Some(true))).unwrap().notes.iter().any(|n| n == NOTE));
-        assert_eq!(Settings::default().encode().unwrap(), with(false, Some(false)).encode().unwrap());
+        assert_eq!(Settings::default().encode().unwrap(), with(true, Some(false)).encode().unwrap());
+        assert_eq!(with(false, None).encode().unwrap(), with(false, Some(false)).encode().unwrap());
         let e: String = plan(&{
             let mut s: Settings = with(true, Some(true));
             s.set("shuffle_scrubs", Value::s("low")).unwrap();

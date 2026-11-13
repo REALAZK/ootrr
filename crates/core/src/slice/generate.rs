@@ -523,6 +523,7 @@ mod tests {
     fn chest_modes_and_vanilla_keys_change_the_pool() {
         let d: Data = Data::load().unwrap();
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set("shuffle_chests", Value::s("off")).unwrap();
         let off: Generated = generate_data(&d, &s, "x", &GenOpts::default()).unwrap();
         assert_eq!(off.counts.randomized, 0);
@@ -818,5 +819,117 @@ mod tests {
         let scan: &str = "{\"format\":1,\"game\":\"g\",\"files\":[],\"chests\":[]}";
         let d: Data = Data::new(ITEMS_JSON, VANILLA_JSON, scan, CATALOG_JSON).unwrap();
         assert!(generate_data(&d, &all_chests(), "x", &GenOpts::default()).is_err());
+    }
+
+    const HELD: [(&str, &str); 9] = [
+        ("ToT Reward from Rauru", "Light Medallion"),
+        ("Queen Gohma", "Kokiri Emerald"),
+        ("King Dodongo", "Goron Ruby"),
+        ("Barinade", "Zora Sapphire"),
+        ("Phantom Ganon", "Forest Medallion"),
+        ("Volvagia", "Fire Medallion"),
+        ("Morpha", "Water Medallion"),
+        ("Bongo Bongo", "Shadow Medallion"),
+        ("Twinrova", "Spirit Medallion"),
+    ];
+
+    fn held_loc(name: &str) -> bool {
+        HELD.iter().any(|h| h.0 == name)
+    }
+
+    fn held_item(name: &str) -> bool {
+        HELD.iter().any(|h| h.1 == name)
+    }
+
+    #[test]
+    fn the_held_locations_are_the_nine_dungeon_reward_events() {
+        let d: Data = Data::load().unwrap();
+        let mut got: Vec<(&str, &str)> = d
+            .flow
+            .locs
+            .iter()
+            .filter(|l| l.cat == crate::slice::support::DUNGEON_REWARD_CAT)
+            .map(|l| (l.name.as_str(), l.vanilla.as_str()))
+            .collect();
+        let mut want: Vec<(&str, &str)> = HELD.to_vec();
+        got.sort();
+        want.sort();
+        assert_eq!(got, want);
+        for (l, i) in HELD {
+            assert_eq!(d.vanilla_of(l), Some(i), "{l}");
+        }
+    }
+
+    #[test]
+    fn stones_and_medallions_stay_with_their_bosses_by_default() {
+        let d: Data = Data::load().unwrap();
+        let mut need: usize = 0;
+        for (s, tag) in [(Settings::default(), "default"), (with(&[("shuffle_chests", "overworld")]), "overworld")] {
+            assert!(plan(&s).unwrap().rewards);
+            assert!(!plan(&s).unwrap().dungeon_rewards);
+            for n in 0..3 {
+                let g: Generated = generate_data(&d, &s, &format!("held {tag} {n}"), &GenOpts { spoiler: true, ..GenOpts::default() }).unwrap();
+                assert!(g.seed_file.placements.contains_key("Kak Man on Roof"), "{tag} {n}");
+                for (loc, item) in &g.seed_file.placements {
+                    assert!(!held_loc(loc), "{tag} {n} shuffled {loc}");
+                    assert!(!held_item(item), "{tag} {n} put {item} at {loc}");
+                }
+                for (loc, item) in g.spheres.iter().flatten() {
+                    if held_item(item) {
+                        assert!(HELD.contains(&(loc.as_str(), item.as_str())), "{loc} {item}");
+                        need += 1;
+                    }
+                }
+            }
+        }
+        assert!(need > 0);
+    }
+
+    #[test]
+    fn stones_and_medallions_move_when_asked() {
+        let d: Data = Data::load().unwrap();
+        let mut s: Settings = Settings::default();
+        s.set("shuffle_dungeon_rewards", Value::Bool(true)).unwrap();
+        assert!(plan(&s).unwrap().dungeon_rewards);
+        let mut moved: usize = 0;
+        for n in 0..3 {
+            let g: Generated = generate_data(&d, &s, &format!("moved {n}"), &GenOpts::default()).unwrap();
+            for (l, _) in HELD {
+                assert!(g.seed_file.placements.contains_key(l), "{n} {l}");
+            }
+            moved += g.seed_file.placements.iter().filter(|(l, i)| held_item(i) && !held_loc(l)).count();
+        }
+        assert!(moved > 0);
+    }
+
+    #[test]
+    fn rewards_off_and_stones_and_medallions_on_keep_the_old_seeds() {
+        let d: Data = Data::load().unwrap();
+        let mut on: Settings = Settings::default();
+        on.set("shuffle_dungeon_rewards", Value::Bool(true)).unwrap();
+        let mut pots: Settings = on.clone();
+        pots.set("shuffle_pots", Value::s("all")).unwrap();
+        pots.set("shuffle_crates", Value::s("all")).unwrap();
+        let cases: [(Settings, &str, &str, &str); 8] = [
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin a", "b8c6c4b31b12abcb42c5014a827ce94e22ee7e61cf01ac815ef80ffa384446a4"),
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin b", "070cc4b39ce519c165aaae10678e7030ef9d0a331790a09a44f4198a90a3ad99"),
+            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin a", "c755bab551e408965a8e15647c62f760d9d76875d86b2590c6708ab9c6614baf"),
+            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin b", "398e2947c1a5116badd6b90121f7e2c8721946edff989067b3213e65e7ea45af"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin a", "bc08991c7936566a71d7fbbe597c5fe15160ae4143f68117c1eaacf7576d85c7"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin b", "43749dd1040da34ad3600ec3e8a5b1babfd75a7c1a93f721c9e110efc2219011"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "d97f824ef573940b9510579cb7e56490826f7cad856da33063f5c230d2f8e960"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "f475e2f2ab973177840bf44e89641bea638ec7f44ab991e35e8004f2f71f1a58"),
+        ];
+        for (s, old, seed, sum) in cases {
+            let g: Generated = generate_data(&d, &s, seed, &GenOpts::default()).unwrap();
+            let mut f: SeedFile = g.seed_file.clone();
+            if s.flag("shuffle_dungeon_rewards").unwrap() {
+                assert_ne!(f.settings_string, old);
+            } else {
+                assert_eq!(f.settings_string, old);
+            }
+            f.settings_string = old.to_string();
+            assert_eq!(f.checksum(), sum, "{old} {seed}");
+        }
     }
 }

@@ -102,6 +102,9 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
             if l.cat == "song" && p.songs != Songs::Off {
                 continue;
             }
+            if l.cat == crate::slice::support::DUNGEON_REWARD_CAT && !p.dungeon_rewards {
+                continue;
+            }
             if crate::scrubs_a::is_a(l) && !p.scrubs {
                 continue;
             }
