@@ -80,6 +80,16 @@ mod tests {
         seed
     }
 
+    fn widen(root: &P, d: &Data, seed: &SeedFile, x: &Extra) -> Extra {
+        let v: crate::slice::tier_order::Verdict = crate::slice::tier_order::fixed_actors(d, seed).unwrap();
+        let mut w: std::collections::BTreeMap<String, crate::slice::seed_packs::Want> = crate::slice::seed_packs::need(d, seed, &v.assign).unwrap();
+        w.retain(|k, _| !x.has(k));
+        let mut out: Extra = crate::slice::seed_packs::pool(root, Host::Eden, &w).unwrap();
+        out.packs.extend(x.packs.clone());
+        out.flags.extend(x.flags.clone());
+        out
+    }
+
     #[test]
     fn a_seed_build_swaps_a_freestanding_spot_to_a_new_pack_and_the_guard_passes() {
         let Some(root) = real() else {
@@ -90,9 +100,9 @@ mod tests {
         let seed: SeedFile = seed_with(&d, "Megaton Hammer", SPOT, "swap guard hammer");
         let load: PB = std::env::temp_dir().join(format!("ootrr_swap_guard_{}", std::process::id()));
         let _ = fs::remove_dir_all(&load);
-        let none: String = crate::slice::edit::build(&seed, &root, &load, "plain").unwrap_err().to_string();
+        let none: String = build_with(&seed, &root, &load, "plain", Host::Eden, &Extra::default()).unwrap_err().to_string();
         assert!(none.contains("has no world pickup"), "{none}");
-        let b: Built = build_with(&seed, &root, &load, "packed", Host::Eden, &x).unwrap();
+        let b: Built = build_with(&seed, &root, &load, "packed", Host::Eden, &widen(&root, &d, &seed, &x)).unwrap();
         let out: PB = b.root.join("romfs");
         let mut rf: Romfs = Romfs::open(&root).unwrap();
         let l: &Loc = d.cat.by_name(SPOT).unwrap();
@@ -167,7 +177,7 @@ mod tests {
         let seed: SeedFile = seed_with(&d, "Megaton Hammer", SPOT, "swap guard refused");
         let load: PB = std::env::temp_dir().join(format!("ootrr_swap_guard_no_{}", std::process::id()));
         let _ = fs::remove_dir_all(&load);
-        let e: String = build_with(&seed, &root, &load, "refused", Host::Eden, &off).unwrap_err().to_string();
+        let e: String = build_with(&seed, &root, &load, "refused", Host::Eden, &widen(&root, &d, &seed, &off)).unwrap_err().to_string();
         assert!(e.contains("IsRespawn"), "{e}");
         assert!(!load.exists());
     }

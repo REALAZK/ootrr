@@ -1,3 +1,5 @@
+use std::collections::BTreeMap as BM;
+
 use crate::error::{Error as E, Res};
 use crate::pot_slice::data::Kind;
 use crate::pot_slice::pickup;
@@ -12,7 +14,7 @@ pub struct Give {
     pub files: Vec<String>,
     pub was: String,
     pub item: String,
-    pub actor: &'static str,
+    pub actor: String,
 }
 
 pub fn is_loc(d: &Data, name: &str) -> bool {
@@ -24,6 +26,19 @@ pub fn any(d: &Data, seed: &SeedFile) -> bool {
 }
 
 pub fn targets(d: &Data, seed: &SeedFile) -> Res<Vec<Give>> {
+    targets_with(d, seed, &BM::new())
+}
+
+pub fn actor_of(d: &Data, loc: &str, item: &str, fixed: &BM<String, String>) -> Res<String> {
+    if let Some(a) = pickup::of(item) {
+        return Ok(a.to_string());
+    }
+    crate::slice::key_spots::resolve(d, item, fixed.get(loc).map(|s| s.as_str()))
+        .map(|p| p.pack)
+        .map_err(|e| E::Msg(format!("{item} has no world pickup and cannot be placed at {loc}: {e}")))
+}
+
+pub fn targets_with(d: &Data, seed: &SeedFile, fixed: &BM<String, String>) -> Res<Vec<Give>> {
     let mut out: Vec<Give> = Vec::new();
     for (loc, item) in &seed.placements {
         let Some(l) = d.pots.get(loc) else {
@@ -33,9 +48,9 @@ pub fn targets(d: &Data, seed: &SeedFile) -> Res<Vec<Give>> {
         if d.pots.state_of(loc) != Some(State::Eligible) {
             return Err(E::Msg(format!("{loc} cannot be placed, its match or its saved row is not safe")));
         }
-        let actor: &'static str = pickup::of(item).ok_or_else(|| E::Msg(format!("{item} has no world pickup and cannot be placed at {loc}")))?;
+        let actor: String = actor_of(d, loc, item, fixed)?;
         for r in &l.refs {
-            out.push(Give { name: loc.clone(), kind: k, hash: r.hash, files: r.files.clone(), was: l.item.clone(), item: item.clone(), actor });
+            out.push(Give { name: loc.clone(), kind: k, hash: r.hash, files: r.files.clone(), was: l.item.clone(), item: item.clone(), actor: actor.clone() });
         }
     }
     Ok(out)

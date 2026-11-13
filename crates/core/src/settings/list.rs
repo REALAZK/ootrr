@@ -202,13 +202,13 @@ pub fn build() -> Schema {
     s.push(
         where_checks(
             Setting::choice(9, "shuffle_pots", "shuffle", "Pots", "off")
-                .tip("Which pots, including flying pots, hold random items."),
+                .tip("Which pots, including flying pots, hold random items. Key items whose pickup pack is built can sit in a pot. A pot item that is not picked up, falls into a pit or is left behind on a room change is lost for good."),
         ),
     );
     s.push(
         where_checks(
             Setting::choice(10, "shuffle_crates", "shuffle", "Crates", "off")
-                .tip("Which crates hold random items."),
+                .tip("Which crates hold random items. Key items whose pickup pack is built can sit in a crate, given once."),
         ),
     );
     s.push(
@@ -222,7 +222,7 @@ pub fn build() -> Schema {
     s.push(
         where_checks(
             Setting::choice(12, "shuffle_freestanding_items", "shuffle", "Freestanding items", "off")
-                .tip("Which rupees, hearts and heart pieces lying on the ground hold random items. Only heart pieces, rupees and recovery hearts can be placed there. Experimental, untested in the game."),
+                .tip("Which rupees, hearts and heart pieces lying on the ground hold random items. Rupees, hearts, heart pieces, the two shields and every key item whose pickup pack is built can be placed there. A spot that exists once per age only takes items that can be found twice. Experimental, untested in the game."),
         ),
     );
     s.push(
@@ -352,7 +352,7 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::choice(52, "shuffle_skulltulas", "shuffle", "Gold Skulltulas", "off")
-            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can only drop items that the game has a pickup for, and it stays dead once killed. Experimental, untested in the game.")
+            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can drop items that the game has a pickup for and key items whose pickup pack is built, as a kit pickup that plays the get window. It is only saved once its item is picked up. Experimental, untested in the game.")
             .opt("off", "Vanilla", "Every skulltula drops its token.")
             .opt("pinned", "Confident matches", "Only the skulltulas whose remake actor is known for sure are shuffled.")
             .opt("matched", "Confident and pooled", "Also the pools of skulltulas that share the same logic, so a mixed up pairing cannot matter."),

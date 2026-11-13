@@ -1,4 +1,4 @@
-use std::collections::BTreeSet as BS;
+use std::collections::{BTreeMap as BM, BTreeSet as BS};
 
 use crate::byml::{Byml, Node};
 use crate::error::{Error as E, Res};
@@ -8,7 +8,7 @@ use crate::settings::seed::SeedFile;
 use crate::slice::data::Data;
 use crate::slice::edit::Edited;
 use crate::slice::skull_kit::kit_actor;
-use crate::slice::skulls::{is_skull, pickup, table, Table, TOKEN};
+use crate::slice::skulls::{drop_actor, is_skull, pickup, table, Table, TOKEN};
 
 pub const SKULL: &str = "Enemy_Skulltula_Gold";
 pub const LISTED: usize = 10;
@@ -29,14 +29,21 @@ pub fn vanilla_actor(d: &Data, loc: &str) -> Option<String> {
 }
 
 pub fn drops(d: &Data, seed: &SeedFile) -> Res<Vec<Drop>> {
+    let v: crate::slice::tier_order::Verdict = crate::slice::tier_order::fixed_actors(d, seed)?;
+    drops_with(d, seed, &v.assign)
+}
+
+pub fn drops_with(d: &Data, seed: &SeedFile, fixed: &BM<String, String>) -> Res<Vec<Drop>> {
     let t: Table = table()?;
     let mut out: Vec<Drop> = Vec::new();
     for (loc, item) in seed.placements.iter().filter(|(l, _)| is_skull(d, l)) {
         if item == TOKEN {
             continue;
         }
-        let from: String = pickup(&t, d, item).ok_or_else(|| E::Msg(format!("{item} has no world pickup, so {loc} cannot drop it")))?;
-        let actor: String = kit_actor(&from);
+        let actor: String = match pickup(&t, d, item) {
+            Some(from) => kit_actor(&from),
+            None => drop_actor(&t, d, item, fixed.get(loc).map(|s| s.as_str())).map_err(|e| E::Msg(format!("{item} has no world pickup, so {loc} cannot drop it: {e}")))?,
+        };
         let l: &crate::catalog::Loc = d.cat.by_name(loc).ok_or_else(|| E::Msg(format!("{loc} is not in the catalog")))?;
         for r in &l.refs {
             out.push(Drop { name: loc.clone(), item: item.clone(), hash: r.hash, actor: actor.clone() });

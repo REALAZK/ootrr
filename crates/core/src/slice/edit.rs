@@ -394,7 +394,7 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
 }
 
 pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Host) -> Res<Built> {
-    build_with(seed, romfs, load, mod_name, host, &Extra::default())
+    crate::slice::seed_packs::build(seed, romfs, load, mod_name, host)
 }
 
 pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Host, extra: &Extra) -> Res<Built> {
@@ -415,7 +415,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     let keys: Vec<&'static str> = if roam { KEY_DUNGEONS.to_vec() } else { Vec::new() };
     let order: crate::slice::tier_order::Verdict = crate::slice::tier_order::fixed_actors(&d, seed)?;
     let (ts, same, flows): (Vec<Target>, usize, Vec<Choice>) = targets_with(&d, seed, roam, &order.assign, extra)?;
-    let skull_drops: Vec<crate::slice::skull_edit::Drop> = crate::slice::skull_edit::drops(&d, seed)?;
+    let skull_drops: Vec<crate::slice::skull_edit::Drop> = crate::slice::skull_edit::drops_with(&d, seed, &order.assign)?;
     crate::slice::skull_kit::check(&mut rf, &skull_drops, extra)?;
     let kit_pool: &Extra = extra;
     crate::slice::swap_guard::check(&mut rf, &d, &ts, extra)?;
@@ -433,7 +433,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     }
     crate::slice::skull_edit::all_found(&skull_drops, &skull_hit)?;
     crate::dungeon_grant::all_marked(&gr, &marks)?;
-    let pot_ts: Vec<crate::pot_slice::targets::Give> = crate::pot_slice::targets::targets(&d, seed)?;
+    let pot_ts: Vec<crate::pot_slice::targets::Give> = crate::pot_slice::targets::targets_with(&d, seed, &order.assign)?;
     crate::pot_slice::apply::apply(&mut rf, &d, &pot_ts, &mut edits)?;
     let scrub_jobs: Vec<crate::scrubs_b::Job> = crate::scrubs_b::jobs(&d, seed)?;
     crate::scrubs_b::stage_banc(&mut rf, &scrub_jobs, &mut edits)?;
@@ -624,6 +624,9 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         let n: usize = pot_ts.iter().map(|t| t.name.as_str()).collect::<BS<&str>>().len();
         notes.push(format!("{n} pots, crates or flying pots hold other items and give them once, none of these edits is tested in the game yet:"));
         notes.extend(crate::pot_slice::apply::lines(&pot_ts, LISTED));
+        if pot_ts.iter().any(|t| crate::pot_slice::pickup::of(&t.item).is_none() && t.kind != crate::pot_slice::data::Kind::Crate) {
+            notes.push(crate::slice::key_spots::LOST.to_string());
+        }
     }
     if !flows.is_empty() {
         notes.push(format!("{} reward events changed in {} flow files, none of these edits is tested in the game yet:", flows.len(), staged.files.len()));

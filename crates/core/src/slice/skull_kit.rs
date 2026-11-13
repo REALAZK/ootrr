@@ -120,7 +120,7 @@ mod tests {
     use crate::settings::seed::SeedFile;
     use crate::settings::{Settings, Value};
     use crate::slice::data::Data;
-    use crate::slice::edit::{build_with, Built};
+    use crate::slice::edit::{build_for, Built};
     use crate::slice::generate::{generate_data, GenOpts, Generated};
     use crate::slice::skull_edit::drops;
     use crate::slice::skulls::table as skull_table;
@@ -221,7 +221,7 @@ mod tests {
         assert!(!ds.is_empty());
         assert!(ds.iter().all(|x| x.actor.ends_with("_GS")));
         let load: PB = temp("seed");
-        let b: Built = build_with(&seed, &root, &load, "kits", Host::Hookshot, &Extra::default()).unwrap();
+        let b: Built = build_for(&seed, &root, &load, "kits", Host::Hookshot).unwrap();
         let romfs: PB = b.root.join("romfs");
         assert!(!romfs.join(SKULL_DEATH).exists());
         let token: Vec<Entry> = token_pack(&mut rf).unwrap();
@@ -259,7 +259,7 @@ mod tests {
         }
         assert!(seen >= ds.iter().map(|x| x.hash).collect::<BS<u64>>().len());
         assert!(b.report.contains("saved when its item is picked up"));
-        let again: Built = build_with(&seed, &root, &load, "kits", Host::Hookshot, &Extra::default()).unwrap();
+        let again: Built = build_for(&seed, &root, &load, "kits", Host::Hookshot).unwrap();
         assert_eq!(again.counts.files, b.counts.files);
         let _ = fs::remove_dir_all(&load);
     }

@@ -35,6 +35,7 @@ pub struct Need {
 pub struct Verdict {
     pub assign: BM<String, String>,
     pub bad: Vec<String>,
+    pub at: Vec<String>,
 }
 
 pub fn covered(d: &Data, placed: &BM<String, String>, f: &str) -> bool {
@@ -60,7 +61,7 @@ fn native(d: &Data, f: &str, loc: &str) -> Give {
     Give::Fixed(d.cat.by_name(loc).and_then(|c| rank(f, &c.item)).unwrap_or(0))
 }
 
-fn fixed_spot(d: &Data, loc: &str) -> bool {
+pub fn fixed_spot(d: &Data, loc: &str) -> bool {
     crate::pot_slice::targets::is_loc(d, loc)
         || crate::slice::skulls::is_skull(d, loc)
         || d.cat.by_name(loc).is_some_and(|l| crate::slice::pickups::is_world(l) || l.kind == "bossheart")
@@ -128,6 +129,10 @@ pub fn need(w: &World, place: &Placement, it: ItemId, at: LocId) -> Need {
     Need { held, reach, tight }
 }
 
+fn top_rule(d: &Data, f: &str, mine: &[&Slot]) -> bool {
+    crate::slice::key_spots::TOP_ONLY.contains(&f) && mine.iter().any(|s| s.give == Give::Open && fixed_spot(d, &s.loc))
+}
+
 pub fn judge(d: &Data, w: &World, place: &Placement, placed: &BM<String, String>) -> Res<Verdict> {
     let all: Vec<Slot> = slots(d, placed);
     let mut v: Verdict = Verdict::default();
@@ -135,6 +140,12 @@ pub fn judge(d: &Data, w: &World, place: &Placement, placed: &BM<String, String>
     for f in fams {
         let t: &[&str] = tiers(f)?;
         let mine: Vec<&Slot> = all.iter().filter(|s| s.family == f).collect();
+        if top_rule(d, f, &mine) {
+            for s in mine.iter().filter(|s| s.give == Give::Open && fixed_spot(d, &s.loc)) {
+                v.assign.insert(s.loc.clone(), t[t.len() - 1].to_string());
+            }
+            continue;
+        }
         let name: &str = mine.iter().find(|s| s.give == Give::Open).map(|s| s.item.as_str()).unwrap_or("");
         let it: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
         for s in mine.iter().filter(|s| s.give != Give::Flow) {
@@ -162,6 +173,7 @@ pub fn judge(d: &Data, w: &World, place: &Placement, placed: &BM<String, String>
                     n.held,
                     if n.tight { "" } else { " or fewer" }
                 ));
+                v.at.push(s.loc.clone());
             }
         }
     }

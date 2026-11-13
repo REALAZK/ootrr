@@ -28,13 +28,14 @@ fn once(
     free: &[LocId],
     pool: &[ItemId],
     allow: &dyn Fn(ItemId, LocId) -> bool,
+    order: &dyn Fn(ItemId, LocId) -> bool,
     rng: &mut Rng,
     rank: Option<&dyn Fn(LocId) -> usize>,
 ) -> Res<Placement> {
     let mut place: Placement = fixed.clone();
     let mut items: Vec<ItemId> = pool.to_vec();
     rng.shuffle(&mut items);
-    let room = |i: &ItemId| free.iter().filter(|l| allow(*i, **l)).count();
+    let room = |i: &ItemId| free.iter().filter(|l| order(*i, **l)).count();
     items.sort_by_key(room);
     let prog: Vec<ItemId> = items.iter().copied().filter(|i| w.items.adv[*i]).collect();
     let mut open: Vec<LocId> = free.to_vec();
@@ -103,6 +104,21 @@ pub fn fill_ranked(
     check_vanilla: bool,
     rank: Option<&dyn Fn(LocId) -> usize>,
 ) -> Res<Placement> {
+    fill_ordered(w, vanilla, free, allow, None, rng, tries, plan, check_vanilla, rank)
+}
+
+pub fn fill_ordered(
+    w: &World,
+    vanilla: &Placement,
+    free: &[LocId],
+    allow: &dyn Fn(ItemId, LocId) -> bool,
+    order: Option<&dyn Fn(ItemId, LocId) -> bool>,
+    rng: &mut Rng,
+    tries: u32,
+    plan: &[(LocId, ItemId)],
+    check_vanilla: bool,
+    rank: Option<&dyn Fn(LocId) -> usize>,
+) -> Res<Placement> {
     let mut fixed: Placement = vanilla.clone();
     let mut pool: Vec<ItemId> = Vec::with_capacity(free.len());
     for l in free {
@@ -133,7 +149,7 @@ pub fn fill_ranked(
         if n >= base && !won.is_empty() {
             break;
         }
-        match once(w, &fixed, &open, &pool, allow, rng, rank) {
+        match once(w, &fixed, &open, &pool, allow, order.unwrap_or(allow), rng, rank) {
             Ok(p) => {
                 won.push(p);
                 if won.len() >= WINS as usize {

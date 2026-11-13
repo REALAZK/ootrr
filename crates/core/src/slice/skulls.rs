@@ -89,10 +89,20 @@ pub fn accepts(d: &Data, w: &World, it: ItemId, l: LocId) -> Option<bool> {
         return None;
     }
     let t: &Table = shared()?;
-    Some(pickup(t, d, &w.items.names[it]).is_some())
+    let item: &str = &w.items.names[it];
+    Some(pickup(t, d, item).is_some() || crate::slice::key_spots::placeable(d, item, crate::slice::key_spots::Spot::Skull))
 }
 
-fn shared() -> Option<&'static Table> {
+pub fn drop_actor(t: &Table, d: &Data, item: &str, tier: Option<&str>) -> Res<String> {
+    if let Some(a) = pickup(t, d, item) {
+        return Ok(crate::slice::skull_kit::kit_actor(&a));
+    }
+    let p: crate::slice::key_spots::Pick = crate::slice::key_spots::resolve(d, item, tier)?;
+    p.kit_spec()?;
+    Ok(p.kit())
+}
+
+pub fn shared() -> Option<&'static Table> {
     static T: OnceLock<Option<Table>> = OnceLock::new();
     T.get_or_init(|| table().ok()).as_ref()
 }
@@ -196,6 +206,10 @@ fn named(w: &World, got: &Placement, l: LocId) -> String {
 }
 
 pub fn spoiler(d: &Data, w: &World, p: &Plan, free: &[LocId], got: &Placement) -> String {
+    spoiler_with(d, w, p, free, got, &BM::new())
+}
+
+pub fn spoiler_with(d: &Data, w: &World, p: &Plan, free: &[LocId], got: &Placement, fixed: &BM<String, String>) -> String {
     let mut out: String = String::new();
     if p.skulls == Mode::Off {
         return out;
@@ -211,10 +225,10 @@ pub fn spoiler(d: &Data, w: &World, p: &Plan, free: &[LocId], got: &Placement) -
         };
         let item: String = named(w, got, l);
         if free.contains(&l) {
-            let drop: String = match t.as_ref().and_then(|t| pickup(t, d, &item)) {
-                Some(_) if item == TOKEN => "its token drop is left as it is".to_string(),
-                Some(a) => format!("drops {}", crate::slice::skull_kit::kit_actor(&a)),
-                None => "no pickup".to_string(),
+            let drop: String = match t.as_ref().map(|t| drop_actor(t, d, &item, fixed.get(n).map(|s| s.as_str()))) {
+                _ if item == TOKEN => "its token drop is left as it is".to_string(),
+                Some(Ok(a)) => format!("drops {a}"),
+                _ => "no pickup".to_string(),
             };
             let _ = writeln!(out, "  {n}: {item} (shuffled, {drop})");
             continue;
@@ -316,7 +330,8 @@ mod tests {
                 assert_eq!(tokens, held);
                 for (loc, item) in &g.seed_file.placements {
                     if is_skull(&d, loc) {
-                        assert!(pickup(&t, &d, item).is_some(), "{loc} holds {item}");
+                        let ok: bool = pickup(&t, &d, item).is_some() || crate::slice::key_spots::placeable(&d, item, crate::slice::key_spots::Spot::Skull);
+                        assert!(ok, "{loc} holds {item}");
                         if item != TOKEN {
                             moved += 1;
                         }

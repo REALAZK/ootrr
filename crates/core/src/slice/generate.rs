@@ -8,7 +8,7 @@ use crate::rng::Rng;
 use crate::settings::Settings;
 use crate::settings::seed::SeedFile;
 use crate::slice::data::{Data, State};
-use crate::slice::fill::{changed, fill_ranked, vanilla_place};
+use crate::slice::fill::{changed, fill_ordered, vanilla_place};
 use crate::slice::logic::world_with;
 use crate::slice::pick::{pick, scoped, Pick};
 use crate::slice::pickups as pu;
@@ -245,14 +245,25 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     let got: Placement = if pk.free.is_empty() {
         vanilla.clone()
     } else {
-        let caps: HM<LocId, usize> = crate::pot_slice::rules::caps(d, &w, &pk.free, &vanilla, &ok);
+        let fix: bool = crate::slice::tier_fix::active(d, &w, &pk.free);
+        let narrow = |it: ItemId, l: LocId| ok(it, l) && !crate::slice::key_spots::widened(d, &w.locs[l].name, &w.items.names[it]);
+        let order: Option<&dyn Fn(ItemId, LocId) -> bool> = if fix { Some(&narrow) } else { None };
+        let caps: HM<LocId, usize> = crate::pot_slice::rules::caps(d, &w, &pk.free, &vanilla, order.unwrap_or(&ok));
         let rank = |l: LocId| caps.get(&l).copied().unwrap_or(0);
         let r: Option<&dyn Fn(LocId) -> usize> = if caps.is_empty() { None } else { Some(&rank) };
+        let keep: Vec<LocId> = plan.iter().map(|x| x.0).collect();
         let mut n: u32 = 0;
         loop {
-            let g: Placement = fill_ranked(&w, &vanilla, &pk.free, &ok, &mut rng, o.tries, &plan, !p.keys_roam(), r)?;
+            let g: Placement = fill_ordered(&w, &vanilla, &pk.free, &ok, order, &mut rng, o.tries, &plan, !p.keys_roam(), r)?;
             if crate::slice::tier_order::fits(d, &w, &g, &pk.free)? {
                 break g;
+            }
+            if fix {
+                let mut fr: Rng = Rng::from_text(&format!("{seed} tier repair {n}"));
+                let c: crate::slice::tier_fix::Ctx = crate::slice::tier_fix::Ctx { d, w: &w, free: &pk.free, keep: &keep, ok: &ok };
+                if let Some(x) = crate::slice::tier_fix::repair(&c, &g, &mut fr)? {
+                    break x;
+                }
             }
             n += 1;
             if n >= TIER_TRIES {
@@ -261,7 +272,8 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
                 } else {
                     "check the plando entries for upgrade items, or try another seed text"
                 };
-                return Err(E::Msg(format!("no fill in {TIER_TRIES} tries kept every fixed upgrade tier in order, {hint}")));
+                let last: Vec<String> = crate::slice::tier_fix::verdict(d, &w, &g, &pk.free)?.bad.into_iter().take(2).collect();
+                return Err(E::Msg(format!("no fill in {TIER_TRIES} tries kept every fixed upgrade tier in order, {hint}. The last fill failed because {}", last.join(", and "))));
             }
         }
     };
@@ -288,7 +300,13 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     let seed_file: SeedFile = SeedFile::new(seed, s, &d.scan.game, map)?;
     let (sp, spheres): (Option<String>, Steps) = if o.spoiler {
         let (mut t, st): (String, Steps) = spoiler_text(&w, &vanilla, &got, &pk)?;
-        t.push_str(&crate::slice::skulls::spoiler(d, &w, &p, &pk.free, &got));
+        let fixed: BM<String, String> = if crate::slice::tier_fix::active(d, &w, &pk.free) {
+            crate::slice::tier_fix::verdict(d, &w, &got, &pk.free)?.assign
+        } else {
+            BM::new()
+        };
+        t.push_str(&crate::slice::skulls::spoiler_with(d, &w, &p, &pk.free, &got, &fixed));
+        t.push_str(&crate::slice::key_spots::spoiler(d, &w, &pk.free, &got, &fixed));
         (Some(t), st)
     } else {
         (None, Vec::new())

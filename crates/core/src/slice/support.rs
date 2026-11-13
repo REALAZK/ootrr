@@ -354,6 +354,12 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if skulls != crate::slice::skulls::Mode::Off {
         notes.push(crate::slice::skulls::NOTE.to_string());
     }
+    if world != Mode::Off || drops.any() || skulls != crate::slice::skulls::Mode::Off {
+        notes.push(crate::slice::key_spots::NOTE.to_string());
+    }
+    if drops.pots != Mode::Off {
+        notes.push(crate::slice::key_spots::LOST.to_string());
+    }
     if scrubs {
         notes.push(crate::scrubs_a::NOTE.to_string());
     }
