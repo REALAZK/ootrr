@@ -76,7 +76,10 @@ pub fn spec(d: &Data, over: &[(&str, &str)]) -> Res<Spec> {
     let mut s: Spec = Spec::from_bundle(SHIMS)?;
     s.settings = Settings::from_json(&parse(SETTINGS)?)?;
     for (k, v) in over {
-        s.settings.set_str(k, v);
+        match v.parse::<i64>() {
+            Ok(n) => s.settings.set_int(k, n),
+            Err(_) => s.settings.set_str(k, v),
+        }
     }
     for it in &d.items {
         s.add_item(&it.name, it.adv, 0);

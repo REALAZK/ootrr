@@ -25,6 +25,7 @@ mod pot_cmd;
 mod pot_scan_cmd;
 mod pots_persist_cmd;
 mod progressive_cmd;
+mod qol_cmd;
 mod save_cmd;
 mod serve_cmd;
 mod settings_cmd;
@@ -68,6 +69,7 @@ const USAGE: &str = "usage:
   ootrr flow-scale <romfs_root> <load_dir> <mod_name> <factor> <min_frames> <relative_path>...
   ootrr flow-force <romfs_root> <load_dir> <mod_name> <relative_path> <event_name> <case_value> [<event_name> <case_value>]...
   ootrr intro-skip <romfs_root> <load_dir> <mod_name> [--movie-only | --scene-only | --hold | --hold-and-scene]
+  ootrr qol-mod <romfs_root> <load_dir> <mod_name> <skip-story | skip-all | anju | poe>
   ootrr door-fix <romfs_root> <load_dir> <mod_name>
   ootrr start-defaults <romfs_root> <load_dir> <mod_name> [--preset setting=value]... [--control] [--bool N=v] [--int N=v] [--enum N=v] [--grant Actor:n] [--opening-step S]
   ootrr flow-rewards <romfs_root> <out_json>
@@ -333,6 +335,7 @@ fn main() -> ExitCode {
         Some("flow-durations") => check_bfevfl::durations(&a[1..]),
         Some("flow-scale") => check_bfevfl::scale(&a[1..]),
         Some("intro-skip") => intro_cmd::run(&a[1..]),
+        Some("qol-mod") => qol_cmd::run(&a[1..]),
         Some("door-fix") => door_fix_cmd::run(&a[1..]),
         Some("start-defaults") => start_defaults_cmd::run(&a[1..]),
         Some("progressive") => progressive_cmd::run(&a[1..]),

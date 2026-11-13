@@ -76,6 +76,7 @@ pub struct Plan {
     pub skulls: crate::slice::skulls::Mode,
     pub remake: bool,
     pub chus: bool,
+    pub qol: crate::qol::Opts,
 }
 
 const GEAR: &[(&str, &str, &str)] = &[
@@ -186,6 +187,7 @@ impl Plan {
         if self.kakariko {
             out.push(KAKARIKO);
         }
+        out.extend(self.qol.logic());
         out
     }
 
@@ -343,6 +345,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     let skulls: crate::slice::skulls::Mode = crate::slice::skulls::mode(s, &mut bad);
     let remake: bool = crate::slice::remake_chests::mode(s, &mut bad);
     let chus: bool = crate::slice::bombchus::mode(s, &mut bad);
+    let qol: crate::qol::Opts = crate::qol::read(s, &mut bad);
     let excluded: Vec<String> = s.items("disabled_locations").map(|v| v.to_vec()).unwrap_or_default();
     if !bad.is_empty() {
         let lines: Vec<String> = bad.iter().map(|b| format!("  {b}")).collect();
@@ -403,7 +406,8 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if chus {
         notes.push(crate::slice::bombchus::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus })
+    notes.extend(qol.notes());
+    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol })
 }
 
 #[cfg(test)]

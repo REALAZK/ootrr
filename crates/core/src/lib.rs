@@ -47,6 +47,7 @@ pub mod placement;
 pub mod pot_slice;
 pub mod pots;
 pub mod pregrant;
+pub mod qol;
 pub mod progressive;
 pub mod rng;
 pub mod required;

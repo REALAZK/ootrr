@@ -32,6 +32,7 @@ pub fn list(d: &Data) -> Vec<String> {
     }
     out.extend(fast::FILES.iter().map(|s| s.to_string()));
     out.insert(intro_skip::FILE.to_string());
+    out.extend(crate::qol::files());
     out.extend(SPOTS.iter().map(|s| s.flow.to_string()));
     out.extend(song_models::SONGS.iter().map(|s| song_models::pack_of(s)));
     out.extend(bomb_lift::PACKS.iter().map(|s| bomb_lift::pack_of(s)));

@@ -586,6 +586,22 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
             }
         }
     }
+    if p.qol.any() {
+        for o in crate::qol::worked(&mut rf, &pk, &p.qol)? {
+            pk.write_romfs(&o.path, &o.z)?;
+            extra += 1;
+            if o.new > o.old {
+                if rst.is_none() {
+                    rst = Some(rsizetable::load(&mut rf)?);
+                }
+                if let Some(t) = rst.as_mut()
+                    && t.grow(&o.path, o.old as u64, o.new as u64, MARGIN)?.is_some()
+                {
+                    grown += 1;
+                }
+            }
+        }
+    }
     extra += crate::slice::skull_kit::write(&mut rf, &pk, &mut rst, &skull_drops, kit_pool)?;
     if host == Host::Hookshot && rst.is_none() {
         rst = Some(rsizetable::load(&mut rf)?);

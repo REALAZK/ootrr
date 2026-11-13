@@ -367,6 +367,21 @@ pub fn build() -> Schema {
         Setting::toggle(57, "bombchus_in_logic", "world", "Bombchus in logic (experimental)", false)
             .tip("Experimental. Bombchus count as explosives in the seed logic, so walls, switches and enemies that need an explosive can be handled with Bombchus and no Bomb Bag. This follows the OoTR option that considers Bombchus in logic. Only the logic side is done here, the remake gets no separate Bombchu bag and no Bombchu drops. Caution: in our test of the remake, Bombchus only worked once a Bomb Bag and its ammo maximum were set, and a Bombchu pickup gave a count of 0 without them. The game is also reported to gate Bombchu use on a bag or a defeated Dodongo. A seed with this ticked may expect Bombchus where the game will not let you use them."),
     );
+    s.push(
+        Setting::choice(70, crate::qol::SKIP, "world", "Skippable cutscenes", "off")
+            .tip("Removes the lock that stops the player from skipping some cutscenes. Most cutscenes can already be skipped by holding the skip button, only eight are locked. Experimental, untested in the game.")
+            .opt("off", "Vanilla", "The locked cutscenes stay locked.")
+            .opt("story", "Opening and credits", "The opening movie and the first credits movie can be skipped. The six title screen demos stay locked.")
+            .opt("all", "All locks", "Also unlocks the six title screen demos. Pressing the skip button on the title screen may then skip a demo."),
+    );
+    s.push(
+        Setting::toggle(71, crate::qol::ANJU, "world", "Anju needs one cucco", false)
+            .tip("Anju in Kakariko Village counts the cucco game as won when one cucco is in the pen instead of seven. The Bottle reward is the same. The logic needs one cucco too. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(72, crate::qol::POE, "world", "Big poe bottle at the first big poe", false)
+            .tip("The Ghost Shop owner in the Market gives the Bottle for the first big poe, where the game wants five. The golden reward after ten big poes is unchanged. The logic needs one big poe. Experimental, untested in the game."),
+    );
     s.push(starting_items());
     s.push(starting_songs());
     s.sort_by_key(|x| x.num);
