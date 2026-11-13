@@ -17,7 +17,7 @@ pub const SKULLS_JSON: &str = include_str!("../../../../data/skulltulas.json");
 pub const SETTING: &str = "shuffle_skulltulas";
 pub const KIND: &str = "gs";
 pub const TOKEN: &str = "Gold Skulltula Token";
-pub const NOTE: &str = "Gold Skulltulas are shuffled. A skulltula drops its new item instead of the token, and it stays dead once killed because the skulltula death table is edited for all 100. A dropped item that is not picked up before leaving is lost. Experimental, untested in the game.";
+pub const NOTE: &str = "Gold Skulltulas are shuffled. A skulltula drops its new item instead of the token. The item shows the get window when it is picked up and only then is the skulltula saved, so an item that is left behind comes back with its skulltula on the next visit. Experimental, untested in the game.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
@@ -213,7 +213,7 @@ pub fn spoiler(d: &Data, w: &World, p: &Plan, free: &[LocId], got: &Placement) -
         if free.contains(&l) {
             let drop: String = match t.as_ref().and_then(|t| pickup(t, d, &item)) {
                 Some(_) if item == TOKEN => "its token drop is left as it is".to_string(),
-                Some(a) => format!("drops {a}"),
+                Some(a) => format!("drops {}", crate::slice::skull_kit::kit_actor(&a)),
                 None => "no pickup".to_string(),
             };
             let _ = writeln!(out, "  {n}: {item} (shuffled, {drop})");

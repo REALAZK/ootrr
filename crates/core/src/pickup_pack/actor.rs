@@ -1,7 +1,8 @@
 use crate::byml::{Byml, Node};
 use crate::error::{Error as E, Res};
 use crate::pickup_pack::closure::{actor_file, chain, local, norm, work, Chain, Pool, COMPONENTS, PARENT};
-use crate::pickup_pack::{is_actor_name, Spec, Style, BASE, DONOR};
+use crate::pickup_pack::magic;
+use crate::pickup_pack::{is_actor_name, Layers, Spec, Style, BASE, DONOR};
 
 pub const NAME_REF: &str = "ActorNameRef";
 pub const MODEL_REF: &str = "ModelInfoRef";
@@ -13,12 +14,16 @@ pub const ATTENTION_REF: &str = "AttentionSenderRef";
 pub const POUCH_ACTOR: &str = "PouchActor";
 pub const FIRST_CHECK: &str = "IsCountCheckOnFirstGet";
 pub const AUTO_GET: &str = "DefaultAutoGet";
+pub const SHARED_ANIM: &str = "Item_Common_Animation";
+const ANIM_LIST: &str = "AnimationResources";
+const ANIM_NAME: &str = "ModelProjectName";
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Made {
     pub actor: (String, Vec<u8>),
     pub pouch: (String, Vec<u8>),
     pub identity: String,
+    pub extra: Vec<(String, Vec<u8>)>,
 }
 
 pub fn pouch_file(name: &str) -> String {
@@ -37,6 +42,16 @@ fn held(p: &Pool, who: &str, k: &str, v: &str) -> Res<String> {
     Ok(f)
 }
 
+pub fn shared_anim(p: &Pool, c: &Chain) -> bool {
+    let Some(f) = c.comps.get(ANIM_REF).and_then(|v| norm(v)) else {
+        return false;
+    };
+    let Ok(y) = p.byml(&f) else {
+        return false;
+    };
+    y.root.get(ANIM_LIST).and_then(|v| v.as_arr()).and_then(|a| a.first()).and_then(|x| x.get(ANIM_NAME)).and_then(|v| v.as_str()) == Some(SHARED_ANIM)
+}
+
 pub fn fits(p: &Pool, s: &Spec) -> Res<Vec<String>> {
     let item: Chain = chain(p, &s.item)?;
     let donor: Chain = chain(p, DONOR)?;
@@ -51,7 +66,7 @@ pub fn fits(p: &Pool, s: &Spec) -> Res<Vec<String>> {
             Some(_) => {}
         }
     }
-    if item.comps.get(AS_REF) != donor.comps.get(AS_REF) {
+    if item.comps.get(AS_REF) != donor.comps.get(AS_REF) && !shared_anim(p, &item) {
         bad.push(format!("{} does not use the animation set of the shipped pickups", s.item));
     }
     Ok(bad)
@@ -81,6 +96,10 @@ pub fn identity(p: &Pool, s: &Spec, item: &Chain, pouch: &str) -> Res<String> {
 }
 
 pub fn make(p: &Pool, s: &Spec) -> Res<Made> {
+    make_with(p, s, &Layers::default())
+}
+
+pub fn make_with(p: &Pool, s: &Spec, l: &Layers) -> Res<Made> {
     let item: Chain = chain(p, &s.item)?;
     let donor: Chain = chain(p, DONOR)?;
     if let Some(m) = fits(p, s)?.first() {
@@ -99,6 +118,12 @@ pub fn make(p: &Pool, s: &Spec) -> Res<Made> {
     if s.style == Style::Press {
         comps.set(ATTENTION_REF, Node::Str(need(&donor, DONOR, ATTENTION_REF)?.to_string()));
     }
+    let mut extra: Vec<(String, Vec<u8>)> = Vec::new();
+    if l.magic {
+        let (f, d, r): (String, Vec<u8>, String) = magic::make(p, &item, &chain(p, BASE)?, &s.item, &s.name)?;
+        comps.set(magic::TABLE_REF, Node::Str(r));
+        extra.push((f, d));
+    }
     let mut actor: Node = Node::Map(Vec::new());
     actor.set(PARENT, Node::Str(work(&actor_file(BASE))));
     actor.set(COMPONENTS, comps);
@@ -114,6 +139,7 @@ pub fn make(p: &Pool, s: &Spec) -> Res<Made> {
         actor: (actor_file(&s.name), Byml { root: actor, version, big: false }.write()?),
         pouch: (pouch_path, Byml { root: pouch, version, big: false }.write()?),
         identity: who,
+        extra,
     })
 }
 
@@ -262,5 +288,59 @@ pub(crate) mod tests {
         assert!(make(&p, &sp).is_err());
         let own: Spec = Spec { item: DONOR.to_string(), name: "Obj_Twice".to_string(), style: Style::Touch, heap: None };
         assert!(fits(&p, &own).unwrap().iter().any(|m| m.contains("already a world pickup")));
+    }
+
+    fn anim(first: &str) -> Vec<u8> {
+        let mut a: Node = Node::Map(Vec::new());
+        a.set(ANIM_NAME, s(first));
+        let mut b: Node = Node::Map(Vec::new());
+        b.set(ANIM_NAME, s("Item_Long_Animation"));
+        file(&[(ANIM_LIST, Node::Arr(vec![a, b]))])
+    }
+
+    fn long(p: &mut Pool, name: &str, first: &str) -> Spec {
+        let f: String = format!("Component/AnimationParam/{name}.engine__component__AnimationParam.bgyml");
+        p.add(&f, &anim(first)).unwrap();
+        let y: Vec<u8> = file(&[(
+            COMPONENTS,
+            comps(&[
+                (AS_REF, "?AS/Pouch_Long.root.asb"),
+                (NAME_REF, "?ActorSystem/ActorName/Item_Long.engine__actor__ActorName.bgyml"),
+                (ANIM_REF, &format!("?{f}")),
+                (MODEL_REF, "?Component/ModelInfo/Item_Test.engine__component__ModelInfo.bgyml"),
+                (POUCH_REF, "?Component/PouchContentParam/Item_Test.game__component__PouchContentParam.bgyml"),
+            ]),
+        )]);
+        p.add(&actor_file(name), &y).unwrap();
+        Spec { item: name.to_string(), name: format!("Obj_{name}"), style: Style::Touch, heap: None }
+    }
+
+    #[test]
+    fn another_animation_set_is_accepted_only_when_the_shared_animations_come_first() {
+        let mut p: Pool = pool();
+        let good: Spec = long(&mut p, "Item_Long", SHARED_ANIM);
+        assert!(fits(&p, &good).unwrap().is_empty());
+        let m: Made = make(&p, &good).unwrap();
+        let y: Byml = Byml::parse(&m.actor.1).unwrap();
+        assert_eq!(y.root.get(COMPONENTS).and_then(|c| c.get(AS_REF)).and_then(|v| v.as_str()), Some("?AS/Item_Common.root.asb"));
+        let second: Spec = long(&mut p, "Item_Late", "Item_Long_Animation");
+        let bad: Vec<String> = fits(&p, &second).unwrap();
+        assert_eq!(bad.len(), 1);
+        assert!(bad[0].contains("animation set"));
+        assert!(make(&p, &second).is_err());
+        assert!(!shared_anim(&p, &chain(&p, "Item_Test").unwrap()));
+        assert!(fits(&p, &spec(Style::Touch)).unwrap().is_empty());
+    }
+
+    #[test]
+    fn the_magic_layer_is_off_unless_asked_for() {
+        let p: Pool = pool();
+        let m: Made = make(&p, &spec(Style::Touch)).unwrap();
+        assert!(m.extra.is_empty());
+        assert_eq!(make_with(&p, &spec(Style::Touch), &Layers::default()).unwrap(), m);
+        let y: Byml = Byml::parse(&m.actor.1).unwrap();
+        assert!(y.root.get(COMPONENTS).and_then(|c| c.get(magic::TABLE_REF)).is_none());
+        let on: Layers = Layers { magic: true, ..Layers::default() };
+        assert!(make_with(&p, &spec(Style::Touch), &on).is_err());
     }
 }

@@ -1,0 +1,834 @@
+{
+  "version": 1,
+  "about": "Unified pickup pack catalog of wave 2. One entry per item. status is built, dry_ok, shipped or blocked. A variant is the same pack with other pack-add options. Read by pickup_pack/catalog.rs. The generator does not read this file yet.",
+  "packs": [
+    {
+      "group": "A",
+      "item": "Item_Boomerang",
+      "pack": "Obj_Boomerang",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_Boomerang",
+      "notes": "Same as the wave 1 chain pack. Built on LLR Freestanding PoH."
+    },
+    {
+      "group": "A",
+      "item": "Item_Hammer",
+      "pack": "Obj_Hammer",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_Hammer",
+      "notes": "Long model, cosmetic risk only. Built on LH Freestanding PoH."
+    },
+    {
+      "group": "A",
+      "item": "Item_GlassTruth",
+      "pack": "Obj_GlassTruth",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Armor_GlassTruth",
+      "notes": "Gear identity differs from the item name. HeadArmor row with MPMaxUP side effect, model floats about 1 m up."
+    },
+    {
+      "group": "A",
+      "item": "Item_Range_Bow",
+      "pack": "Obj_Range_Bow",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Weapon_Range_Bow",
+      "notes": "Item_Bow has no actor pack, the real actor is Item_Range_Bow. No quiver comes with it, arrow max stays 0 until the ENGINE ammo layer or a Quiver.",
+      "variants": [
+        {
+          "args": [
+            "--heap",
+            "199928",
+            "--ammo"
+          ],
+          "status": "built",
+          "notes": "Pickup side ammo layer of ENGINE, as in wave2\\engine\\mods\\e3_ammo_bow_slingshot. azk decided to try this side first. The plain build stays the fallback until the layer is seen working in game."
+        }
+      ]
+    },
+    {
+      "group": "A",
+      "item": "Item_Range_SlingShot",
+      "pack": "Obj_Range_SlingShot",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Weapon_Range_SlingShot",
+      "notes": "Capital S in SlingShot. No bullet bag comes with it, seed max stays 0 until the ENGINE ammo layer or a bag.",
+      "variants": [
+        {
+          "args": [
+            "--heap",
+            "199928",
+            "--ammo"
+          ],
+          "status": "built",
+          "notes": "Pickup side ammo layer of ENGINE, as in wave2\\engine\\mods\\e3_ammo_bow_slingshot. azk decided to try this side first. The plain build stays the fallback until the layer is seen working in game."
+        }
+      ]
+    },
+    {
+      "group": "A",
+      "item": "Item_Quiver_Medium",
+      "pack": "Obj_Quiver_Medium",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_Quiver_Medium",
+      "notes": "Row sets arrow max 40 and refills arrows. Never place after a Large."
+    },
+    {
+      "group": "A",
+      "item": "Item_Quiver_Large",
+      "pack": "Obj_Quiver_Large",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_Quiver_Large",
+      "notes": "Row sets arrow max 50 and refills arrows. Needs the tier order."
+    },
+    {
+      "group": "A",
+      "item": "Item_BulletBag_Medium",
+      "pack": "Obj_BulletBag_Medium",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_BulletBag_Medium",
+      "notes": "Row sets seed max 40 and refills seeds. Never place after a Large."
+    },
+    {
+      "group": "A",
+      "item": "Item_BulletBag_Large",
+      "pack": "Obj_BulletBag_Large",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_BulletBag_Large",
+      "notes": "Row sets seed max 50 and refills seeds. Needs the tier order."
+    },
+    {
+      "group": "A",
+      "item": "Item_BombBag_Small",
+      "pack": "Obj_BombBag_Small",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_BombBag_Small",
+      "notes": "Dry run refused, ASRef is Item_BombBag.root.asb. Waits for the ENGINE shared Item_Common animation check. Command stays the same once it lands. Wave 2 merge: the ENGINE fit check accepts it. Built with the merged binary, byte identical to wave2\\engine\\mods\\e1_bombbag_small.",
+      "source_status": "blocked_engine"
+    },
+    {
+      "group": "A",
+      "item": "Item_BombBag_Medium",
+      "pack": "Obj_BombBag_Medium",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_BombBag_Medium",
+      "notes": "Row sets bomb max 30 and refills bombs. Small must be owned first in a real seed."
+    },
+    {
+      "group": "A",
+      "item": "Item_BombBag_Large",
+      "pack": "Obj_BombBag_Large",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_BombBag_Large",
+      "notes": "Row sets bomb max 40 and refills bombs. Needs the tier order."
+    },
+    {
+      "group": "A",
+      "item": "Item_Bombchu",
+      "pack": "Obj_Bombchu",
+      "args": [],
+      "status": "blocked",
+      "identity": "Item_Bombchu",
+      "notes": "No pack needed. The shipped Obj_Bombchu is the Bombchus (5) pickup. Never place Item_Bombchu, it is the live bomb. The dry run refuses it on purpose.",
+      "source_status": "blocked_decision"
+    },
+    {
+      "group": "A",
+      "item": "Item_BombchuBundle_Small",
+      "pack": "Obj_BombchuBundle_Small",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "dry_ok",
+      "identity": "Item_BombchuBundle_Small",
+      "notes": "Dry run passes and a tables only copy is built in extra. Rows equal the shipped Obj_Bombchu, so it is not placed and not needed."
+    },
+    {
+      "group": "A",
+      "item": "Item_BombchuBundle_Medium",
+      "pack": "Obj_BombchuBundle_Medium",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_BombchuBundle_Medium",
+      "notes": "Built for the no bag test. IsCountCheckOnFirstGet false may eat the pickup with 0 chus. Decision on a count check option is open."
+    },
+    {
+      "group": "A",
+      "item": "Item_BombchuBundle_Large",
+      "pack": "Obj_BombchuBundle_Large",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Item_BombchuBundle_Large",
+      "notes": "Built for the no bag test, same open decision as Medium."
+    },
+    {
+      "group": "B",
+      "item": "Item_HeavyBoot",
+      "pack": "Obj_HeavyBoot",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Armor_Adult_HeavyBoot",
+      "notes": "Built and read back (PouchActor, rows, size table). Adult only equipment. In ZZ OOTRR Pack B at ZF Bottom PoH. Not yet tried in game."
+    },
+    {
+      "group": "B",
+      "item": "Item_HoverBoot",
+      "pack": "Obj_HoverBoot",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Armor_Adult_HoverBoot",
+      "notes": "Built and read back. Same shape as Iron Boots. In ZZ OOTRR Pack B at ZF Iceberg PoH, the same scene file as the Iron Boots spot. Not yet tried in game."
+    },
+    {
+      "group": "B",
+      "item": "Item_Shield_Mirror",
+      "pack": "Obj_Shield_Mirror",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Weapon_Shield_Mirror",
+      "notes": "Built and read back. Keeps the shield's own pouch actor. Large model on a small body, may clip the ground. In ZZ OOTRR Pack B at Kak Windmill PoH. Not yet tried in game."
+    },
+    {
+      "group": "B",
+      "item": "Item_Sword_Kokiri",
+      "pack": "Obj_Sword_Kokiri",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Weapon_Sword_Kokiri",
+      "notes": "Built and read back. Child equipment only. IsGet.Weapon_Sword_Kokiri is the flag Mido's gate is believed to read. In ZZ OOTRR Pack B at LLR PoH. Not yet tried in game."
+    },
+    {
+      "group": "B",
+      "item": "Item_Sword_Biggoron",
+      "pack": "Obj_Sword_Biggoron",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "identity": "Weapon_Sword_Biggoron",
+      "notes": "Built and read back. A pickup runs no equip helper. Exclusive sword group may remove a held Giant's Knife. In ZZ OOTRR Pack B at ZR Near Domain PoH. Needs a generator rule change before a seed may place it (WP4)."
+    },
+    {
+      "group": "B",
+      "item": "Item_Shield_Deku",
+      "pack": "Obj_Shield_Deku",
+      "args": [],
+      "status": "shipped",
+      "identity": "Weapon_Shield_Deku",
+      "notes": "Ships in the game (48 files, PouchActor Weapon_Shield_Deku read from the dump). No new pack. Freestanding actor list needs the entry (WP4)."
+    },
+    {
+      "group": "B",
+      "item": "Item_Shield_Hylian",
+      "pack": "Obj_Shield_Hylian",
+      "args": [],
+      "status": "shipped",
+      "identity": "Weapon_Shield_Hylian",
+      "notes": "Ships in the game (49 files, PouchActor Weapon_Shield_Hylian read from the dump). No new pack. Freestanding actor list needs the entry (WP4)."
+    },
+    {
+      "group": "C",
+      "item": "Item_FairyBless_MP",
+      "pack": "Obj_FairyBless_MP",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_FairyBless_MP",
+      "notes": "READY WITH LAYER. Built plain, 41 files, heap 199928, deal FairyBlessMP, MPMaxUP 24, no GameParameterTableRef override, no Tag row. Needs ENGINE magic bar layer if test M1 shows no usable bar",
+      "variants": [
+        {
+          "args": [
+            "--host",
+            "hookshot",
+            "--magic"
+          ],
+          "status": "built",
+          "notes": "Optional magic layer of ENGINE. Only needed if the plain pack fails the magic bar test M1."
+        }
+      ]
+    },
+    {
+      "group": "C",
+      "item": "Item_DinFire",
+      "pack": "Obj_DinFire",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_DinFire",
+      "notes": "Plain, 40 files, heap 199928, MPMaxUP 24, variation frame 0, no Tag row. M1 control, a cast needs a meter. Takes the magic layer too if M1 fails",
+      "variants": [
+        {
+          "args": [
+            "--host",
+            "hookshot",
+            "--magic"
+          ],
+          "status": "built",
+          "notes": "Optional magic layer of ENGINE. Only needed if the plain pack fails the magic bar test M1."
+        }
+      ]
+    },
+    {
+      "group": "C",
+      "item": "Item_FairyBless_MPDouble",
+      "pack": "Obj_FairyBless_MPDouble",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_FairyBless_MPDouble",
+      "notes": "READY WITH LAYER. Built plain, 41 files, heap 199928, deal FairyBlessMPDouble, MPMaxUP 48, no Tag row. Needs ENGINE magic bar layer if M1 or M2 fail, plus WP5 tier order",
+      "variants": [
+        {
+          "args": [
+            "--host",
+            "hookshot",
+            "--magic"
+          ],
+          "status": "built",
+          "notes": "Optional magic layer of ENGINE. Only needed if the plain pack fails the magic bar test M1."
+        }
+      ]
+    },
+    {
+      "group": "C",
+      "item": "Item_Arrow_Ice",
+      "pack": "Obj_Arrow_Ice",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_Arrow_Ice",
+      "notes": "Plain, 40 files, heap 199928, PouchCategory Bow, MPMaxUP 24, no Tag row so no Fire Arrow challenge. Magic layer applies if M1 fails",
+      "variants": [
+        {
+          "args": [
+            "--host",
+            "hookshot",
+            "--magic"
+          ],
+          "status": "dry_ok",
+          "notes": "Optional magic layer of ENGINE. Only needed if the plain pack fails the magic bar test M1."
+        }
+      ]
+    },
+    {
+      "group": "C",
+      "item": "Item_Arrow_Light",
+      "pack": "Obj_Arrow_Light",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_Arrow_Light",
+      "notes": "Plain, 40 files, heap 199928, PouchCategory Bow, MPMaxUP 24, no Tag row. Magic layer applies if M1 fails",
+      "variants": [
+        {
+          "args": [
+            "--host",
+            "hookshot",
+            "--magic"
+          ],
+          "status": "dry_ok",
+          "notes": "Optional magic layer of ENGINE. Only needed if the plain pack fails the magic bar test M1."
+        }
+      ]
+    },
+    {
+      "group": "C",
+      "item": "Item_FaroreWind",
+      "pack": "Obj_FaroreWind",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_FaroreWind",
+      "notes": "Plain, 40 files, heap 199928, shared Item_DinFire model, variation frame 1, MPMaxUP 24, no Tag row. Magic layer applies if M1 fails",
+      "variants": [
+        {
+          "args": [
+            "--host",
+            "hookshot",
+            "--magic"
+          ],
+          "status": "dry_ok",
+          "notes": "Optional magic layer of ENGINE. Only needed if the plain pack fails the magic bar test M1."
+        }
+      ]
+    },
+    {
+      "group": "C",
+      "item": "Item_NayruLove",
+      "pack": "Obj_NayruLove",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_NayruLove",
+      "notes": "Plain, 40 files, heap 199928, shared Item_DinFire model, variation frame 2, MPMaxUP 24, no Tag row. Magic layer applies if M1 fails",
+      "variants": [
+        {
+          "args": [
+            "--host",
+            "hookshot",
+            "--magic"
+          ],
+          "status": "dry_ok",
+          "notes": "Optional magic layer of ENGINE. Only needed if the plain pack fails the magic bar test M1."
+        }
+      ]
+    },
+    {
+      "group": "C",
+      "item": "Item_AgonyStone",
+      "pack": "Obj_AgonyStone",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_AgonyStone",
+      "notes": "Plain, 40 files, heap 199928, KeyItem, deal AgonyStone, no magic, no Tag row. Rumble untested off the flow. gate::bound keeps it on Kak 20 in seeds"
+    },
+    {
+      "group": "C",
+      "item": "Item_Token_Gerudo",
+      "pack": "Obj_Token_Gerudo",
+      "args": [
+        "--host",
+        "hookshot"
+      ],
+      "status": "built",
+      "identity": "Item_Token_Gerudo",
+      "notes": "Plain, 40 files, heap 199928, KeyItem, no deal, no magic, no Tag row. Fortress reads only IsGet.Item_Token_Gerudo"
+    },
+    {
+      "group": "D",
+      "item": "Item_Hookshot",
+      "pack": "Obj_Hookshot",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Hookshot 1 of 2",
+      "identity": "Item_Hookshot",
+      "notes": "Wave 1 proof pack, passed in game 2026-11-12. Not rebuilt here and not in the group D mod."
+    },
+    {
+      "group": "D",
+      "item": "Item_Longshot",
+      "pack": "Obj_Longshot",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Hookshot 2 of 2",
+      "identity": "Item_Longshot",
+      "notes": "Merge binary refuses it: not the Item_Common animation set. Waits for the ENGINE fit check. Command: ootrr pack-add <romfs> <load_dir> \"ZZ OOTRR Pack D\" Item_Longshot --host hookshot --heap 199928 --base \"<load_dir>\\ZZ OOTRR Pack D\\romfs\" --place 8030885465575590602 Wave 2 merge: the ENGINE fit check accepts it. Built with the merged binary, byte identical to wave2\\engine\\mods\\e1_longshot. The pouch identity Item_Longshot is now written and read back.",
+      "source_status": "blocked_engine"
+    },
+    {
+      "group": "D",
+      "item": "Item_Gauntlet_Goron",
+      "pack": "Obj_Gauntlet_Goron",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Strength 1 of 3",
+      "identity": "Item_Gauntlet_Goron",
+      "notes": "The pouch file names the item actor, as the shipped item does. The save flags exist only under Armor_Child_Gauntlet_Goron. In game check needed. 41 files, 36540 bytes. Wave 2 merge: kept flagged. The identity field holds the PouchActor that is written. The save names are under Armor_Child_Gauntlet_Goron, so this pack needs an in game test before any seed may place it.",
+      "identity_note": "PouchActor Item_Gauntlet_Goron, ActorInfo ActorName Armor_Child_Gauntlet_Goron",
+      "flag": "in_game_first"
+    },
+    {
+      "group": "D",
+      "item": "Item_Gauntlet_Silver",
+      "pack": "Obj_Gauntlet_Silver",
+      "args": [
+        "--heap",
+        "203416"
+      ],
+      "status": "built",
+      "tier": "Strength 2 of 3",
+      "identity": "Armor_Adult_Gauntlet_Silver",
+      "notes": "Heap 203416 is the tool default for this item and is untested in game. 41 files, 36332 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Item_Gauntlet_Gold",
+      "pack": "Obj_Gauntlet_Gold",
+      "args": [
+        "--heap",
+        "205936"
+      ],
+      "status": "built",
+      "tier": "Strength 3 of 3",
+      "identity": "Armor_Adult_Gauntlet_Gold",
+      "notes": "Heap 205936 is the tool default for this item and is untested in game. 41 files, 36396 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Item_Wallet_Medium",
+      "pack": "Obj_Wallet_Medium",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Wallet 1 of 2 (the small wallet is the start item)",
+      "identity": "Item_Wallet_Medium",
+      "notes": "Rupee maximum 500. 40 files, 35988 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Item_Wallet_Large",
+      "pack": "Obj_Wallet_Large",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Wallet 2 of 2",
+      "identity": "Item_Wallet_Large",
+      "notes": "Rupee maximum 1000. 40 files, 35988 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Item_Scale_Silver",
+      "pack": "Obj_Scale_Silver",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Scale 1 of 2",
+      "identity": "Item_Scale_Silver",
+      "notes": "DiveDepth 6.0. 40 files, 35988 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Item_Scale_Gold",
+      "pack": "Obj_Scale_Gold",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Scale 2 of 2",
+      "identity": "Item_Scale_Gold",
+      "notes": "DiveDepth 9.0. 40 files, 35964 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Item_NutBag_Medium",
+      "pack": "Obj_NutBag_Medium",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Nut capacity 1 of 2 (the small bag comes with the first nut)",
+      "identity": "Item_NutBag_Medium",
+      "notes": "Nut maximum 30. Built but not for placement: azk allows only the top tier at pickup spots for now. 40 files, 35988 bytes.",
+      "flag": "not_for_placement"
+    },
+    {
+      "group": "D",
+      "item": "Item_NutBag_Large",
+      "pack": "Obj_NutBag_Large",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Nut capacity 2 of 2 (top tier)",
+      "identity": "Item_NutBag_Large",
+      "notes": "Nut maximum 40. The only nut capacity pack WP4 may place at pickup, pot, crate and skulltula spots. 40 files, 35988 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Item_StickBag_Medium",
+      "pack": "Obj_StickBag_Medium",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Stick capacity 1 of 2 (the small bag comes with the first stick)",
+      "identity": "Item_StickBag_Medium",
+      "notes": "Stick maximum 20. Built but not for placement, same rule as the nut bag. 40 files, 36020 bytes.",
+      "flag": "not_for_placement"
+    },
+    {
+      "group": "D",
+      "item": "Item_StickBag_Large",
+      "pack": "Obj_StickBag_Large",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "Stick capacity 2 of 2 (top tier)",
+      "identity": "Item_StickBag_Large",
+      "notes": "Stick maximum 30. The only stick capacity pack WP4 may place at pickup, pot, crate and skulltula spots. 40 files, 36004 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Item_MagicBean",
+      "pack": "Obj_MagicBean",
+      "args": [
+        "--heap",
+        "199928"
+      ],
+      "status": "built",
+      "tier": "not tiered",
+      "identity": "Item_MagicBean",
+      "notes": "One bean per pickup, stock cap 10. Pool rules stay with WP8. 40 files, 36012 bytes."
+    },
+    {
+      "group": "D",
+      "item": "Obj_Heart_Piece",
+      "pack": "Obj_Heart_Piece",
+      "args": [],
+      "status": "shipped",
+      "tier": "not tiered",
+      "identity": "Obj_Heart_Piece",
+      "notes": "Shipped pickup, no build. Covers Piece of Heart, Piece of Heart (Out of Logic) and Piece of Heart (Treasure Chest Game)."
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle",
+      "pack": "Obj_Bottle",
+      "args": [],
+      "status": "built",
+      "identity": "Item_Bottle",
+      "notes": "empty bottle, built and audited, not yet in game. Main risk is a second empty bottle (T5)"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_Milk",
+      "pack": "Obj_Bottle_Milk",
+      "args": [
+        "--heap",
+        "203664"
+      ],
+      "status": "built",
+      "identity": "Item_Bottle_Milk",
+      "notes": "built and audited, chest version seen in game on 2026-11-12. Duplicate after cow refill is the risk (T4)"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_RedPotion",
+      "pack": "Obj_Bottle_RedPotion",
+      "args": [],
+      "status": "built",
+      "identity": "Item_Bottle_RedPotion",
+      "notes": "built and audited, not yet in game"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_GreenPotion",
+      "pack": "Obj_Bottle_GreenPotion",
+      "args": [],
+      "status": "built",
+      "identity": "Item_Bottle_GreenPotion",
+      "notes": "built and audited, colour frame 1 copied from the item row, check it is green in game"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_BluePotion",
+      "pack": "Obj_Bottle_BluePotion",
+      "args": [],
+      "status": "built",
+      "identity": "Item_Bottle_BluePotion",
+      "notes": "built and audited, colour frame 2. Also serves the Blue Potion alias"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_Fairy",
+      "pack": "Obj_Bottle_Fairy",
+      "args": [
+        "--heap",
+        "205816"
+      ],
+      "status": "built",
+      "identity": "Item_Bottle_Fairy",
+      "notes": "built and audited, heap is the spec proposal. Must bottle and not heal (T7)"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_Fish",
+      "pack": "Obj_Bottle_Fish",
+      "args": [
+        "--heap",
+        "208200"
+      ],
+      "status": "built",
+      "identity": "Item_Bottle_Fish",
+      "notes": "built and audited, heap is the spec proposal"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_BlueFire",
+      "pack": "Obj_Bottle_BlueFire",
+      "args": [],
+      "status": "built",
+      "identity": "Item_Bottle_BlueFire",
+      "notes": "built and audited, floor model is the plain empty bottle"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_Bug",
+      "pack": "Obj_Bottle_Bug",
+      "args": [
+        "--heap",
+        "224624"
+      ],
+      "status": "built",
+      "identity": "Item_Bottle_Bug",
+      "notes": "built and audited with the larger heap, the rule heap 199928 is an untested fallback"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_BigPoe",
+      "pack": "Obj_Bottle_BigPoe",
+      "args": [],
+      "status": "built",
+      "identity": "Item_Bottle_BigPoe",
+      "notes": "built and audited, BigPoeFenceId default at the Poe collector is unknown"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_Poe",
+      "pack": "Obj_Bottle_Poe",
+      "args": [],
+      "status": "built",
+      "identity": "Item_Bottle_Poe",
+      "notes": "built and audited"
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_Letter",
+      "pack": "Obj_Bottle_LetterLand",
+      "args": [
+        "--name",
+        "Obj_Bottle_LetterLand",
+        "--tag",
+        "LetterBottle"
+      ],
+      "status": "built",
+      "identity": "Item_Bottle_Letter",
+      "notes": "dry run passes (40 files), but the LetterBottle Tag row needs the ENGINE Tag writer. Without it the letter is likely still deliverable, tag only sets Get_StoneOfWater_GetRutoLetter. Wave 2 merge: built with the ENGINE Tag writer and the tag LetterBottle, byte identical to wave2\\engine\\mods\\e2_letter_land_tag.",
+      "source_status": "blocked_engine",
+      "variants": [
+        {
+          "args": [
+            "--name",
+            "Obj_Bottle_LetterLand"
+          ],
+          "status": "built",
+          "notes": "Control build with no Tag row, as in wave2\\engine\\mods\\e2_letter_land_no_tag. Get_StoneOfWater_GetRutoLetter stays false."
+        }
+      ]
+    },
+    {
+      "group": "E",
+      "item": "Item_Bottle_HalfMilk",
+      "pack": "Obj_Bottle_HalfMilk",
+      "args": [],
+      "status": "dry_ok",
+      "identity": "Item_Bottle_HalfMilk",
+      "notes": "dry run passes on top of the 11 pack chain (41 files). Not an OoTR item, build only if azk decides so"
+    },
+    {
+      "group": "E",
+      "item": "Milk",
+      "pack": null,
+      "args": [],
+      "status": "blocked",
+      "identity": null,
+      "notes": "OoTR refill. A pickup would add a whole new bottle, so WP4 must not map Milk to any pack",
+      "source_status": "blocked_decision"
+    }
+  ]
+}

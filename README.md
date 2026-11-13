@@ -34,6 +34,7 @@ Everything is optional and off unless noted. All of these are experimental and s
 - Skip the opening cutscenes (on by default): a new game goes straight to the first moment you control Link.
 - Small keys in any dungeon or anywhere, counted for the dungeon each key belongs to (experimental).
 - Kokiri Forest can start open (open, or open exit with the Deku Tree still closed).
+- Bombchus in logic (experimental, off by default): the seed logic counts Bombchus as explosives without a Bomb Bag, as OoTR does. Only the logic is changed. In our test the game only let Bombchus work once a Bomb Bag and its ammo maximum were set, so a seed with this ticked may expect Bombchus where the game will not let you use them.
 - A plandomizer on the Generate page, or --plando Location=Item on the command line, to fix chosen items at chosen locations. The seed is only made if it can still be beaten.
 
 ## Troubleshooting

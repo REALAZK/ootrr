@@ -4,10 +4,10 @@ use crate::byml::{Byml, Node};
 use crate::error::{Error as E, Res};
 use crate::placement::hash_of;
 use crate::pots::DROP;
-use crate::romfs::Romfs;
 use crate::settings::seed::SeedFile;
 use crate::slice::data::Data;
 use crate::slice::edit::Edited;
+use crate::slice::skull_kit::kit_actor;
 use crate::slice::skulls::{is_skull, pickup, table, Table, TOKEN};
 
 pub const SKULL: &str = "Enemy_Skulltula_Gold";
@@ -35,7 +35,8 @@ pub fn drops(d: &Data, seed: &SeedFile) -> Res<Vec<Drop>> {
         if item == TOKEN {
             continue;
         }
-        let actor: String = pickup(&t, d, item).ok_or_else(|| E::Msg(format!("{item} has no world pickup, so {loc} cannot drop it")))?;
+        let from: String = pickup(&t, d, item).ok_or_else(|| E::Msg(format!("{item} has no world pickup, so {loc} cannot drop it")))?;
+        let actor: String = kit_actor(&from);
         let l: &crate::catalog::Loc = d.cat.by_name(loc).ok_or_else(|| E::Msg(format!("{loc} is not in the catalog")))?;
         for r in &l.refs {
             out.push(Drop { name: loc.clone(), item: item.clone(), hash: r.hash, actor: actor.clone() });
@@ -114,23 +115,13 @@ pub fn all_found(ds: &[Drop], hit: &BS<u64>) -> Res<()> {
     }
 }
 
-pub fn check_packs(rf: &Romfs, ds: &[Drop]) -> Res<()> {
-    let actors: BS<&str> = ds.iter().map(|d| d.actor.as_str()).collect();
-    for a in actors {
-        if !rf.root.join("Pack").join("Actor").join(format!("{a}.pack.zs")).is_file() {
-            return Err(E::Msg(format!("the game folder has no pickup actor {a}, a skulltula cannot drop it")));
-        }
-    }
-    Ok(())
-}
-
 pub fn notes(ds: &[Drop]) -> Vec<String> {
     if ds.is_empty() {
         return Vec::new();
     }
     let names: BS<(&str, &str, &str)> = ds.iter().map(|d| (d.name.as_str(), d.item.as_str(), d.actor.as_str())).collect();
     let mut out: Vec<String> = vec![format!(
-        "{} Gold Skulltulas drop another item than the token and the skulltula death table now keeps every skulltula dead once killed. Check these in game ({} of {}):",
+        "{} Gold Skulltulas drop another item than the token. Each drop is a kit pickup that plays the get window, and a skulltula is only saved when its item is picked up, so an item left behind comes back with the skulltula. Untested in the game. Check these ({} of {}):",
         names.len(),
         names.len().min(LISTED),
         names.len()
@@ -201,7 +192,7 @@ mod tests {
             let g: Generated = generate_data(&d, &s, &format!("drops {n}"), &GenOpts::default()).unwrap();
             let ds: Vec<Drop> = drops(&d, &g.seed_file).unwrap();
             for x in &ds {
-                assert!(x.actor.starts_with("Obj_"), "{}", x.actor);
+                assert!(x.actor.starts_with("Obj_") && x.actor.ends_with("_GS"), "{}", x.actor);
                 assert_ne!(x.item, TOKEN);
                 assert!(is_skull(&d, &x.name));
             }

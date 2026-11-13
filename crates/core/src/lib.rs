@@ -62,7 +62,6 @@ pub mod scrubs_b;
 pub mod search;
 pub mod settings;
 pub mod slice;
-pub mod skull_death;
 pub mod song_models;
 pub mod special;
 pub mod start_reward;

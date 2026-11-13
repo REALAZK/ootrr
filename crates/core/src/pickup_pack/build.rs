@@ -1,9 +1,9 @@
 use std::collections::BTreeSet as BS;
 
 use crate::error::{Error as E, Res};
-use crate::pickup_pack::actor::{make, Made};
+use crate::pickup_pack::actor::{make_with, Made};
 use crate::pickup_pack::closure::{chain, dangling_with, is_byml, select, Chain, Pool};
-use crate::pickup_pack::{is_actor_name, Spec};
+use crate::pickup_pack::{is_actor_name, Layers, Spec};
 use crate::sarc::{self, Entry};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -25,6 +25,10 @@ pub fn pool_of(packs: &[Vec<Entry>]) -> Res<Pool> {
 }
 
 pub fn plan(packs: &[Vec<Entry>], s: &Spec) -> Res<Plan> {
+    plan_with(packs, s, &Layers::default())
+}
+
+pub fn plan_with(packs: &[Vec<Entry>], s: &Spec, l: &Layers) -> Res<Plan> {
     if !is_actor_name(&s.name) || !is_actor_name(&s.item) {
         return Err(E::Msg(format!("{} or {} is not a plain actor name", s.name, s.item)));
     }
@@ -33,9 +37,9 @@ pub fn plan(packs: &[Vec<Entry>], s: &Spec) -> Res<Plan> {
         return Err(E::Msg(format!("{f} is not a parameter file, an item whose pack carries graph or binary files needs a hand made template")));
     }
     let peers: Vec<(String, usize)> = p.files.iter().map(|e| (e.0.clone(), e.1.len())).collect();
-    let m: Made = make(&p, s)?;
+    let m: Made = make_with(&p, s, l)?;
     let mut fresh: Vec<(String, usize)> = Vec::new();
-    for (f, d) in [&m.actor, &m.pouch] {
+    for (f, d) in [&m.actor, &m.pouch].into_iter().chain(m.extra.iter()) {
         if p.get(f).is_some() {
             return Err(E::Msg(format!("{f} already exists, {} is taken", s.name)));
         }

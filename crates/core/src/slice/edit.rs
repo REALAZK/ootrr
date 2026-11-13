@@ -416,7 +416,8 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     let order: crate::slice::tier_order::Verdict = crate::slice::tier_order::fixed_actors(&d, seed)?;
     let (ts, same, flows): (Vec<Target>, usize, Vec<Choice>) = targets_with(&d, seed, roam, &order.assign, extra)?;
     let skull_drops: Vec<crate::slice::skull_edit::Drop> = crate::slice::skull_edit::drops(&d, seed)?;
-    crate::slice::skull_edit::check_packs(&rf, &skull_drops)?;
+    crate::slice::skull_kit::check(&mut rf, &skull_drops, extra)?;
+    let kit_pool: &Extra = extra;
     crate::slice::swap_guard::check(&mut rf, &d, &ts, extra)?;
     let mut skull_hit: BS<u64> = BS::new();
     let gr: crate::dungeon_grant::Grants = crate::slice::dungeon_items::grants(&d, seed, &p)?;
@@ -532,9 +533,6 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     if roam {
         more.push(stage_pouch(&mut rf)?);
     }
-    if !skull_drops.is_empty() {
-        more.push(crate::skull_death::stage(&mut rf)?);
-    }
     more.extend(crate::bomb_lift::stage(&mut rf)?);
     more.extend(crate::door_fix::stage(&mut rf)?);
     let reward: Option<&str> = crate::start_reward::pick(&seed.seed, p.start).map(|(_, a)| a);
@@ -584,6 +582,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
             }
         }
     }
+    extra += crate::slice::skull_kit::write(&mut rf, &pk, &mut rst, &skull_drops, kit_pool)?;
     if host == Host::Hookshot && rst.is_none() {
         rst = Some(rsizetable::load(&mut rf)?);
     }

@@ -272,6 +272,9 @@ pub fn check_swaps_with(rf: &mut Romfs, actors: &[&str], extra: &Extra) -> Res<(
         if !v.stays() {
             return Err(E::Msg(format!("{a} would not stay collected once taken ({}), so no freestanding spot may become it", v.why())));
         }
+        if v.table == crate::pickup_pack::kit::DEATH_TABLE {
+            return Err(E::Msg(format!("{a} carries the skulltula token kit, it writes the saved rows of the skulltula that dropped it, so no freestanding spot may become it")));
+        }
     }
     Ok(())
 }
@@ -290,7 +293,6 @@ mod tests {
     use super::*;
 
     use crate::catalog::Loc;
-    use crate::skull_death;
     use crate::slice::data::Data;
     use crate::slice::pickups::{is_world, world_actor};
 
@@ -432,21 +434,21 @@ mod tests {
     }
 
     #[test]
-    fn the_skulltula_table_keeps_a_killed_skulltula_only_after_the_mod_edit() {
+    fn the_shipped_skulltula_table_never_saves_a_killed_skulltula() {
         let Some(mut rf) = romfs() else {
             return;
         };
-        let mut ch: Vec<Byml> = chain(&mut rf, "Enemy_Skulltula_Gold").unwrap();
+        let ch: Vec<Byml> = chain(&mut rf, "Enemy_Skulltula_Gold").unwrap();
         assert_eq!(ch.len(), 3);
-        assert!(!cell_of(&ch, "LifeDepleted").stays());
-        let raw: Vec<u8> = rf.read(skull_death::PATH).unwrap();
-        let (out, _): (Vec<u8>, usize) = skull_death::persist(&raw).unwrap();
-        let top: usize = ch.len() - 1;
-        ch[top] = Byml::parse(&out).unwrap();
-        assert!(cell_of(&ch, "LifeDepleted").stays());
-        assert!(cell_of(&ch, "Drowned").stays());
-        assert!(!cell_of(&ch, "ChemicalCriticalHitIce").dead);
+        for r in ["LifeDepleted", "Drowned"] {
+            let c: Cell = cell_of(&ch, r);
+            assert!(c.dead && !c.saved && !c.stays(), "{r} {c:?}");
+        }
+        assert!(!cell_of(&ch, "ChemicalCriticalHitIce").saved);
         assert!(!cell_of(&ch, "FallIntoAbyss").dead);
+        let token: Vec<Byml> = chain(&mut rf, "Item_Token_Gold").unwrap();
+        assert!(cell_of(&token, "LifeDepleted").dead);
+        assert!(!cell_of(&token, "FallIntoAbyss").dead && !cell_of(&token, "Drowned").dead);
     }
 
     #[test]

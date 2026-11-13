@@ -363,6 +363,10 @@ pub fn build() -> Schema {
             .opt("off", "Vanilla", "These chests keep their original items.")
             .opt("on", "Shuffled", "These chests hold random items."),
     );
+    s.push(
+        Setting::toggle(57, "bombchus_in_logic", "world", "Bombchus in logic (experimental)", false)
+            .tip("Experimental. Bombchus count as explosives in the seed logic, so walls, switches and enemies that need an explosive can be handled with Bombchus and no Bomb Bag. This follows the OoTR option that considers Bombchus in logic. Only the logic side is done here, the remake gets no separate Bombchu bag and no Bombchu drops. Caution: in our test of the remake, Bombchus only worked once a Bomb Bag and its ammo maximum were set, and a Bombchu pickup gave a count of 0 without them. The game is also reported to gate Bombchu use on a bag or a defeated Dodongo. A seed with this ticked may expect Bombchus where the game will not let you use them."),
+    );
     s.push(starting_items());
     s.push(starting_songs());
     s.sort_by_key(|x| x.num);

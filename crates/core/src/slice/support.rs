@@ -73,6 +73,7 @@ pub struct Plan {
     pub drops: crate::pot_slice::Drops,
     pub skulls: crate::slice::skulls::Mode,
     pub remake: bool,
+    pub chus: bool,
 }
 
 const GEAR: &[(&str, &str, &str)] = &[
@@ -177,6 +178,9 @@ impl Plan {
         };
         if self.keys_roam() {
             out.extend(KEY_LAYOUTS.iter().map(|k| (*k, "shuffled")));
+        }
+        if self.chus {
+            out.push((crate::slice::bombchus::LOGIC_KEY, "true"));
         }
         out
     }
@@ -311,6 +315,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     }
     let skulls: crate::slice::skulls::Mode = crate::slice::skulls::mode(s, &mut bad);
     let remake: bool = crate::slice::remake_chests::mode(s, &mut bad);
+    let chus: bool = crate::slice::bombchus::mode(s, &mut bad);
     let excluded: Vec<String> = s.items("disabled_locations").map(|v| v.to_vec()).unwrap_or_default();
     if !bad.is_empty() {
         let lines: Vec<String> = bad.iter().map(|b| format!("  {b}")).collect();
@@ -358,7 +363,10 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if remake {
         notes.push(crate::slice::remake_chests::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, gear, pouch, excluded, notes, drops, skulls, remake })
+    if chus {
+        notes.push(crate::slice::bombchus::NOTE.to_string());
+    }
+    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, gear, pouch, excluded, notes, drops, skulls, remake, chus })
 }
 
 #[cfg(test)]

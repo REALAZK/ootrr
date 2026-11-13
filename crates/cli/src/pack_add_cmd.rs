@@ -2,17 +2,18 @@ use std::path::Path as P;
 
 use ootrr_core::error::{Error as E, Res};
 use ootrr_core::modpack::Host;
-use ootrr_core::pickup_pack::write::{run as add, Done, Opts};
-use ootrr_core::pickup_pack::{default_name, Spec, Style};
+use ootrr_core::pickup_pack::write::{run_with as add, Done, Opts};
+use ootrr_core::pickup_pack::{default_name, Layers, Spec, Style};
 
 fn arg<'a>(a: &'a [String], i: usize, what: &'static str) -> Res<&'a str> {
     a.get(i).map(|s| s.as_str()).ok_or(E::Format(what))
 }
 
-pub fn parse(a: &[String]) -> Res<(Spec, Opts)> {
+pub fn parse(a: &[String]) -> Res<(Spec, Opts, Layers)> {
     let item: &str = arg(a, 3, "missing Item_Actor")?;
     let mut s: Spec = Spec { item: item.to_string(), name: default_name(item), style: Style::Touch, heap: None };
     let mut o: Opts = Opts { host: Host::Eden, base: None, rst_from: None, places: Vec::new(), dry: false };
+    let mut l: Layers = Layers::default();
     let mut i: usize = 4;
     while i < a.len() {
         let step: usize = match a[i].as_str() {
@@ -23,6 +24,21 @@ pub fn parse(a: &[String]) -> Res<(Spec, Opts)> {
             "--dry" => {
                 o.dry = true;
                 1
+            }
+            "--ammo" => {
+                l.ammo = true;
+                1
+            }
+            "--magic" => {
+                l.magic = true;
+                1
+            }
+            "--tag" => {
+                let v: &str = arg(a, i + 1, "missing tag name")?;
+                if !l.tags.iter().any(|t| t == v) {
+                    l.tags.push(v.to_string());
+                }
+                2
             }
             "--name" => {
                 s.name = arg(a, i + 1, "missing pickup actor name")?.to_string();
@@ -55,15 +71,15 @@ pub fn parse(a: &[String]) -> Res<(Spec, Opts)> {
         };
         i += step;
     }
-    Ok((s, o))
+    Ok((s, o, l))
 }
 
 pub fn run(a: &[String]) -> Res<()> {
     let root: &str = arg(a, 0, "missing romfs_root")?;
     let load: &str = arg(a, 1, "missing load_dir")?;
     let name: &str = arg(a, 2, "missing mod_name")?;
-    let (s, o): (Spec, Opts) = parse(a)?;
-    let d: Done = add(P::new(root), P::new(load), name, &s, &o)?;
+    let (s, o, l): (Spec, Opts, Layers) = parse(a)?;
+    let d: Done = add(P::new(root), P::new(load), name, &s, &o, &l)?;
     print!("{}", d.report);
     println!("{} carries {} with instance heap {}", s.name, s.item, d.heap);
     if o.dry {
@@ -82,8 +98,10 @@ mod tests {
 
     #[test]
     fn the_defaults_are_a_touch_pickup_named_after_the_item() {
-        let (s, o): (Spec, Opts) = parse(&args(&["r", "l", "m", "Item_Hookshot"])).unwrap();
+        let (s, o, l): (Spec, Opts, Layers) = parse(&args(&["r", "l", "m", "Item_Hookshot"])).unwrap();
         assert_eq!(s, Spec { item: "Item_Hookshot".to_string(), name: "Obj_Hookshot".to_string(), style: Style::Touch, heap: None });
+        assert_eq!(l, Layers::default());
+        assert!(l.plain());
         assert_eq!(o.host, Host::Eden);
         assert!(o.places.is_empty() && !o.dry && o.base.is_none());
     }
@@ -93,7 +111,8 @@ mod tests {
         let a: Vec<String> = args(&[
             "r", "l", "m", "Item_Hookshot", "--press", "--name", "Obj_Hook", "--heap", "200000", "--host", "hookshot", "--place", "11219803099333988363", "--place", "7", "--base", "x/romfs", "--rst-from", "t.zs", "--dry",
         ]);
-        let (s, o): (Spec, Opts) = parse(&a).unwrap();
+        let (s, o, l): (Spec, Opts, Layers) = parse(&a).unwrap();
+        assert!(l.plain());
         assert_eq!(s.name, "Obj_Hook");
         assert_eq!(s.style, Style::Press);
         assert_eq!(s.heap, Some(200000));
@@ -108,5 +127,18 @@ mod tests {
         assert!(parse(&args(&["r", "l", "m", "Item_Hookshot", "--place", "abc"])).is_err());
         assert!(parse(&args(&["r", "l", "m", "Item_Hookshot", "--host", "wii"])).is_err());
         assert!(parse(&args(&["r", "l", "m", "Item_Hookshot", "--what"])).is_err());
+        assert!(parse(&args(&["r", "l", "m", "Item_Hookshot", "--tag"])).is_err());
+    }
+
+    #[test]
+    fn the_layer_options_are_read_and_a_tag_is_kept_once() {
+        let a: Vec<String> = args(&["r", "l", "m", "Item_Bottle_Letter", "--name", "Obj_Bottle_LetterLand", "--tag", "LetterBottle", "--tag", "LetterBottle"]);
+        let (s, _, l): (Spec, Opts, Layers) = parse(&a).unwrap();
+        assert_eq!(s.name, "Obj_Bottle_LetterLand");
+        assert_eq!(l, Layers { tags: vec!["LetterBottle".to_string()], ammo: false, magic: false });
+        let (_, _, l): (Spec, Opts, Layers) = parse(&args(&["r", "l", "m", "Item_Range_Bow", "--ammo"])).unwrap();
+        assert_eq!(l, Layers { tags: Vec::new(), ammo: true, magic: false });
+        let (_, _, l): (Spec, Opts, Layers) = parse(&args(&["r", "l", "m", "Item_FairyBless_MP", "--magic"])).unwrap();
+        assert_eq!(l, Layers { tags: Vec::new(), ammo: false, magic: true });
     }
 }

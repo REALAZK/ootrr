@@ -59,8 +59,12 @@ fn int(n: &Node, k: &str) -> Option<i32> {
     }
 }
 
+pub fn own_heap(table: &Byml, item: &str) -> Res<i32> {
+    Ok(int(need(table, item, ACTOR_INFO)?, HEAP).unwrap_or(0))
+}
+
 pub fn heap(table: &Byml, item: &str) -> Res<i32> {
-    let own: i32 = int(need(table, item, ACTOR_INFO)?, HEAP).unwrap_or(0);
+    let own: i32 = own_heap(table, item)?;
     let mut top: i32 = own;
     for p in HEAP_PEERS {
         top = top.max(int(need(table, p, ACTOR_INFO)?, HEAP).unwrap_or(0));
@@ -159,6 +163,19 @@ pub(crate) mod tests {
         let y: Byml = table(rows);
         assert_eq!(heap(&y, "Item_Test").unwrap(), (144004 + HEAP_MARGIN + 7) / 8 * 8);
         assert!(heap(&y, "Item_None").is_err());
+    }
+
+    #[test]
+    fn an_item_heavier_than_every_peer_sets_the_heap_itself() {
+        let mut rows: Vec<Node> = vec![row("Item_Heavy", &[(HEAP, Node::I32(170648))]), row("Item_Light", &[(HEAP, Node::I32(90000))])];
+        for p in HEAP_PEERS {
+            rows.push(row(p, &[(HEAP, Node::I32(167160))]));
+        }
+        let y: Byml = table(rows);
+        assert_eq!(own_heap(&y, "Item_Heavy").unwrap(), 170648);
+        assert_eq!(heap(&y, "Item_Heavy").unwrap(), 203416);
+        assert_eq!(heap(&y, "Item_Light").unwrap(), 199928);
+        assert!(own_heap(&y, "Item_None").is_err());
     }
 
     #[test]

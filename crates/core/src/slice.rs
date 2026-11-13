@@ -1,4 +1,5 @@
 pub mod banc;
+pub mod bombchus;
 pub mod copies;
 pub mod data;
 pub mod dungeon_items;
@@ -17,6 +18,7 @@ pub mod remake_chests;
 pub mod remake_overworld;
 pub mod scan;
 pub mod skull_edit;
+pub mod skull_kit;
 pub mod skulls;
 pub mod starts;
 pub mod support;

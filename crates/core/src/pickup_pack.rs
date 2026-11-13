@@ -1,10 +1,15 @@
 pub mod actor;
+pub mod ammo;
 pub mod build;
+pub mod catalog;
 pub mod closure;
 pub mod guard;
+pub mod kit;
+pub mod magic;
 pub mod place;
 pub mod rows;
 pub mod sizes;
+pub mod tag;
 pub mod write;
 
 pub const BASE: &str = "Obj_Item_Base";
@@ -23,6 +28,19 @@ pub struct Spec {
     pub name: String,
     pub style: Style,
     pub heap: Option<i32>,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Layers {
+    pub tags: Vec<String>,
+    pub ammo: bool,
+    pub magic: bool,
+}
+
+impl Layers {
+    pub fn plain(&self) -> bool {
+        self.tags.is_empty() && !self.ammo && !self.magic
+    }
 }
 
 pub fn pack_of(name: &str) -> String {
@@ -57,5 +75,14 @@ mod tests {
         assert!(!is_actor_name("../Obj"));
         assert!(!is_actor_name("Obj Hookshot"));
         assert!(!is_actor_name(""));
+    }
+
+    #[test]
+    fn no_layer_is_on_by_default() {
+        let l: Layers = Layers::default();
+        assert!(l.plain());
+        assert!(!Layers { ammo: true, ..Layers::default() }.plain());
+        assert!(!Layers { magic: true, ..Layers::default() }.plain());
+        assert!(!Layers { tags: vec!["LetterBottle".to_string()], ..Layers::default() }.plain());
     }
 }

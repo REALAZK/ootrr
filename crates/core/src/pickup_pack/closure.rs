@@ -19,7 +19,7 @@ pub fn norm(s: &str) -> Option<String> {
     let t: &str = s.strip_prefix('?').or_else(|| s.strip_prefix("Work/"))?;
     Some(match t.strip_suffix(".gyml") {
         Some(x) => format!("{x}.bgyml"),
-        None => t.to_string(),
+        None => crate::pickup_pack::kit::graph(t).unwrap_or_else(|| t.to_string()),
     })
 }
 
