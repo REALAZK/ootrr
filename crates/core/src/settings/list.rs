@@ -161,15 +161,17 @@ pub fn build() -> Schema {
             .opt("random", "Random", "The seed picks one at random."),
     );
     s.push(
-        Setting::choice(3, "open_forest", "world", "Kokiri Forest", "closed")
-            .tip("Whether the way out of the forest and into the Deku Tree is blocked.")
+        Setting::choice(3, "open_forest", "world", "Kokiri Forest", "open")
+            .tip("Whether the way out of the forest and into the Deku Tree is blocked. An open Kakariko gate needs the forest exit open, since its story state takes Mido away while the exit wall would stay.")
             .opt("open", "Open", "Nothing blocks the forest or the Deku Tree.")
             .opt("closed_deku", "Closed Deku", "The forest exit is open but the Deku Tree is closed.")
             .opt("closed", "Closed", "The forest and the Deku Tree stay closed until the story opens them."),
     );
     s.push(
         Setting::choice(4, "open_kakariko", "world", "Kakariko Gate", "open")
-            .tip("Whether the gate to Kakariko Village needs Zelda's Letter. Open also skips the castle visit: a new game starts after Zelda and Impa, with their two items already given. Experimental, untested in the game.")
+            .dep("open_forest", super::model::Cond::IsNot(super::model::Value::s("closed")))
+            .disabled_as(super::model::Value::s("zelda"))
+            .tip("Whether the gate to Kakariko Village needs Zelda's Letter. Open also skips the castle visit: a new game starts after Zelda and Impa, with their two items already given. Needs the forest exit open; with a closed forest the gate falls back to Zelda's Letter.")
             .opt("open", "Open", "The gate is open from the start and the castle visit is skipped. Zelda's Letter and the Song from Impa, or whatever is placed there, are given when a new game starts.")
             .opt("zelda", "Zelda's Letter", "The gate opens when you show the letter.")
             .opt("closed", "Closed", "The gate stays closed until the story opens it."),
@@ -180,10 +182,10 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::choice(6, "zora_fountain", "world", "Zora's Fountain", "closed")
-            .tip("Whether King Zora blocks the way to Zora's Fountain.")
+            .tip("Whether King Zora blocks the way to Zora's Fountain. Open sets the Water Stone quest past Ruto's Letter when a new game starts, so he already stands aside; the letter is still found and stays a bottle.")
             .opt("closed", "Closed", "King Zora must be moved with Ruto's Letter.")
-            .opt("adult", "Open as adult", "King Zora is gone once you are an adult.")
-            .opt("open", "Open", "King Zora never blocks the way."),
+            .opt("adult", "Open as adult", "The logic treats the passage as open for the adult. The game is unchanged, as its adult domain has no blocker in the map data.")
+            .opt("open", "Open", "King Zora never blocks the way: a new game writes the quest state after the letter was shown."),
     );
     s.push(
         Setting::choice(7, "gerudo_fortress", "world", "Gerudo Fortress", "normal")

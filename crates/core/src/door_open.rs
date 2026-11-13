@@ -8,9 +8,33 @@
 use std::path::Path as P;
 
 use crate::ainb::Ainb;
+use crate::bfevfl::{Bf, Case, Cont, Event, Flow, Kind, Val};
+use crate::byml::{Byml, Node};
 use crate::error::{Error, Res};
 use crate::romfs::Romfs;
 use crate::staging::{self, Out};
+
+/// The flow that sends adult Link back to childhood from the pedestal. After its equipment swap
+/// the child can be left holding the Master Sword, which only an adult can wield.
+pub const RETURN_FILE: &str = "Event/EventFlow/Market_Adult_Field_AdultToChild.bfevfl.zs";
+pub const RETURN_FLOW: &str = "Market_Adult_Field_AdultToChild";
+pub const SWAP_ENTRY: &str = "ReplaceEquipmentForEraChange";
+pub const RETURN_PREFIX: &str = "OOTRRReturn";
+const DATA_ACTOR: &str = "GameDataActor";
+const SET_STR: &str = "EventTriggerSetGameDataString64";
+const IS_STR: &str = "EventQueryIsGameDataString64";
+const POUCH_ACTOR: &str = "PouchSystemActor";
+const IN_POUCH: &str = "EventQueryIsExistInPouch";
+const EQUIP: &str = "PlayerStatus.EquipWeapon";
+const MASTER: &str = "Weapon_Sword_Master";
+const KOKIRI: &str = "Weapon_Sword_Kokiri";
+const NONE: u16 = 0xFFFF;
+
+/// Sheik stands on the temple's centre line right next to the pedestal's sword, between the
+/// player and the prompt. She is moved sideways by this much so the prompt is easy to reach.
+pub const SHEIK_FILE: &str = "Banc/Market/Market_Adult_Static.bcett.byml.zs";
+pub const SHEIK_HASH: u64 = 2669233513522124871;
+pub const SHEIK_SHIFT: f32 = -3.0;
 
 const BOOL: usize = 1;
 
@@ -27,6 +51,11 @@ pub const ATTENTION: &str = "ActorLogicAttentionActor";
 pub const SWORD: &str = "Obj_TimeTemple_MasterSword_A_01_e482";
 pub const CHALLENGE: &str = "Work/Challenge/DoorOfTime.game__challenge__Challenge.gyml";
 pub const STEP: &str = "Step06";
+
+/// The adult Temple of Time: the pedestal's sword, which sends you back to childhood, is
+/// deleted until the Forest Sage is awakened. The randomizer lets you travel back at any time.
+pub const PEDESTAL_MODULE: &str = "Logic/Market_Adult_Prefab_89da.logic.module.ainb";
+pub const ADULT_SWORD: &str = "Obj_TimeTemple_MasterSword_A_01_b347";
 
 pub fn door_element(a: &Ainb) -> Option<usize> {
     a.find_els(GATE).into_iter().find(|&i| a.prop_str(i, "InstanceName") == Some(DOOR))
@@ -97,6 +126,91 @@ pub fn patch_sword(a: &mut Ainb) -> Res<()> {
     Ok(())
 }
 
+/// Keeps the adult pedestal's sword alive whatever the Forest Sage quest says.
+pub fn patch_pedestal(a: &mut Ainb) -> Res<()> {
+    let i: usize = named(a, ATTENTION, ADULT_SWORD).ok_or(Error::Format("door open: the adult module has no pedestal sword"))?;
+    if !a.force_bool(i, "Logic_Delete", false)? {
+        return Err(Error::Format("door open: the pedestal sword was already a constant, the module is not the unpatched one"));
+    }
+    Ok(())
+}
+
+fn item(k: &str, v: Val) -> (String, Val) {
+    (k.to_string(), v)
+}
+
+fn fidx(n: usize) -> Res<u16> {
+    if n >= NONE as usize {
+        return Err(Error::Format("door open: too many events in the flow"));
+    }
+    Ok(n as u16)
+}
+
+/// After the era change's equipment swap: if the child ended up with the Master Sword equipped,
+/// equip the Kokiri Sword when the pouch has it, or nothing.
+pub fn patch_return(b: &mut Bf) -> Res<usize> {
+    let f: &mut Flow = b.flows.iter_mut().find(|x| x.name == RETURN_FLOW).ok_or(Error::Format("door open: no adult to child flow"))?;
+    if f.events.iter().any(|e| e.name.starts_with(RETURN_PREFIX)) {
+        return Err(Error::Format("door open: the adult to child flow already carries the sword patch"));
+    }
+    let swaps: Vec<usize> = (0..f.events.len()).filter(|&i| matches!(&f.events[i].kind, Kind::Sub { entry, .. } if entry == SWAP_ENTRY)).collect();
+    let [at] = swaps.as_slice() else {
+        return Err(Error::Msg(format!("door open: expected one {SWAP_ENTRY} call in {RETURN_FLOW}, found {}", swaps.len())));
+    };
+    let Kind::Sub { next: old, .. } = f.events[*at].kind.clone() else { unreachable!() };
+    let (da, dq): (u16, u16) = crate::start_state::query_slot(f, DATA_ACTOR, IS_STR)?;
+    let (da2, dx): (u16, u16) = crate::start_state::slot(f, DATA_ACTOR, SET_STR)?;
+    let (pa, pq): (u16, u16) = crate::start_state::query_slot(f, POUCH_ACTOR, IN_POUCH)?;
+    let base: usize = f.events.len();
+    let (s1, s2, a1, a2): (u16, u16, u16, u16) = (fidx(base)?, fidx(base + 1)?, fidx(base + 2)?, fidx(base + 3)?);
+    let equip = |v: &str| Some(Cont { items: vec![item("GameDataName", Val::Str(EQUIP.to_string())), item("Value", Val::Str(v.to_string())), item("Index", Val::Int(-1))] });
+    f.events.push(Event {
+        name: format!("{RETURN_PREFIX}{base}"),
+        kind: Kind::Switch { actor: da, query: dq, cases: vec![Case { val: 0, ev: s2 }, Case { val: 1, ev: old }], params: equip(MASTER) },
+    });
+    f.events.push(Event {
+        name: format!("{RETURN_PREFIX}{}", base + 1),
+        kind: Kind::Switch {
+            actor: pa,
+            query: pq,
+            cases: vec![Case { val: 0, ev: a1 }, Case { val: 1, ev: a2 }],
+            params: Some(Cont { items: vec![item("Actor", Val::Str(KOKIRI.to_string())), item("Num", Val::Int(1))] }),
+        },
+    });
+    f.events.push(Event { name: format!("{RETURN_PREFIX}{}", base + 2), kind: Kind::Action { next: old, actor: da2, act: dx, params: equip(KOKIRI) } });
+    f.events.push(Event { name: format!("{RETURN_PREFIX}{}", base + 3), kind: Kind::Action { next: old, actor: da2, act: dx, params: equip("") } });
+    if let Kind::Sub { next, .. } = &mut f.events[*at].kind {
+        *next = s1;
+    }
+    Ok(4)
+}
+
+/// Moves Sheik sideways off the temple's centre line.
+pub fn patch_sheik(y: &mut Byml) -> Res<()> {
+    let actors: &mut Vec<Node> = y.root.get_mut("Actors").and_then(|n| n.as_arr_mut()).ok_or(Error::Format("door open: the adult Market map has no actors"))?;
+    let a: &mut Node = actors
+        .iter_mut()
+        .find(|a| matches!(a.get("Hash"), Some(Node::U64(h)) if *h == SHEIK_HASH))
+        .ok_or(Error::Format("door open: the adult Market map has no Sheik"))?;
+    let t: &mut Vec<Node> = a.get_mut("Translate").and_then(|n| n.as_arr_mut()).ok_or(Error::Format("door open: Sheik has no position"))?;
+    let Some(Node::F32(z)) = t.get(2).cloned() else {
+        return Err(Error::Format("door open: Sheik's position is not three floats"));
+    };
+    if (z - -34.0).abs() > 0.01 {
+        return Err(Error::Format("door open: Sheik is not at her vanilla spot, the map is not the unpatched one"));
+    }
+    t[2] = Node::F32(z + SHEIK_SHIFT);
+    Ok(())
+}
+
+pub fn stage_sheik(rf: &mut Romfs) -> Res<Out> {
+    let raw: Vec<u8> = staging::banc_raw(rf, SHEIK_FILE, None)?;
+    let mut y: Byml = Byml::parse(&raw)?;
+    patch_sheik(&mut y)?;
+    let out: Vec<u8> = y.write()?;
+    staging::banc_out(rf, SHEIK_FILE, raw.len(), &out)
+}
+
 fn rewrite(rf: &mut Romfs, path: &str, f: impl FnOnce(&mut Ainb) -> Res<()>) -> Res<Out> {
     let raw: Vec<u8> = rf.read(path)?;
     let mut a: Ainb = Ainb::parse(&raw)?;
@@ -109,7 +223,99 @@ fn rewrite(rf: &mut Romfs, path: &str, f: impl FnOnce(&mut Ainb) -> Res<()>) -> 
 }
 
 pub fn stage(rf: &mut Romfs) -> Res<Vec<Out>> {
-    Ok(vec![rewrite(rf, MODULE, |a| patch(a).map(|_| ()))?, rewrite(rf, SWORD_MODULE, patch_sword)?])
+    let back: Out = staging::rewrite(rf, RETURN_FILE, |raw| {
+        let mut b: Bf = Bf::parse(raw)?;
+        patch_return(&mut b)?;
+        let out: Vec<u8> = b.write()?;
+        if Bf::parse(&out)? != b {
+            return Err(Error::Format("door open: the patched flow does not round trip"));
+        }
+        Ok(out)
+    })?;
+    Ok(vec![
+        rewrite(rf, MODULE, |a| patch(a).map(|_| ()))?,
+        rewrite(rf, SWORD_MODULE, patch_sword)?,
+        rewrite(rf, PEDESTAL_MODULE, patch_pedestal)?,
+        back,
+        stage_sheik(rf)?,
+    ])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bfevfl::{Actor, Entry};
+
+    fn actor(n: &str, acts: &[&str], qs: &[&str]) -> Actor {
+        Actor {
+            name: n.to_string(),
+            sub: String::new(),
+            arg: String::new(),
+            actions: acts.iter().map(|s| s.to_string()).collect(),
+            queries: qs.iter().map(|s| s.to_string()).collect(),
+            params: Some(Cont { items: vec![("EventMemberCreateMethod".to_string(), Val::Int(0))] }),
+            ep: 0xFFFF,
+            cut: 1,
+        }
+    }
+
+    fn sample() -> Bf {
+        let events: Vec<Event> = vec![
+            Event { name: "E0".to_string(), kind: Kind::Action { next: 1, actor: 0, act: 0, params: None } },
+            Event { name: "E1".to_string(), kind: Kind::Sub { next: 2, params: None, flow: SWAP_ENTRY.to_string(), entry: SWAP_ENTRY.to_string() } },
+            Event { name: "E2".to_string(), kind: Kind::Action { next: NONE, actor: 1, act: 0, params: None } },
+        ];
+        let f: Flow = Flow {
+            name: RETURN_FLOW.to_string(),
+            actors: vec![actor("EventSystemActor", &["EventTransition"], &[]), actor(DATA_ACTOR, &["EventTriggerSetGameDataBool"], &["EventQueryIsGameDataBool"])],
+            events,
+            entries: vec![Entry { name: RETURN_FLOW.to_string(), subs: Vec::new(), vars: Vec::new(), main: 0, pad: 0 }],
+        };
+        Bf { ver: [0, 4, 0, 0], bom: 0xFEFF, shift: 3, pad: 0, name: RETURN_FLOW.to_string(), flows: vec![f], tls: Vec::new() }
+    }
+
+    #[test]
+    fn the_return_patch_reequips_the_kokiri_sword_or_nothing_after_the_swap() {
+        let mut b: Bf = sample();
+        assert_eq!(patch_return(&mut b).unwrap(), 4);
+        let f: &Flow = &b.flows[0];
+        let Kind::Sub { next, .. } = f.events[1].kind else { panic!() };
+        assert_eq!(next, 3);
+        let Kind::Switch { actor, query, cases, .. } = &f.events[3].kind else { panic!() };
+        assert_eq!(f.actors[*actor as usize].queries[*query as usize], IS_STR);
+        assert_eq!((cases[0].ev, cases[1].ev), (4, 2));
+        let Kind::Switch { actor, query, cases, .. } = &f.events[4].kind else { panic!() };
+        assert_eq!(f.actors[*actor as usize].name, POUCH_ACTOR);
+        assert_eq!(f.actors[*actor as usize].queries[*query as usize], IN_POUCH);
+        assert_eq!((cases[0].ev, cases[1].ev), (5, 6));
+        for (i, want) in [(5, KOKIRI), (6, "")] {
+            let Kind::Action { next, actor, act, params } = &f.events[i].kind else { panic!() };
+            assert_eq!(*next, 2);
+            assert_eq!(f.actors[*actor as usize].actions[*act as usize], SET_STR);
+            assert_eq!(params.as_ref().unwrap().get("Value"), Some(&Val::Str(want.to_string())));
+        }
+        assert!(patch_return(&mut b).is_err());
+        let bytes: Vec<u8> = b.write().unwrap();
+        assert_eq!(Bf::parse(&bytes).unwrap(), b);
+    }
+
+    #[test]
+    fn sheik_moves_sideways_only_from_her_vanilla_spot() {
+        let sheik = |z: f32| {
+            Node::Map(vec![
+                ("Gyaml".to_string(), Node::Str("Npc_Hylia_Sheik_Adult".to_string())),
+                ("Hash".to_string(), Node::U64(SHEIK_HASH)),
+                ("Translate".to_string(), Node::Arr(vec![Node::F32(139.0), Node::F32(106.35), Node::F32(z)])),
+            ])
+        };
+        let mut y: Byml = Byml { root: Node::Map(vec![("Actors".to_string(), Node::Arr(vec![sheik(-34.0)]))]), version: 7, big: false };
+        patch_sheik(&mut y).unwrap();
+        let t: &[Node] = y.root.get("Actors").unwrap().as_arr().unwrap()[0].get("Translate").unwrap().as_arr().unwrap();
+        assert_eq!(t[2], Node::F32(-37.0));
+        assert!(patch_sheik(&mut y).is_err());
+        let back: Byml = Byml::parse(&y.write().unwrap()).unwrap();
+        assert_eq!(back.root, y.root);
+    }
 }
 
 pub fn build(romfs: &P, load: &P, name: &str) -> Res<String> {

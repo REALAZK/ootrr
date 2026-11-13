@@ -422,6 +422,12 @@ pub fn start_state(d: &Data, seed: &SeedFile, p: &crate::slice::support::Plan) -
     if p.kakariko {
         ops.extend(crate::start_state::kakariko(&skipped_items(d, seed, &crate::start_state::KAKARIKO_LOCATIONS)?));
     }
+    if p.fountain == crate::slice::support::Fountain::Open {
+        ops.extend(crate::start_state::fountain());
+    }
+    if p.intro {
+        ops.extend(crate::start_state::first_visit());
+    }
     Ok(ops)
 }
 
@@ -601,10 +607,18 @@ pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Hos
     if p.fast {
         extra += crate::fast::apply(&mut rf, &pk)?;
     }
-    let state: crate::start_state::Ops = start_state(&d, seed, &p)?;
+    let mut state: crate::start_state::Ops = start_state(&d, seed, &p)?;
+    if !state.items.is_empty() {
+        let l: crate::flags::FlagList = crate::flags_build::load(&mut rf)?;
+        crate::start_state::add_is_get(&mut state, |n| l.by_hash(crate::flags::hash_name(n) as u64).is_some());
+    }
     if p.intro || !state.is_empty() {
         let o: crate::intro_skip::Opts = if p.intro { crate::intro_skip::Opts::FULL } else { crate::intro_skip::Opts::default() };
-        let (outs, _): (Vec<crate::staging::Out>, crate::intro_skip::Report) = crate::intro_skip::stage_with(&mut rf, o, &state)?;
+        let (mut outs, _): (Vec<crate::staging::Out>, crate::intro_skip::Report) = crate::intro_skip::stage_with(&mut rf, o, &state)?;
+        if p.kakariko {
+            outs.push(crate::start_state::stage_free_quest(&mut rf)?);
+            outs.push(crate::start_state::stage_field_clock(&mut rf)?);
+        }
         for o in outs {
             pk.write_romfs(&o.path, &o.z)?;
             extra += 1;
@@ -648,8 +662,9 @@ pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Hos
     }
     if !state.is_empty() {
         notes.push(format!(
-            "A new game writes the skipped story: {} quest steps, {} flags, and these items: {}.",
+            "A new game writes the skipped story: {} quest steps, {} quest states, {} flags, and these items: {}.",
             state.steps.len(),
+            state.enums.len(),
             state.flags.len(),
             state.items.join(", ")
         ));

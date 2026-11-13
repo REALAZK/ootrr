@@ -141,6 +141,24 @@ mod tests {
     }
 
     #[test]
+    fn the_pedestal_patch_keeps_the_adult_sword_alive() {
+        use crate::door_open as d;
+        let mut a: Ainb = synth();
+        let src: usize = node(&mut a, "InvBool.module", 0, &[]);
+        let x: usize = node(&mut a, d::ATTENTION, 0, &[(BOOL, "Logic_Create", flag(true)), (BOOL, "Logic_Delete", flag(false))]);
+        name_prop(&mut a, x, d::ADULT_SWORD);
+        link(&mut a, x, "Logic_Delete", src as i16, 0);
+        let b: u32 = a.pool.add("Logic_Delete");
+        a.params[x].add_plug(0, 0, Plug { a: src as u32, b, extra: Vec::new() }).unwrap();
+        d::patch_pedestal(&mut a).unwrap();
+        let i = a.input(BOOL, a.find_in(x, BOOL, "Logic_Delete").unwrap()).unwrap();
+        assert_eq!((i.src, i.flags, i.val), (-1, CONST, flag(false)));
+        assert!(a.params[x].group(0).is_empty());
+        assert!(d::patch_pedestal(&mut a).is_err());
+        assert!(audit(&a).is_empty());
+    }
+
+    #[test]
     fn the_door_patch_turns_linked_inputs_into_constants_and_drops_their_plugs() {
         let mut a: Ainb = synth();
         let src: usize = node(&mut a, "Source", 0, &[]);
