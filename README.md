@@ -86,3 +86,7 @@ git push origin v0.1.0
 ```
 
 The workflow in `.github/workflows/release.yml` runs the tests, builds with the build paths stripped, audits each binary with `tools/audit.py`, makes the installers in `packaging/` and publishes a prerelease with `SHA256SUMS.txt`. To try the build without publishing, start the workflow by hand from the Actions tab. That builds everything and keeps the files as artifacts.
+
+## License
+
+OOTRR is free software under the GNU General Public License, version 3 or any later version (see `LICENSE`). Releases up to and including 0.4.0 were published under the MIT License, kept in `LICENSE-MIT`. Credits for the ported OoT Randomizer logic and the embedded fonts are in `NOTICE`. No game files are included.

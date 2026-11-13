@@ -1,3 +1,9 @@
+OOTRR is licensed under the GNU General Public License, version 3 or (at your option) any later version.
+The full text is in LICENSE. Versions of OOTRR released before this change, up to and including 0.4.0, were
+released under the MIT License. That text is kept in LICENSE-MIT and still applies to those versions.
+
+The notices below belong to third party work that OOTRR builds on. They stay in force and are compatible with the GPL.
+
 Parts of the logic engine (crates/core/src: rules.rs, world.rs, search.rs, fill.rs, spoiler.rs and their helper modules)
 are ported from the design of the OoT Randomizer.
 
