@@ -425,6 +425,13 @@ pub fn build() -> Schema {
             .tip("The Ghost Shop owner in the Market gives the Bottle for the first big poe, where the game wants five. The golden reward after ten big poes is unchanged. The logic needs one big poe. Experimental, untested in the game."),
     );
     s.push(
+        Setting::choice(78, crate::qol::NAVI, "world", "Return with Navi", "off")
+            .tip("Calling Navi with the D-pad asks whether to head back, like the original game restarting a saved file at the dungeon entrance, in Kokiri Forest or in the Temple of Time. Needs no item. The D-pad calls Navi from the start of a new game, and her room tutorial hints are replaced by the question; enemy hints while targeting stay. Boss rush, final battle and miniboss arena maps never offer it. Experimental, untested in the game.")
+            .opt("off", "Off", "Navi stays quiet when she has no hint.")
+            .opt("dungeons", "Dungeons", "Inside a dungeon or its boss room, Navi offers a trip back to the dungeon entrance.")
+            .opt("everywhere", "Dungeons and overworld", "Also outside dungeons: back to Kokiri Forest as a child, or the Temple of Time as an adult."),
+    );
+    s.push(
         Setting::toggle(73, "shuffle_treasure_reward", "shuffle", "Treasure Chest Game reward", false)
             .tip("Whether the final reward of the Market Treasure Chest Game, a Piece of Heart, holds a random item. Only the first win gives it, later wins give the usual red rupee. The five rooms keep their keys and rupees. Only unique items that do nothing when found twice can be placed there, so no upgrades, ammo, bottles or keys. Experimental, untested in the game."),
     );
