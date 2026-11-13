@@ -26,7 +26,9 @@ mod progressive_cmd;
 mod save_cmd;
 mod serve_cmd;
 mod settings_cmd;
+mod teleport_check;
 mod teleport_cmd;
+mod teleport_merge_cmd;
 mod slice_cmd;
 
 use std::env;
@@ -68,9 +70,11 @@ const USAGE: &str = "usage:
   ootrr flow-sim <romfs_root> <flow> <entry> [--set name=value]... [--own Item[:n]]... [--choose n]... [--hour h] [--follow] [--verbose] [--mod dir] [--patch doorfix] [--nodep Challenge] [--never lit,!lit] [--expect rule] [--compare] [--run Flow:Entry]...
   ootrr flow-vocab <romfs_root>
   ootrr flow-sim-scan <romfs_root> [paths_per_entry] [--adult]
-  ootrr tp-chests <romfs_root> <out_tsv> [map_filter]
-  ootrr tp-picks <romfs_root> <out_tsv> <banc_hash_pairs_tsv>
-  ootrr tp-build <romfs_root> <load_dir> <mod_name> <start|coords> <dests_tsv> [--flag NAME] [--rot deg|rad]
+  ootrr tp-chests <romfs_root> <out_tsv> [map_filter] [--stand kind=dist:lift,...]
+  ootrr tp-picks <romfs_root> <out_tsv> <banc_hash_kind_tsv> [--stand kind=dist:lift,...]
+  ootrr tp-build <romfs_root> <load_dir> <mod_name> <start|coords> <dests_tsv> [--flag NAME] [--mflag NAME] [--rot deg|rad] [--layout shared|direct] [--groups on|off] [--autosave on|off]
+  ootrr tp-check <romfs_root> <mod_folder> <dests_tsv> [--mode start|coords] [--base <seed_mod_folder>] [the options of tp-build]
+  ootrr tp-merge <romfs_root> <seed_load_dir> <seed_mod_name> <dests_tsv> <out_load_dir> <out_mod_name> [--mode start|coords] [the options of tp-build]
   ootrr flow-locations-report [--tests] [--all]
   ootrr flow-locations-check <romfs_root> [flags_json]
   ootrr flow-apply <romfs_root> <load_dir> <mod_name> [--untested] <location=Item_Actor>...
@@ -337,6 +341,8 @@ fn main() -> ExitCode {
         Some("tp-chests") => teleport_cmd::chests(&a[1..]),
         Some("tp-picks") => teleport_cmd::picks(&a[1..]),
         Some("tp-build") => teleport_cmd::build(&a[1..]),
+        Some("tp-check") => teleport_check::run(&a[1..]),
+        Some("tp-merge") => teleport_merge_cmd::run(&a[1..]),
         Some("flow-locations-report") => flow_cmd::report(&a[1..]),
         Some("flow-locations-check") => flow_cmd::check(&a[1..]),
         Some("flow-apply") => flow_cmd::run_apply(&a[1..]),

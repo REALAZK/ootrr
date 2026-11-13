@@ -4,7 +4,7 @@ import { panel as plando_panel } from "./plando.js";
 import { post } from "./api.js";
 import { state, touch } from "./store.js";
 import { effective, match_preset, changed } from "./rules.js";
-import { viewer } from "./viewer.js";
+import { panel as spoiler_panel } from "./spoiler.js";
 import { go, bar } from "./nav.js";
 import { live, refresh_string } from "./strings.js";
 
@@ -34,6 +34,11 @@ export function render() {
     touch();
   } });
   const go_btn = h("button", { type: "button", class: "btn primary" }, "Generate seed");
+  const hide = h("input", { type: "checkbox", id: "hide_spoiler", checked: state.hide_spoiler, onchange: () => {
+    state.hide_spoiler = hide.checked;
+    touch();
+    if (state.result) show(state.result);
+  } });
   const pick = h("input", { type: "file", accept: ".ootrr,.json,application/json", class: "hide" });
   const preset_id = match_preset(schema, state.vals);
   const preset = preset_id ? schema.presets.find((p) => p.id === preset_id).name : "Custom";
@@ -63,7 +68,7 @@ export function render() {
           h("button", { type: "button", class: "btn", onclick: () => go("result") }, "Continue to build"),
         ),
       ),
-      h("section", { class: "card" }, h("h2", null, "Spoiler"), viewer(res)),
+      h("section", { class: "card" }, h("h2", null, "Spoiler"), spoiler_panel(res, state.hide_spoiler)),
     );
   }
 
@@ -130,6 +135,7 @@ export function render() {
       { class: "card stack" },
       h("div", null, h("label", { class: "lbl", for: "seed" }, "Seed"), seed, h("p", { class: "hint" }, "The same seed with the same settings (and no plandomizer entries) always gives the same seed file.")),
       h("p", { class: "muted" }, `Settings: ${preset}${n ? `, ${n} changed from the defaults` : ""}. `, h("a", { href: "#/settings" }, "Change settings")),
+      h("div", null, h("label", { class: "switch", for: "hide_spoiler" }, hide, h("span", null, "Hide the spoiler")), h("p", { class: "hint" }, "Keeps the spoiler out of sight when the seed is made. You can still show it or download a copy. This only hides it on this page, the seed file still holds the placements.")),
       h(
         "div",
         { class: "row" },
