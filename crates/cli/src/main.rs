@@ -34,6 +34,7 @@ mod teleport_cmd;
 mod teleport_merge_cmd;
 mod slice_cmd;
 mod start_defaults_cmd;
+mod treasure_cmd;
 
 use std::env;
 use std::fs;
@@ -108,6 +109,7 @@ const USAGE: &str = "usage:
   ootrr event-chests <romfs_root> <locations_json> <slice_json> <out_json>
   ootrr event-chest-show <romfs_root> <event_name> ...
   ootrr event-chests-testmod <romfs_root> <event_chests_json> <load_dir> <mod_name>
+  ootrr treasure-testmod <romfs_root> <load_dir> <mod_name> <item_actor> [keep-view]
   ootrr find-drop <romfs_root> <item_name_or_star>
   ootrr set-drop <romfs_root> <load_dir> <mod_name> <actor_hash> <item_name> [no-event]
   ootrr hints-show <seed.ootrr> <romfs_root>
@@ -385,6 +387,7 @@ fn main() -> ExitCode {
         Some("event-chests") => event_chests_cmd::run(&a[1..]),
         Some("event-chest-show") => event_chests_cmd::show(&a[1..]),
         Some("event-chests-testmod") => event_chests_cmd::testmod(&a[1..]),
+        Some("treasure-testmod") => treasure_cmd::testmod(&a[1..]),
         Some("find-drop") => find_drop(&a[1..]),
         Some("set-drop") => set_drop(&a[1..]),
         Some("zs-extract") => zs_extract(&a[1..]),

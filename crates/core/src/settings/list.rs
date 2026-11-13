@@ -382,6 +382,10 @@ pub fn build() -> Schema {
         Setting::toggle(72, crate::qol::POE, "world", "Big poe bottle at the first big poe", false)
             .tip("The Ghost Shop owner in the Market gives the Bottle for the first big poe, where the game wants five. The golden reward after ten big poes is unchanged. The logic needs one big poe. Experimental, untested in the game."),
     );
+    s.push(
+        Setting::toggle(73, "shuffle_treasure_reward", "shuffle", "Treasure Chest Game reward", false)
+            .tip("Whether the final reward of the Market Treasure Chest Game, a Piece of Heart, holds a random item. Only the first win gives it, later wins give the usual red rupee. The five rooms keep their keys and rupees. Only unique items that do nothing when found twice can be placed there, so no upgrades, ammo, bottles or keys. Experimental, untested in the game."),
+    );
     s.push(starting_items());
     s.push(starting_songs());
     s.sort_by_key(|x| x.num);

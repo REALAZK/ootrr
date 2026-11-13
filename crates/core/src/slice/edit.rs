@@ -289,6 +289,7 @@ pub fn edit_file_with(file: &str, raw: &[u8], ts: &[Target], keys: bool) -> Res<
             }
         };
         if n > 0 {
+            crate::slice::treasure::set_view(&mut y, t.hash, &t.new_actor);
             if let Some(k) = t.key {
                 place_key(&mut y, t.hash, k).ok_or(E::Format("edited key chest vanished"))?;
             }
@@ -401,6 +402,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     let d: Data = Data::load()?;
     let loaded = seed.settings()?;
     let p = plan(&loaded.settings)?;
+    let d: Data = crate::slice::treasure::with(d, p.treasure);
     let mut rf: Romfs = Romfs::open(romfs)?;
     let have: String = fingerprint(&rf, &d.scan.files)?;
     if have != seed.game {

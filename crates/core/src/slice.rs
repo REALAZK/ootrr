@@ -27,6 +27,7 @@ pub mod support;
 pub mod swap_guard;
 pub mod tier_fix;
 pub mod tier_order;
+pub mod treasure;
 
 pub use edit::{build, build_for, BuildCounts, Built, ChestLine};
 pub use generate::{generate, generate_with, plando_options, Counts, GenOpts, Generated};

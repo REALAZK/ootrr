@@ -58,6 +58,9 @@ pub fn is_song(actor: &str) -> bool {
 fn by_place(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> Option<bool> {
     let name: &str = &w.locs[l].name;
     let item: &str = &w.items.names[it];
+    if let Some(ok) = crate::slice::treasure::at(p.treasure, name, item) {
+        return Some(ok);
+    }
     if p.remake && crate::slice::remake_overworld::keeps_out(d, name, item) {
         return Some(false);
     }

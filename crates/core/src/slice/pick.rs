@@ -81,7 +81,7 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
     let mut free: Vec<LocId> = Vec::new();
     let mut left: BM<String, usize> = BM::new();
     for r in &d.scan.rows {
-        let open: bool = r.state == State::Eligible || (r.state == State::Event && d.event_ok(&r.name));
+        let open: bool = r.state == State::Eligible || (r.state == State::Event && (d.event_ok(&r.name) || crate::slice::treasure::opens(p.treasure, &r.name)));
         let why: Option<String> = if !open {
             Some(r.state.why().to_string())
         } else {
