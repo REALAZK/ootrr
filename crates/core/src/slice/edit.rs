@@ -9,8 +9,9 @@ use crate::dungeon_credit::{key_dungeon, place as place_key, stage_pouch, sweep,
 use crate::flow_locations::{self, Choice, Opts as FlowOpts, Stage};
 use crate::error::{Error as E, Res};
 use crate::modpack::{Host, Pack};
+use crate::pickup_persist::Extra;
 use crate::placement::banc_files;
-use crate::progressive::{needs_every_holder, route, stage as stage_upgrades, tiers, Size};
+use crate::progressive::{needs_every_holder, route, stage as stage_upgrades, Size};
 use crate::romfs::Romfs;
 use crate::rsizetable::{self, Rst};
 use crate::settings::seed::SeedFile;
@@ -133,10 +134,11 @@ fn actors_for(d: &Data, seed: &SeedFile) -> Res<BM<String, String>> {
 
 #[cfg(test)]
 fn targets(d: &Data, seed: &SeedFile) -> Res<(Vec<Target>, usize, Vec<Choice>)> {
-    targets_with(d, seed, false)
+    let v: crate::slice::tier_order::Verdict = crate::slice::tier_order::fixed_actors(d, seed)?;
+    targets_with(d, seed, false, &v.assign, &Extra::default())
 }
 
-fn targets_with(d: &Data, seed: &SeedFile, roam: bool) -> Res<(Vec<Target>, usize, Vec<Choice>)> {
+fn targets_with(d: &Data, seed: &SeedFile, roam: bool, fixed: &BM<String, String>, extra: &Extra) -> Res<(Vec<Target>, usize, Vec<Choice>)> {
     let mut out: Vec<Target> = Vec::new();
     let mut flows: Vec<Choice> = Vec::new();
     let mut same: usize = 0;
@@ -157,7 +159,7 @@ fn targets_with(d: &Data, seed: &SeedFile, roam: bool) -> Res<(Vec<Target>, usiz
             if wrapped.contains_key(loc) {
                 continue;
             }
-            let actor: String = given.get(loc).cloned().ok_or_else(|| E::Msg(format!("{loc} was given no item actor")))?;
+            let actor: String = fixed.get(loc).or_else(|| given.get(loc)).cloned().ok_or_else(|| E::Msg(format!("{loc} was given no item actor")))?;
             if Some(actor.as_str()) == d.flow.by_name(loc).and_then(|l| l.item.as_deref()) {
                 same += 1;
             } else {
@@ -166,7 +168,7 @@ fn targets_with(d: &Data, seed: &SeedFile, roam: bool) -> Res<(Vec<Target>, usiz
             continue;
         }
         if let Some(l) = d.cat.by_name(loc).filter(|l| pu::is_world(l)) {
-            let t: Vec<Target> = pu::targets(d, l, item)?;
+            let t: Vec<Target> = pu::targets_with(d, l, item, extra, fixed.get(loc).map(|a| a.as_str()))?;
             if t.is_empty() {
                 same += 1;
             } else {
@@ -219,8 +221,8 @@ fn targets_with(d: &Data, seed: &SeedFile, roam: bool) -> Res<(Vec<Target>, usiz
             .family(item)
             .filter(|f| !needs_every_holder(f) || d.holders(f).iter().all(|h| seed.placements.contains_key(*h) || d.wrappable(h)));
         let new_actor: String = match family {
-            Some(f) => tiers(f)?[0].to_string(),
-            None => given.get(loc).cloned().ok_or_else(|| E::Msg(format!("{loc} was given no item actor")))?,
+            Some(f) => crate::pregrant::chest_drop(f)?.to_string(),
+            None => fixed.get(loc).or_else(|| given.get(loc)).cloned().ok_or_else(|| E::Msg(format!("{loc} was given no item actor")))?,
         };
         let key: Option<&'static str> = if roam && new.kind == "SmallKey" {
             let name: &str = new.dungeon.as_deref().unwrap_or("");
@@ -392,6 +394,10 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str) -> Res<Built>
 }
 
 pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Host) -> Res<Built> {
+    build_with(seed, romfs, load, mod_name, host, &Extra::default())
+}
+
+pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Host, extra: &Extra) -> Res<Built> {
     let d: Data = Data::load()?;
     let loaded = seed.settings()?;
     let p = plan(&loaded.settings)?;
@@ -407,9 +413,11 @@ pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Hos
     }
     let roam: bool = p.keys_roam();
     let keys: Vec<&'static str> = if roam { KEY_DUNGEONS.to_vec() } else { Vec::new() };
-    let (ts, same, flows): (Vec<Target>, usize, Vec<Choice>) = targets_with(&d, seed, roam)?;
+    let order: crate::slice::tier_order::Verdict = crate::slice::tier_order::fixed_actors(&d, seed)?;
+    let (ts, same, flows): (Vec<Target>, usize, Vec<Choice>) = targets_with(&d, seed, roam, &order.assign, extra)?;
     let skull_drops: Vec<crate::slice::skull_edit::Drop> = crate::slice::skull_edit::drops(&d, seed)?;
     crate::slice::skull_edit::check_packs(&rf, &skull_drops)?;
+    crate::slice::swap_guard::check(&mut rf, &d, &ts, extra)?;
     let mut skull_hit: BS<u64> = BS::new();
     let gr: crate::dungeon_grant::Grants = crate::slice::dungeon_items::grants(&d, seed, &p)?;
     let mut marks: crate::dungeon_grant::Marks = crate::dungeon_grant::Marks::default();
@@ -603,6 +611,9 @@ pub fn build_for(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Hos
         notes.retain(|n| n != pu::NOTE);
     }
     notes.extend(crate::slice::skull_edit::notes(&skull_drops));
+    for b in &order.bad {
+        notes.push(format!("Upgrade tier warning, generate this seed again with this build: {b}"));
+    }
     notes.extend(crate::scrubs_b::notes(&scrub_jobs));
     if !upgrades.is_empty() {
         let n: usize = ts.iter().filter(|t| t.family.is_some()).map(|t| t.name.as_str()).collect::<BS<&str>>().len();
@@ -758,7 +769,7 @@ mod tests {
                 match (t.family, d.family(&t.new_item)) {
                     (Some(f), _) => {
                         seen.insert(f);
-                        assert_eq!(t.new_actor, tiers(f).unwrap()[0]);
+                        assert_eq!(t.new_actor, crate::pregrant::chest_drop(f).unwrap());
                         assert!(
                             !needs_every_holder(f) || d.holders(f).iter().all(|h| g.seed_file.placements.contains_key(*h) || d.wrappable(h)),
                             "{f}"

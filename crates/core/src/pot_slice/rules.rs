@@ -7,7 +7,7 @@ use crate::world::{LocId, Placement, World};
 
 pub fn at(d: &Data, name: &str, item: &str) -> Option<bool> {
     if d.pots.has(name) {
-        return Some(pickup::of(item).is_some());
+        return Some(pickup::of(item).is_some() && crate::slice::copies::fits(d, name, item));
     }
     None
 }
@@ -60,7 +60,8 @@ mod tests {
         let pot: &str = "KF House of Twins Pot 1";
         let chest: &str = "KF Midos Top Left Chest";
         assert_eq!(probe(&d, &w, "Rupees (20)", pot), Some(true));
-        assert_eq!(probe(&d, &w, "Fire Arrows", pot), Some(true));
+        assert_eq!(probe(&d, &w, "Fire Arrows", pot), Some(false));
+        assert_eq!(probe(&d, &w, "Fire Arrows", "Dodongos Cavern Right Side Pot 1"), Some(true));
         assert_eq!(probe(&d, &w, "Progressive Hookshot", pot), Some(false));
         assert_eq!(probe(&d, &w, "Piece of Heart", pot), Some(false));
         assert_eq!(probe(&d, &w, "Ocarina", pot), Some(false));

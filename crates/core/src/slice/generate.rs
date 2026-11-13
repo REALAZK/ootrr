@@ -13,12 +13,12 @@ use crate::slice::logic::world_with;
 use crate::slice::pick::{pick, scoped, Pick};
 use crate::slice::pickups as pu;
 use crate::slice::plando::{loc_of, resolve, Entry};
-use crate::start_reward::pick as pick_start;
 use crate::slice::support::{plan, Keep, Mode, Plan, Songs};
 use crate::spoiler::{playthrough, Spoiler};
 use crate::world::{LocId, Placement, World};
 
 pub const TRIES: u32 = 600;
+pub const TIER_TRIES: u32 = 40;
 
 #[derive(Debug, Clone)]
 pub struct GenOpts {
@@ -211,20 +211,7 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
         named.push(w.locs[l].name.clone());
     }
     p.excluded = named;
-    if let Some((name, _)) = pick_start(seed, p.start) {
-        let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
-        w.start.push((i, 1));
-    }
-    for name in crate::slice::dungeon_items::start_items(d, &p) {
-        let i: ItemId = w.item(&name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
-        w.start.push((i, 1));
-    }
-    for name in &p.gear {
-        let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
-        if !w.start.iter().any(|(id, _)| *id == i) {
-            w.start.push((i, 1));
-        }
-    }
+    crate::slice::starts::add(d, &p, &mut w, seed)?;
     let vanilla: Placement = vanilla_place(&w, d)?;
     let pk: Pick = pick(d, &w, &p);
     if p.world != Mode::Off && !pk.free.iter().any(|l| pu::listed(d, &w.locs[*l].name)) {
@@ -261,7 +248,22 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
         let caps: HM<LocId, usize> = crate::pot_slice::rules::caps(d, &w, &pk.free, &vanilla, &ok);
         let rank = |l: LocId| caps.get(&l).copied().unwrap_or(0);
         let r: Option<&dyn Fn(LocId) -> usize> = if caps.is_empty() { None } else { Some(&rank) };
-        fill_ranked(&w, &vanilla, &pk.free, &ok, &mut rng, o.tries, &plan, !p.keys_roam(), r)?
+        let mut n: u32 = 0;
+        loop {
+            let g: Placement = fill_ranked(&w, &vanilla, &pk.free, &ok, &mut rng, o.tries, &plan, !p.keys_roam(), r)?;
+            if crate::slice::tier_order::fits(d, &w, &g, &pk.free)? {
+                break g;
+            }
+            n += 1;
+            if n >= TIER_TRIES {
+                let hint: &str = if o.plando.is_empty() {
+                    "these settings leave too little room, try another seed text or fewer shuffled pickup spots"
+                } else {
+                    "check the plando entries for upgrade items, or try another seed text"
+                };
+                return Err(E::Msg(format!("no fill in {TIER_TRIES} tries kept every fixed upgrade tier in order, {hint}")));
+            }
+        }
     };
     if p.skulls != crate::slice::skulls::Mode::Off {
         crate::slice::skulls::check_tokens(&w, &vanilla, &got)?;

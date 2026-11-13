@@ -1,4 +1,5 @@
 pub mod banc;
+pub mod copies;
 pub mod data;
 pub mod dungeon_items;
 pub mod edit;
@@ -17,7 +18,10 @@ pub mod remake_overworld;
 pub mod scan;
 pub mod skull_edit;
 pub mod skulls;
+pub mod starts;
 pub mod support;
+pub mod swap_guard;
+pub mod tier_order;
 
 pub use edit::{build, build_for, BuildCounts, Built, ChestLine};
 pub use generate::{generate, generate_with, plando_options, Counts, GenOpts, Generated};

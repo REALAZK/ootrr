@@ -19,6 +19,7 @@ mod intro_cmd;
 mod items_cmd;
 mod key_credit_cmd;
 mod logic_cmd;
+mod pack_add_cmd;
 mod pot_cmd;
 mod pot_scan_cmd;
 mod pots_persist_cmd;
@@ -89,6 +90,7 @@ const USAGE: &str = "usage:
   ootrr slice-scan <romfs_root> <out_json>
   ootrr pot-scan <romfs_root> <out_json>
   ootrr pots-persist <romfs_root> <load_dir> <mod_name>
+  ootrr pack-add <romfs_root> <load_dir> <mod_name> <Item_Actor> [--name <Obj_Actor>] [--press] [--heap N] [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--place <ActorHash>]... [--dry]
   ootrr flags-build <romfs_root> <out_json>
   ootrr flags-lookup <flags_json> <name_or_hash> ...
   ootrr flags-check <romfs_root> <flags_json>
@@ -362,6 +364,7 @@ fn main() -> ExitCode {
         Some("slice-scan") => slice_cmd::scan_cmd(&a[1..]),
         Some("pot-scan") => pot_scan_cmd::run(&a[1..]),
         Some("pots-persist") => pots_persist_cmd::run(&a[1..]),
+        Some("pack-add") => pack_add_cmd::run(&a[1..]),
         Some("flags-build") => flags_cmd::build(&a[1..]),
         Some("flags-lookup") => flags_cmd::lookup(&a[1..]),
         Some("flags-check") => flags_cmd::check(&a[1..]),

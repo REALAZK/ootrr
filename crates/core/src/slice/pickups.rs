@@ -4,6 +4,8 @@ use crate::byml::{Byml, Node};
 use crate::catalog::{Loc, Via};
 use crate::error::{Error as E, Res};
 use crate::logic_items::ItemId;
+use crate::pickup_pack::default_name;
+use crate::pickup_persist::Extra;
 use crate::placement::hash_of;
 use crate::settings::Settings;
 use crate::slice::data::Data;
@@ -98,12 +100,30 @@ pub fn swap_gyaml(y: &mut Byml, hash: u64, old: &str, new: &str) -> usize {
     n
 }
 
+pub fn pack_actor(d: &Data, extra: &Extra, item: &str, tier: Option<&str>) -> Option<String> {
+    let i: &crate::slice::data::Item = d.item(item)?;
+    let content: &str = match tier {
+        Some(t) => t,
+        None if i.tiers.is_empty() => i.actor.as_deref()?,
+        None => return None,
+    };
+    let name: String = default_name(content);
+    extra.has(&name).then_some(name)
+}
+
 pub fn targets(d: &Data, l: &Loc, item: &str) -> Res<Vec<Target>> {
+    targets_with(d, l, item, &Extra::default(), None)
+}
+
+pub fn targets_with(d: &Data, l: &Loc, item: &str, extra: &Extra, tier: Option<&str>) -> Res<Vec<Target>> {
     let vanilla: &str = d.vanilla_of(&l.name).ok_or_else(|| E::Msg(format!("{} has no vanilla item", l.name)))?;
     if item == vanilla {
         return Ok(Vec::new());
     }
-    let new: &str = world_actor(item).ok_or_else(|| E::Msg(format!("{item} has no world pickup and cannot be placed at {}", l.name)))?;
+    let new: String = match world_actor(item) {
+        Some(a) => a.to_string(),
+        None => pack_actor(d, extra, item, tier).ok_or_else(|| E::Msg(format!("{item} has no world pickup and cannot be placed at {}", l.name)))?,
+    };
     let mut out: Vec<Target> = Vec::new();
     for r in &l.refs {
         out.push(Target {
@@ -178,7 +198,7 @@ pub fn select(d: &Data, w: &World, p: &Plan, free: &mut Vec<LocId>, left: &mut B
 
 pub fn at(d: &Data, name: &str, item: &str) -> Option<bool> {
     if d.cat.by_name(name).is_some_and(is_world) {
-        return Some(world_actor(item).is_some());
+        return Some(world_actor(item).is_some() && crate::slice::copies::fits(d, name, item));
     }
     None
 }
