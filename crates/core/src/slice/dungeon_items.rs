@@ -333,8 +333,7 @@ mod tests {
         assert!(f.iter().all(|(_, v)| *v));
         assert!(f.iter().any(|(n, _)| n == "DungeonInfo.InsideGanonCastle.IsGetBossKey"));
         assert!(f.iter().any(|(n, _)| n == "DungeonInfo.IceCavern.IsGetCompass"));
-        // 27 dungeon and door flags plus the two forest walls of the open forest default.
-        assert!(p.start_flags().len() == 29);
+        assert!(p.start_flags().len() == 27);
         let d: Data = Data::load().unwrap();
         assert_eq!(start_items(&d, &p).len(), 6);
         let q: Plan = plan(&with(&[("shuffle_mapcompass", "remove")])).unwrap();

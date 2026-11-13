@@ -235,20 +235,7 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
             }
         }
     }
-    if let Some((name, _)) = pick_start(seed, p.start) {
-        let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
-        w.start.push((i, 1));
-    }
-    for name in crate::slice::dungeon_items::start_items(d, &p) {
-        let i: ItemId = w.item(&name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
-        w.start.push((i, 1));
-    }
-    for name in &p.gear {
-        let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
-        if !w.start.iter().any(|(id, _)| *id == i) {
-            w.start.push((i, 1));
-        }
-    }
+    crate::slice::starts::add(d, &p, &mut w, seed)?;
     let vanilla: Placement = vanilla_place(&w, d)?;
     let pk: Pick = pick(d, &w, &p);
     if p.world != Mode::Off && !pk.free.iter().any(|l| pu::listed(d, &w.locs[*l].name)) {
@@ -741,7 +728,7 @@ mod tests {
     #[test]
     fn an_open_kakariko_only_places_giveable_items_at_the_skipped_checks() {
         let d: Data = Data::load().unwrap();
-        let s: Settings = with(&[("shuffle_rewards", "supported"), ("shuffle_songs", "anywhere")]);
+        let s: Settings = with(&[("shuffle_rewards", "supported"), ("shuffle_songs", "anywhere"), ("open_forest", "closed_deku"), ("open_kakariko", "open")]);
         for n in 0..3 {
             let g: Generated = generate_data(&d, &s, &format!("kak {n}"), &GenOpts::default()).unwrap();
             assert!(g.report.contains("Kakariko gate starts open"));
@@ -822,11 +809,13 @@ mod tests {
     #[test]
     fn seeds_that_generated_before_keep_their_exact_placements() {
         let d: Data = Data::load().unwrap();
+        // Re-based when the open Door of Time entered the logic: the Master Sword is reachable
+        // without the Song of Time, so items behind it move. The overworld-only pins did not change.
         let cases: [(&[(&str, &str)], &str, usize, u64); 4] = [
-            (&[], "default 0", 77, 0x9b41_25fb_b7b3_954b),
-            (&[], "default 1", 77, 0x74e9_a4ba_5cb4_40b9),
+            (&[], "default 0", 77, 0x9427_415a_43e5_8ac5),
+            (&[], "default 1", 77, 0x975b_9440_5b5c_0bdb),
             (&[("shuffle_chests", "overworld")], "chests_ow 0", 10, 0x842f_cb4b_1197_ea2a),
-            (&[("shuffle_chests", "dungeons")], "dungeons 0", 67, 0x169a_7c8a_d12b_3980),
+            (&[("shuffle_chests", "dungeons")], "dungeons 0", 67, 0xe65d_cad2_d76a_2410),
         ];
         for (pairs, seed, n, want) in cases {
             let mut all: Vec<(&str, &str)> = vec![("shuffle_rewards", "off")];
@@ -995,14 +984,14 @@ mod tests {
         pots.set("shuffle_pots", Value::s("all")).unwrap();
         pots.set("shuffle_crates", Value::s("all")).unwrap();
         let cases: [(Settings, &str, &str, &str); 8] = [
-            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin a", "b8c6c4b31b12abcb42c5014a827ce94e22ee7e61cf01ac815ef80ffa384446a4"),
-            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin b", "070cc4b39ce519c165aaae10678e7030ef9d0a331790a09a44f4198a90a3ad99"),
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin a", "d707fe2e79ae1cbb7f99e4c32fb6100f0835d19457e6d2b3c38f0a5c86aa51c9"),
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin b", "9f250fc2c63e2f67e36088a818435a5565ce8601973b639bd133fbb605069d7c"),
             (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin a", "c755bab551e408965a8e15647c62f760d9d76875d86b2590c6708ab9c6614baf"),
             (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin b", "398e2947c1a5116badd6b90121f7e2c8721946edff989067b3213e65e7ea45af"),
-            (on.clone(), "OOTRR1-EYAQD32I", "pin a", "bc08991c7936566a71d7fbbe597c5fe15160ae4143f68117c1eaacf7576d85c7"),
-            (on.clone(), "OOTRR1-EYAQD32I", "pin b", "43749dd1040da34ad3600ec3e8a5b1babfd75a7c1a93f721c9e110efc2219011"),
-            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "d97f824ef573940b9510579cb7e56490826f7cad856da33063f5c230d2f8e960"),
-            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "f475e2f2ab973177840bf44e89641bea638ec7f44ab991e35e8004f2f71f1a58"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin a", "e3c97e934085104048f5374eb7087bc74888ccd394018cb256bbde5a20deef26"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin b", "fb9466b847458a0092349c142e329f6853350a476a302b164c25d156d48039cd"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "245bc9811f6b689245405e4ad615aa20610e4deb03ed095043d45b5dfdce640d"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "3ded5634d1b49323be723af12c0913eba069c6e3726ebc99a77774ecd64700e7"),
         ];
         for (s, old, seed, sum) in cases {
             let g: Generated = generate_data(&d, &s, seed, &GenOpts::default()).unwrap();

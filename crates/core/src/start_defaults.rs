@@ -432,6 +432,7 @@ mod tests {
         let d: crate::slice::data::Data = crate::slice::data::Data::load().unwrap();
         let base: crate::settings::Settings = crate::settings::Settings::default();
         let mut s: crate::settings::Settings = base.clone();
+        s.set("open_forest", crate::settings::Value::s("closed_deku")).unwrap();
         s.set("open_kakariko", crate::settings::Value::s("open")).unwrap();
         let p: crate::slice::support::Plan = crate::slice::support::plan(&s).unwrap();
         let w: crate::world::World = crate::slice::logic::world_with(&d, &p.logic()).unwrap();

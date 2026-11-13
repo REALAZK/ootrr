@@ -69,7 +69,7 @@ mod tests {
     fn off_is_the_default_and_changes_nothing() {
         let p: Plan = plan(&Settings::default()).unwrap();
         assert!(!p.chus);
-        assert!(p.logic().is_empty());
+        assert_eq!(p.logic(), vec![("open_door_of_time", "open")]);
         assert!(!p.notes.iter().any(|n| n == NOTE));
     }
 
@@ -77,7 +77,7 @@ mod tests {
     fn on_is_accepted_sets_the_logic_flag_and_adds_the_caution() {
         let p: Plan = plan(&on()).unwrap();
         assert!(p.chus);
-        assert_eq!(p.logic(), vec![(LOGIC_KEY, "true")]);
+        assert_eq!(p.logic(), vec![("open_door_of_time", "open"), (LOGIC_KEY, "true")]);
         assert!(p.notes.iter().any(|n| n == NOTE));
         assert!(NOTE.contains("Bomb Bag") && NOTE.contains("Experimental"));
     }

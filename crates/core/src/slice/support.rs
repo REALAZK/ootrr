@@ -197,10 +197,6 @@ impl Plan {
         if self.door {
             out.push(("open_door_of_time", "open"));
         }
-        if self.kakariko {
-            out.push(("open_kakariko", "open"));
-            out.push(("skip_child_zelda", "true"));
-        }
         match self.fountain {
             Fountain::Closed => {}
             Fountain::Adult => out.push(("zora_fountain", "adult")),
@@ -214,6 +210,7 @@ impl Plan {
         }
         if self.kakariko {
             out.push(KAKARIKO);
+            out.push(("skip_child_zelda", "true"));
         }
         out.extend(self.qol.logic());
         out
@@ -491,12 +488,11 @@ mod tests {
         assert_eq!(p.small, Keep::Dungeon);
         assert_eq!(p.map, Keep::Dungeon);
         assert!(p.intro);
-        assert_eq!(p.notes.len(), 5);
+        assert_eq!(p.notes.len(), 3);
         assert!(p.notes.iter().any(|n| n.contains("bridge=medallions")));
-        assert!(p.notes.iter().any(|n| n.contains("Kokiri Forest starts open")));
         assert!(p.notes.iter().any(|n| n.contains("intro is skipped")));
         assert!(p.notes.iter().any(|n| n.contains("Door of Time starts open")));
-        assert!(p.notes.iter().any(|n| n.contains("Kakariko gate starts open")));
+        assert!(!p.notes.iter().any(|n| n.contains("Kakariko gate starts open")));
     }
 
     #[test]
@@ -504,6 +500,7 @@ mod tests {
         let mut s: Settings = Settings::default();
         s.set("open_door_of_time", Value::Bool(false)).unwrap();
         s.set("open_forest", Value::s("closed_deku")).unwrap();
+        s.set("open_kakariko", Value::s("open")).unwrap();
         let p: Plan = plan(&s).unwrap();
         assert!(p.kakariko);
         assert_eq!(p.logic(), vec![("open_forest", "closed_deku"), ("open_kakariko", "open"), ("skip_child_zelda", "true")]);
@@ -583,6 +580,8 @@ mod tests {
     #[test]
     fn a_closed_forest_turns_the_open_kakariko_gate_back_to_the_letter() {
         let mut s: Settings = Settings::default();
+        s.set("open_forest", Value::s("open")).unwrap();
+        s.set("open_kakariko", Value::s("open")).unwrap();
         assert!(plan(&s).unwrap().kakariko);
         s.set("open_forest", Value::s("closed")).unwrap();
         let p: Plan = plan(&s).unwrap();
@@ -595,6 +594,8 @@ mod tests {
     #[test]
     fn starting_with_zeldas_letter_next_to_an_open_kakariko_is_refused() {
         let mut s: Settings = Settings::default();
+        s.set("open_forest", Value::s("closed_deku")).unwrap();
+        s.set("open_kakariko", Value::s("open")).unwrap();
         s.set("starting_items", Value::set(&["zeldas_letter"])).unwrap();
         let e: String = plan(&s).unwrap_err().to_string();
         assert!(e.contains("zeldas_letter while open_kakariko"), "{e}");
@@ -622,15 +623,17 @@ mod tests {
         let mut s: Settings = Settings::default();
         assert_eq!(s.text("open_kakariko").unwrap(), "zelda");
         let p: Plan = plan(&s).unwrap();
-        assert!(!p.kakariko && p.defaults().is_empty() && p.logic().is_empty());
+        assert!(!p.kakariko && p.defaults().is_empty());
+        assert_eq!(p.logic(), vec![("open_door_of_time", "open")]);
         assert!(!p.notes.iter().any(|n| n.contains("open_kakariko")));
+        s.set("open_forest", Value::s("closed_deku")).unwrap();
         s.set("open_kakariko", Value::s("open")).unwrap();
         let p: Plan = plan(&s).unwrap();
         assert!(p.kakariko);
         assert_eq!(p.defaults(), vec![KAKARIKO]);
-        assert_eq!(p.logic(), vec![KAKARIKO]);
+        assert_eq!(p.logic(), vec![("open_forest", "closed_deku"), ("open_door_of_time", "open"), KAKARIKO, ("skip_child_zelda", "true")]);
         assert!(p.notes.iter().any(|n| n.contains("Death Mountain starts open") && n.contains("Mask Shop")));
-        assert!(p.start_flags().is_empty());
+        assert_eq!(p.start_flags(), vec![(EXIT_WALL.to_string(), false), (DOOR_OPENED.to_string(), true)]);
         s.set("open_kakariko", Value::s("closed")).unwrap();
         assert!(plan(&s).err().unwrap().to_string().contains("open_kakariko is closed"));
     }
