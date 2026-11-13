@@ -82,6 +82,7 @@ pub struct Plan {
     pub qol: crate::qol::Opts,
     pub treasure: bool,
     pub kit: crate::start_items::Kit,
+    pub open: crate::open_world::Opts,
 }
 
 const GEAR: &[(&str, &str, &str)] = &[
@@ -90,11 +91,9 @@ const GEAR: &[(&str, &str, &str)] = &[
     ("slingshot", "Slingshot", "Weapon_Range_SlingShot"),
 ];
 
-const UNCHANGED: [&str; 23] = [
+const UNCHANGED: [&str; 21] = [
     "logic_rules",
     "starting_age",
-    "open_door_of_time",
-    "zora_fountain",
     "gerudo_fortress",
     "bridge",
     "bridge_stones",
@@ -195,11 +194,14 @@ impl Plan {
             out.push(KAKARIKO);
         }
         out.extend(self.qol.logic());
+        out.extend(self.open.logic());
         out
     }
 
     pub fn defaults(&self) -> Vec<(&'static str, &'static str)> {
-        if self.kakariko { vec![KAKARIKO] } else { Vec::new() }
+        let mut out: Vec<(&'static str, &'static str)> = if self.kakariko { vec![KAKARIKO] } else { Vec::new() };
+        out.extend(self.open.defaults());
+        out
     }
 
     pub fn opening_step(&self) -> Option<&'static str> {
@@ -356,6 +358,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     let chus: bool = crate::slice::bombchus::mode(s, &mut bad);
     let qol: crate::qol::Opts = crate::qol::read(s, &mut bad);
     let treasure: bool = crate::slice::treasure::mode(s, &mut bad);
+    let open: crate::open_world::Opts = crate::open_world::read(s, &mut bad);
     let excluded: Vec<String> = s.items("disabled_locations").map(|v| v.to_vec()).unwrap_or_default();
     if !bad.is_empty() {
         let lines: Vec<String> = bad.iter().map(|b| format!("  {b}")).collect();
@@ -421,7 +424,8 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if treasure {
         notes.push(crate::slice::treasure::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure, kit })
+    notes.extend(open.notes()?);
+    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure, kit, open })
 }
 
 #[cfg(test)]
@@ -435,7 +439,9 @@ mod tests {
         assert_eq!(p.small, Keep::Dungeon);
         assert_eq!(p.map, Keep::Dungeon);
         assert!(p.intro);
-        assert_eq!(p.notes.len(), 2);
+        assert_eq!(p.notes.len(), 3);
+        assert!(p.notes.iter().any(|n| n.contains("world clock runs from the start")));
+        assert_eq!(p.open, crate::open_world::Opts { time: true, ..crate::open_world::Opts::default() });
         assert!(p.notes.iter().any(|n| n.contains("bridge=medallions")));
         assert!(p.notes.iter().any(|n| n.contains("intro is skipped")));
     }
@@ -503,12 +509,12 @@ mod tests {
         let mut s: Settings = Settings::default();
         assert_eq!(s.text("open_kakariko").unwrap(), "zelda");
         let p: Plan = plan(&s).unwrap();
-        assert!(!p.kakariko && p.defaults().is_empty() && p.logic().is_empty());
+        assert!(!p.kakariko && p.defaults() == vec![(crate::open_world::TIME, "true")] && p.logic().is_empty());
         assert!(!p.notes.iter().any(|n| n.contains("open_kakariko")));
         s.set("open_kakariko", Value::s("open")).unwrap();
         let p: Plan = plan(&s).unwrap();
         assert!(p.kakariko);
-        assert_eq!(p.defaults(), vec![KAKARIKO]);
+        assert_eq!(p.defaults(), vec![KAKARIKO, (crate::open_world::TIME, "true")]);
         assert_eq!(p.logic(), vec![KAKARIKO]);
         assert!(p.notes.iter().any(|n| n.contains("Death Mountain starts open") && n.contains("Mask Shop")));
         assert!(p.start_flags().is_empty());

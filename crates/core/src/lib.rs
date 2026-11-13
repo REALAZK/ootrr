@@ -41,6 +41,7 @@ pub mod logic_val;
 pub mod modpack;
 pub mod msbt;
 pub mod murmur;
+pub mod open_world;
 pub mod pickup_pack;
 pub mod pickup_persist;
 pub mod placement;

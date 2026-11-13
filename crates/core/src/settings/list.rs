@@ -197,15 +197,29 @@ pub fn build() -> Schema {
             .opt("closed", "Closed", "The gate stays closed until the story opens it."),
     );
     s.push(
-        Setting::toggle(5, "open_door_of_time", "world", "Open Door of Time", true)
-            .tip("Start with the Door of Time already open, so the Ocarina and songs are not needed to reach the Master Sword."),
+        Setting::toggle(5, "open_door_of_time", "world", "Open Door of Time", false)
+            .tip("Start with the Door of Time already open, so the Ocarina and songs are not needed to reach the Master Sword. Returning to childhood still needs the Forest Sage. Experimental, untested in the game."),
     );
     s.push(
         Setting::choice(6, "zora_fountain", "world", "Zora's Fountain", "closed")
-            .tip("Whether King Zora blocks the way to Zora's Fountain.")
+            .tip("Whether King Zora blocks the way to Zora's Fountain. Open is experimental, untested in the game.")
             .opt("closed", "Closed", "King Zora must be moved with Ruto's Letter.")
             .opt("adult", "Open as adult", "King Zora is gone once you are an adult.")
-            .opt("open", "Open", "King Zora never blocks the way."),
+            .opt("open", "Open", "King Zora never blocks the way. Ruto's Letter stays in the item pool."),
+    );
+    s.push(
+        Setting::toggle(75, "jabu_open", "world", "Jabu Jabu's Belly open", false)
+            .tip("Jabu Jabu opens his mouth without a fish, so no fish and no bottle are needed to enter Jabu Jabu's Belly. King Zora still has to be moved first unless Zora's Fountain is open. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(76, "time_always_passes", "world", "Time always passes", true)
+            .wire_as(Value::Bool(false))
+            .tip("The day and night clock runs from the start instead of waiting for Kaepora in Hyrule Field and Impa's send off, so night can be reached before meeting Zelda. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(77, "early_beds", "world", "Beds before Zelda", false)
+            .tip("Beds offer Sleep until morning and Sleep until night before the Zelda meeting. Experimental, untested in the game.")
+            .when_on("time_always_passes"),
     );
     s.push(
         Setting::choice(7, "gerudo_fortress", "world", "Gerudo Fortress", "normal")

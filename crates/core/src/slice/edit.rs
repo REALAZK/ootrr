@@ -593,19 +593,19 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
             }
         }
     }
-    if p.qol.any() {
-        for o in crate::qol::worked(&mut rf, &pk, &p.qol)? {
-            pk.write_romfs(&o.path, &o.z)?;
-            extra += 1;
-            if o.new > o.old {
-                if rst.is_none() {
-                    rst = Some(rsizetable::load(&mut rf)?);
-                }
-                if let Some(t) = rst.as_mut()
-                    && t.grow(&o.path, o.old as u64, o.new as u64, MARGIN)?.is_some()
-                {
-                    grown += 1;
-                }
+    let mut late: Vec<crate::staging::Out> = if p.qol.any() { crate::qol::worked(&mut rf, &pk, &p.qol)? } else { Vec::new() };
+    late.extend(crate::open_world::worked(&mut rf, &pk, &p.open)?);
+    for o in late {
+        pk.write_romfs(&o.path, &o.z)?;
+        extra += 1;
+        if o.new > o.old {
+            if rst.is_none() {
+                rst = Some(rsizetable::load(&mut rf)?);
+            }
+            if let Some(t) = rst.as_mut()
+                && t.grow(&o.path, o.old as u64, o.new as u64, MARGIN)?.is_some()
+            {
+                grown += 1;
             }
         }
     }

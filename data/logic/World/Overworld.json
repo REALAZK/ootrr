@@ -2693,7 +2693,7 @@
         },
         "exits": {
             "ZD Behind King Zora": "True",
-            "Jabu Jabus Belly Beginning": "is_child and Fish",
+            "Jabu Jabus Belly Beginning": "is_child and (Fish or jabu_open)",
             "ZF Ice Ledge": "is_adult",
             "ZF Great Fairy Fountain": "has_explosives",
             "ZF Underwater": "is_adult and Iron_Boots and (logic_fewer_tunic_requirements or Zora_Tunic)",

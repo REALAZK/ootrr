@@ -348,6 +348,11 @@ mod tests {
             ("Int".to_string(), key("PlayerStatus.CurrentRupee")),
             ("Int".to_string(), key("PouchData.Item_Ocarina_Fairy.StockNum")),
             ("Enum".to_string(), key("Step_Meet_DekuTree")),
+            ("Enum".to_string(), key("Step_Get_StoneOfWater")),
+            ("Bool".to_string(), key("GaveFishToJabJab")),
+            ("Bool".to_string(), key("JabJabOpenedMouth")),
+            ("Bool".to_string(), key("HyruleField_ArriveEntrance")),
+            ("Bool".to_string(), key("HavePlayedEvent.Dm_HrlField_0020")),
         ];
         let mut got: Vec<(String, u32)> = changed_rows(&orig, &back);
         want.sort();

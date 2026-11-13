@@ -295,7 +295,7 @@ mod tests {
     fn default_string_is_tiny_and_stable() {
         let t: String = Settings::default().encode().unwrap();
         assert_eq!(t, Settings::default().encode().unwrap());
-        assert!(t.len() < 16, "{t}");
+        assert!(t.len() < 24, "{t}");
         assert_eq!(Settings::decode(&t).unwrap().settings, Settings::default());
     }
 
@@ -349,10 +349,12 @@ mod tests {
     #[test]
     fn rewards_off_writes_the_old_default_string_and_the_new_toggle_round_trips() {
         let mut s: Settings = Settings::default();
+        s.set("time_always_passes", Value::Bool(false)).unwrap();
         assert_eq!(s.encode().unwrap(), "OOTRR1-EYAQD32I");
         s.set("shuffle_rewards", Value::s("off")).unwrap();
         assert_eq!(s.encode().unwrap(), "OOTRR1-XZLA");
         let mut s: Settings = Settings::default();
+        s.set("time_always_passes", Value::Bool(false)).unwrap();
         s.set("shuffle_dungeon_rewards", Value::Bool(true)).unwrap();
         let t: String = s.encode().unwrap();
         assert_ne!(t, "OOTRR1-EYAQD32I");
@@ -360,5 +362,37 @@ mod tests {
         assert!(l.warnings.is_empty());
         assert_eq!(l.settings, s);
         assert!(l.settings.flag("shuffle_dungeon_rewards").unwrap());
+    }
+
+    #[test]
+    fn old_strings_keep_the_clock_off_and_the_door_closed_while_new_defaults_turn_the_clock_on() {
+        for t in ["OOTRR1-XZLA", "OOTRR1-EYAQD32I", "OOTRR1-BAAQFSMI", "OOTRR1-BEAQGGABAUOACZBEAMBAABWEOQ"] {
+            let s: Settings = Settings::decode(t).unwrap().settings;
+            assert!(!s.flag("time_always_passes").unwrap(), "{t}");
+            assert!(!s.flag("open_door_of_time").unwrap(), "{t}");
+            assert!(!s.flag("jabu_open").unwrap(), "{t}");
+            assert_eq!(s.text("zora_fountain").unwrap(), "closed", "{t}");
+            assert_eq!(s.encode().unwrap(), t);
+        }
+        let d: Settings = Settings::default();
+        assert!(d.flag("time_always_passes").unwrap());
+        assert!(!d.flag("open_door_of_time").unwrap());
+        let t: String = d.encode().unwrap();
+        assert_ne!(t, "OOTRR1-EYAQD32I");
+        assert_eq!(Settings::decode(&t).unwrap().settings, d);
+        let mut all: Settings = Settings::default();
+        for (k, v) in [("zora_fountain", Value::s("open")), ("jabu_open", Value::Bool(true)), ("open_door_of_time", Value::Bool(true)), ("early_beds", Value::Bool(true))] {
+            all.set(k, v).unwrap();
+        }
+        let back: Settings = Settings::decode(&all.encode().unwrap()).unwrap().settings;
+        assert_eq!(back, all);
+        let mut late: Settings = all.clone();
+        late.set("time_always_passes", Value::Bool(false)).unwrap();
+        late.normalize();
+        assert!(!late.flag("early_beds").unwrap());
+        for (n, id) in [(75, "jabu_open"), (76, "time_always_passes"), (77, "early_beds")] {
+            assert_eq!(schema().get(id).unwrap().num, n);
+            assert!(schema().get(id).unwrap().tip.contains("Experimental"));
+        }
     }
 }

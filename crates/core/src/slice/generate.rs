@@ -749,7 +749,9 @@ mod tests {
         for (pairs, seed, n, want) in cases {
             let mut all: Vec<(&str, &str)> = vec![("shuffle_rewards", "off")];
             all.extend_from_slice(pairs);
-            let g: Generated = generate_data(&d, &with(&all), seed, &GenOpts::default()).unwrap();
+            let mut s: Settings = with(&all);
+            s.set(crate::open_world::TIME, Value::Bool(false)).unwrap();
+            let g: Generated = generate_data(&d, &s, seed, &GenOpts::default()).unwrap();
             assert_eq!(g.seed_file.placements.len(), n, "{seed}");
             assert_eq!(digest(&g.seed_file.placements), want, "{seed}");
         }
@@ -922,7 +924,8 @@ mod tests {
             (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "d97f824ef573940b9510579cb7e56490826f7cad856da33063f5c230d2f8e960"),
             (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "f475e2f2ab973177840bf44e89641bea638ec7f44ab991e35e8004f2f71f1a58"),
         ];
-        for (s, old, seed, sum) in cases {
+        for (mut s, old, seed, sum) in cases {
+            s.set(crate::open_world::TIME, Value::Bool(false)).unwrap();
             let g: Generated = generate_data(&d, &s, seed, &GenOpts::default()).unwrap();
             let mut f: SeedFile = g.seed_file.clone();
             if s.flag("shuffle_dungeon_rewards").unwrap() {

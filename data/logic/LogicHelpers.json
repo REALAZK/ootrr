@@ -10,8 +10,8 @@
     "Scarecrow": "Progressive_Hookshot and can_play(Scarecrow_Song)",
     "Distant_Scarecrow": "(Progressive_Hookshot, 2) and can_play(Scarecrow_Song)",
     "skip_to_day": "True",
-    "skip_to_night": "'Zelda Met'",
-    "skip_to_dampe": "'Zelda Met'",
+    "skip_to_night": "'Zelda Met' or time_always_passes",
+    "skip_to_dampe": "'Zelda Met' or time_always_passes",
     # Items can be directly aliased, so all occurrences of that item name get replaced,
     # but make sure that inside the rule you use the string 'item' form
     # to avoid infinite recursion.
