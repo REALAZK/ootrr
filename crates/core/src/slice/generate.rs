@@ -1,5 +1,7 @@
 use std::collections::{BTreeMap as BM, HashMap as HM};
 use std::fmt::Write as W;
+use std::sync::Arc;
+use std::time::Duration;
 
 use crate::error::{Error as E, Res};
 use crate::logic_items::ItemId;
@@ -8,28 +10,33 @@ use crate::rng::Rng;
 use crate::settings::Settings;
 use crate::settings::seed::SeedFile;
 use crate::slice::data::{Data, State};
-use crate::slice::fill::{changed, fill_ordered, vanilla_place};
+use crate::slice::fill::{changed, fill_ordered, vanilla_place, SWITCH};
 use crate::slice::logic::world_with;
 use crate::slice::pick::{pick, scoped, Pick};
 use crate::slice::pickups as pu;
 use crate::slice::plando::{loc_of, resolve, Entry};
 use crate::slice::support::{plan, Keep, Mode, Plan, Songs};
+use crate::slice::watch::{Live, Watch};
 use crate::spoiler::{playthrough, Spoiler};
 use crate::world::{LocId, Placement, World};
 
 pub const TRIES: u32 = 600;
 pub const TIER_TRIES: u32 = 40;
+pub const LIMIT: Duration = Duration::from_secs(90);
 
 #[derive(Debug, Clone)]
 pub struct GenOpts {
     pub spoiler: bool,
     pub tries: u32,
     pub plando: Vec<Entry>,
+    pub limit: Option<Duration>,
+    pub live: Option<Arc<Live>>,
+    pub switch: u32,
 }
 
 impl Default for GenOpts {
     fn default() -> GenOpts {
-        GenOpts { spoiler: false, tries: TRIES, plando: Vec::new() }
+        GenOpts { spoiler: false, tries: TRIES, plando: Vec::new(), limit: None, live: None, switch: SWITCH }
     }
 }
 
@@ -206,6 +213,7 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     if d.scan.rows.is_empty() {
         return Err(E::Format("the chest list in data/slice.json is empty, run slice-scan first"));
     }
+    let watch: Watch = Watch::new(o.limit, o.live.clone());
     let mut p: Plan = plan(s)?;
     let mut w: World = world_with(d, &p.logic())?;
     let mut named: Vec<String> = Vec::with_capacity(p.excluded.len());
@@ -257,7 +265,8 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
         let keep: Vec<LocId> = plan.iter().map(|x| x.0).collect();
         let mut n: u32 = 0;
         loop {
-            let g: Placement = fill_ordered(&w, &vanilla, &pk.free, &ok, order, &mut rng, o.tries, &plan, !p.keys_roam(), r)?;
+            let g: Placement = fill_ordered(&w, &vanilla, &pk.free, &ok, order, &mut rng, o.tries, &plan, !p.keys_roam(), r, o.switch, &watch)
+                .map_err(|e| crate::slice::advice::explain(&p, e))?;
             if crate::slice::tier_order::fits(d, &w, &g, &pk.free)? {
                 break g;
             }
@@ -712,6 +721,96 @@ mod tests {
         s.set("disabled_locations", Value::set(&["Midos Top Left"])).unwrap();
         let e: String = generate_data(&d, &s, "dis", &GenOpts::default()).err().unwrap().to_string();
         assert!(e.contains("disabled locations: no location is named") && e.contains("KF Midos Top Left Chest"), "{e}");
+    }
+
+    fn digest(p: &BM<String, String>) -> u64 {
+        let mut h: u64 = 0xCBF2_9CE4_8422_2325;
+        for (k, v) in p {
+            for b in format!("{k}\t{v}\n").as_bytes() {
+                h ^= *b as u64;
+                h = h.wrapping_mul(0x0000_0100_0000_01B3);
+            }
+        }
+        h
+    }
+
+    #[test]
+    fn seeds_that_generated_before_keep_their_exact_placements() {
+        let d: Data = Data::load().unwrap();
+        let cases: [(&[(&str, &str)], &str, usize, u64); 4] = [
+            (&[], "default 0", 77, 0x9b41_25fb_b7b3_954b),
+            (&[], "default 1", 77, 0x74e9_a4ba_5cb4_40b9),
+            (&[("shuffle_chests", "overworld")], "chests_ow 0", 10, 0x842f_cb4b_1197_ea2a),
+            (&[("shuffle_chests", "dungeons")], "dungeons 0", 67, 0x169a_7c8a_d12b_3980),
+        ];
+        for (pairs, seed, n, want) in cases {
+            let mut all: Vec<(&str, &str)> = vec![("shuffle_rewards", "off")];
+            all.extend_from_slice(pairs);
+            let g: Generated = generate_data(&d, &with(&all), seed, &GenOpts::default()).unwrap();
+            assert_eq!(g.seed_file.placements.len(), n, "{seed}");
+            assert_eq!(digest(&g.seed_file.placements), want, "{seed}");
+        }
+    }
+
+    #[test]
+    fn a_setting_that_cannot_fit_fails_at_once_with_a_plain_message() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = with(&[("shuffle_chests", "dungeons"), ("shuffle_bosskeys", "overworld")]);
+        let t0: std::time::Instant = std::time::Instant::now();
+        let e: String = generate_data(&d, &s, "x", &GenOpts::default()).err().unwrap().to_string();
+        assert!(e.starts_with("No seed can be made with these settings, the shuffled items cannot all fit"), "{e}");
+        assert!(e.contains("Boss Key") && e.contains("can only go to 0 free locations"), "{e}");
+        assert!(t0.elapsed() < std::time::Duration::from_secs(20));
+    }
+
+    fn xcykrix() -> Settings {
+        let mut s: Settings = with(&[
+            ("open_forest", "open"),
+            ("shuffle_rewards", "supported"),
+            ("shuffle_songs", "anywhere"),
+            ("shuffle_skulltulas", "matched"),
+            (crate::slice::remake_chests::SETTING, "on"),
+        ]);
+        for k in ["shuffle_boss_hearts", "gossip_hints", "faster_chests"] {
+            s.set(k, Value::Bool(true)).unwrap();
+        }
+        s
+    }
+
+    #[test]
+    fn the_careful_fill_is_deterministic_and_its_seeds_are_valid() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = xcykrix();
+        let p: Plan = plan(&s).unwrap();
+        let w: World = world_with(&d, &p.logic()).unwrap();
+        let o: GenOpts = GenOpts { switch: 0, spoiler: true, ..GenOpts::default() };
+        let a: Generated = generate_data(&d, &s, "careful", &o).unwrap();
+        let b: Generated = generate_data(&d, &s, "careful", &o).unwrap();
+        assert_eq!(a.seed_file.to_text(), b.seed_file.to_text());
+        assert_eq!(a.spoiler, b.spoiler);
+        assert!(rebuilt(&d, &p, &a.seed_file.placements));
+        for (loc, item) in &a.seed_file.placements {
+            assert!(allowed(&d, &w, &p, w.item(item).unwrap(), w.loc(loc).unwrap()), "{item} at {loc}");
+        }
+        assert!(a.spoiler.unwrap().contains("Sphere 1"));
+        let c: Generated = generate_data(&d, &s, "careful other", &o).unwrap();
+        assert_ne!(a.seed_file.placements, c.seed_file.placements);
+    }
+
+    #[test]
+    fn the_time_limit_and_a_cancel_end_the_run_with_a_message() {
+        let d: Data = Data::load().unwrap();
+        let o: GenOpts = GenOpts { limit: Some(Duration::ZERO), ..GenOpts::default() };
+        let e: String = generate_data(&d, &xcykrix(), "slow", &o).err().unwrap().to_string();
+        assert!(e.contains("time limit of 0 seconds") && e.contains("set Gold Skulltulas to Confident matches"), "{e}");
+        let l: Arc<Live> = Arc::new(Live::default());
+        l.cancel();
+        let c: GenOpts = GenOpts { live: Some(Arc::clone(&l)), ..GenOpts::default() };
+        let e: String = generate_data(&d, &Settings::default(), "stop", &c).err().unwrap().to_string();
+        assert_eq!(e, crate::slice::watch::STOPPED);
+        let r: Generated = generate_data(&d, &Settings::default(), "free", &GenOpts { limit: Some(LIMIT), ..GenOpts::default() }).unwrap();
+        let n: Generated = generate_data(&d, &Settings::default(), "free", &GenOpts::default()).unwrap();
+        assert_eq!(r.seed_file.to_text(), n.seed_file.to_text());
     }
 
     #[test]

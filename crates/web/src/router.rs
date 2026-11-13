@@ -52,7 +52,15 @@ fn api(sh: &Shared, r: &Req) -> Hr<Resp> {
         }
         "/api/generate" => {
             need(r, "POST")?;
-            api_generate::run(&body::json(r)?)?
+            api_generate::run_in(&sh.gens, &body::json(r)?)?
+        }
+        "/api/generate/progress" => {
+            need(r, "GET")?;
+            api_generate::progress(&sh.gens, r.param("ticket"))?
+        }
+        "/api/generate/cancel" => {
+            need(r, "POST")?;
+            api_generate::cancel(&sh.gens, &body::json(r)?)?
         }
         "/api/plando/options" => {
             need(r, "POST")?;
@@ -192,6 +200,27 @@ mod tests {
         assert_eq!(r.status, 422);
         let r: Resp = handle(&s, &rq("POST", "/api/settings/encode", &[], "[1]"));
         assert_eq!(r.status, 400);
+    }
+
+    #[test]
+    fn generate_progress_cancel_and_a_readable_failure() {
+        let s: Shared = sh();
+        let mut p: Req = rq("GET", "/api/generate/progress", &[], "");
+        p.query = vec![("ticket".into(), "nobody".into())];
+        let r: Resp = handle(&s, &p);
+        assert_eq!(r.status, 200);
+        assert!(String::from_utf8_lossy(&r.body).contains("\"running\":false"));
+        p.query.clear();
+        assert_eq!(handle(&s, &p).status, 400);
+        let c: Resp = handle(&s, &rq("POST", "/api/generate/cancel", &[], r#"{"ticket":"nobody"}"#));
+        assert!(String::from_utf8_lossy(&c.body).contains("\"cancelled\":false"));
+        let bad: &str = r#"{"seed":"x","ticket":"t1","settings":{"shuffle_chests":"dungeons","shuffle_bosskeys":"overworld"}}"#;
+        let e: Resp = handle(&s, &rq("POST", "/api/generate", &[], bad));
+        assert_eq!(e.status, 422);
+        let t: String = String::from_utf8_lossy(&e.body).into_owned();
+        assert!(t.contains("No seed can be made with these settings") && t.contains("Boss Key"), "{t}");
+        assert!(s.gens.progress("t1").get("running").and_then(|x| x.as_bool()) == Some(false));
+        assert_eq!(handle(&s, &rq("POST", "/api/generate", &[], r#"{"seed":"x","ticket":"a b","settings":{}}"#)).status, 400);
     }
 
     fn tsh() -> Shared {

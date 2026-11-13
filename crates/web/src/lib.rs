@@ -13,6 +13,7 @@ mod datadir;
 mod e2e;
 mod error;
 mod events;
+mod gen_live;
 mod guard;
 mod jobs;
 mod pathsafe;

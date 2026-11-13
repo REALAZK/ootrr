@@ -14,6 +14,7 @@ mod flags_cmd;
 mod flow_cmd;
 mod flow_sim_cmd;
 mod game_cmd;
+mod gen_progress;
 mod hints_cmd;
 mod intro_cmd;
 mod items_cmd;

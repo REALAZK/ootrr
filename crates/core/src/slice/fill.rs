@@ -1,8 +1,12 @@
+use std::collections::HashMap as HM;
+
 use crate::error::{Error as E, Res};
 use crate::logic_items::ItemId;
 use crate::rng::Rng;
 use crate::search::{explore, Search};
 use crate::slice::data::Data;
+use crate::slice::fit::{Fit, Grid, Short};
+use crate::slice::watch::Watch;
 use crate::world::{LocId, Placement, World};
 
 pub fn vanilla_place(w: &World, d: &Data) -> Res<Placement> {
@@ -21,40 +25,47 @@ pub fn vanilla_place(w: &World, d: &Data) -> Res<Placement> {
 
 pub const WINS: u32 = 16;
 pub const RETRY: u32 = 8;
+pub const SWITCH: u32 = 500;
+pub const SHORT: &str = "the shuffled items cannot all fit the shuffled locations";
 
-fn once(
-    w: &World,
-    fixed: &Placement,
-    free: &[LocId],
-    pool: &[ItemId],
-    allow: &dyn Fn(ItemId, LocId) -> bool,
-    order: &dyn Fn(ItemId, LocId) -> bool,
-    rng: &mut Rng,
-    rank: Option<&dyn Fn(LocId) -> usize>,
-) -> Res<Placement> {
-    let mut place: Placement = fixed.clone();
-    let mut items: Vec<ItemId> = pool.to_vec();
+struct Job<'a> {
+    w: &'a World,
+    fixed: &'a Placement,
+    free: &'a [LocId],
+    pool: &'a [ItemId],
+    allow: &'a dyn Fn(ItemId, LocId) -> bool,
+    keys: &'a HM<ItemId, usize>,
+    rank: Option<&'a dyn Fn(LocId) -> usize>,
+}
+
+fn key(j: &Job, i: ItemId) -> usize {
+    j.keys.get(&i).copied().unwrap_or(0)
+}
+
+fn once(j: &Job, rng: &mut Rng) -> Res<Placement> {
+    let w: &World = j.w;
+    let mut place: Placement = j.fixed.clone();
+    let mut items: Vec<ItemId> = j.pool.to_vec();
     rng.shuffle(&mut items);
-    let room = |i: &ItemId| free.iter().filter(|l| order(*i, **l)).count();
-    items.sort_by_key(room);
+    items.sort_by_key(|i| key(j, *i));
     let prog: Vec<ItemId> = items.iter().copied().filter(|i| w.items.adv[*i]).collect();
-    let mut open: Vec<LocId> = free.to_vec();
+    let mut open: Vec<LocId> = j.free.to_vec();
     let mut base: Search = Search::new(w);
     base.settle(&place, true);
     let mut assumed: Search = base.clone();
     assumed.add_all(&prog);
     for it in items {
         rng.shuffle(&mut open);
-        if let Some(r) = rank {
+        if let Some(r) = j.rank {
             open.sort_by_key(|l| r(*l));
         }
         let pick: Option<usize> = if w.items.adv[it] {
             assumed.remove(it);
             let mut mx: Search = assumed.clone();
             mx.settle(&place, true);
-            open.iter().position(|l| allow(it, *l) && mx.loc_access(*l))
+            open.iter().position(|l| (j.allow)(it, *l) && mx.loc_access(*l))
         } else {
-            open.iter().position(|l| allow(it, *l))
+            open.iter().position(|l| (j.allow)(it, *l))
         };
         match pick {
             Some(k) => {
@@ -76,8 +87,79 @@ fn once(
     Ok(place)
 }
 
+fn once_fit(j: &Job, g: &Grid, rng: &mut Rng) -> Res<Placement> {
+    let w: &World = j.w;
+    let mut f: Fit = Fit::new(g);
+    if !f.full() {
+        return Err(E::Msg(SHORT.to_string()));
+    }
+    let mut place: Placement = j.fixed.clone();
+    let mut items: Vec<usize> = (0..j.pool.len()).collect();
+    rng.shuffle(&mut items);
+    items.sort_by_key(|p| key(j, j.pool[*p]));
+    let prog: Vec<ItemId> = items.iter().map(|p| j.pool[*p]).filter(|i| w.items.adv[*i]).collect();
+    let mut open: Vec<usize> = (0..j.free.len()).collect();
+    let mut base: Search = Search::new(w);
+    base.settle(&place, true);
+    let mut assumed: Search = base.clone();
+    assumed.add_all(&prog);
+    for p in items {
+        let it: ItemId = j.pool[p];
+        rng.shuffle(&mut open);
+        if let Some(r) = j.rank {
+            open.sort_by_key(|x| r(j.free[*x]));
+        }
+        let mx: Option<Search> = if w.items.adv[it] {
+            assumed.remove(it);
+            let mut m: Search = assumed.clone();
+            m.settle(&place, true);
+            Some(m)
+        } else {
+            None
+        };
+        let mut pick: Option<usize> = None;
+        for (k, x) in open.iter().enumerate() {
+            if !g.fits(p, *x) || mx.as_ref().is_some_and(|m| !m.loc_access(j.free[*x])) {
+                continue;
+            }
+            if f.take(p, *x) {
+                pick = Some(k);
+                break;
+            }
+        }
+        match pick {
+            Some(k) => {
+                let x: usize = open.swap_remove(k);
+                place.put(j.free[x], it);
+            }
+            None => {
+                return Err(E::Msg(format!(
+                    "no spot for {} among {} free locations",
+                    w.items.names[it],
+                    open.len()
+                )));
+            }
+        }
+    }
+    if !explore(w, &place, &[]).won() {
+        return Err(E::Format("the game is not beatable after the fill"));
+    }
+    Ok(place)
+}
+
 pub fn changed(fixed: &Placement, got: &Placement, free: &[LocId]) -> usize {
     free.iter().filter(|l| fixed.get(**l) != got.get(**l)).count()
+}
+
+pub fn short_text(s: &Short) -> String {
+    let names: Vec<&str> = s.kinds.iter().take(4).map(|k| k.as_str()).collect();
+    let more: &str = if s.kinds.len() > 4 { " and others" } else { "" };
+    format!(
+        "{SHORT}: {} items ({}{more}) can only go to {} free locations",
+        s.items.len(),
+        names.join(", "),
+        s.spots
+    )
 }
 
 pub fn fill(
@@ -104,7 +186,7 @@ pub fn fill_ranked(
     check_vanilla: bool,
     rank: Option<&dyn Fn(LocId) -> usize>,
 ) -> Res<Placement> {
-    fill_ordered(w, vanilla, free, allow, None, rng, tries, plan, check_vanilla, rank)
+    fill_ordered(w, vanilla, free, allow, None, rng, tries, plan, check_vanilla, rank, SWITCH, &Watch::idle())
 }
 
 pub fn fill_ordered(
@@ -118,6 +200,8 @@ pub fn fill_ordered(
     plan: &[(LocId, ItemId)],
     check_vanilla: bool,
     rank: Option<&dyn Fn(LocId) -> usize>,
+    switch: u32,
+    watch: &Watch,
 ) -> Res<Placement> {
     let mut fixed: Placement = vanilla.clone();
     let mut pool: Vec<ItemId> = Vec::with_capacity(free.len());
@@ -142,6 +226,16 @@ pub fn fill_ordered(
     if !plan.is_empty() && !explore(w, &fixed, &pool).won() {
         return Err(E::Format("plando: the seed cannot be beaten with these fixed placements"));
     }
+    let g: Grid = Grid::new(&pool, &open, allow);
+    if let Some(s) = Fit::new(&g).short(w) {
+        return Err(E::Msg(short_text(&s)));
+    }
+    let sorter: &dyn Fn(ItemId, LocId) -> bool = order.unwrap_or(allow);
+    let mut keys: HM<ItemId, usize> = HM::new();
+    for i in &g.kinds {
+        keys.insert(*i, open.iter().filter(|l| sorter(*i, **l)).count());
+    }
+    let j: Job = Job { w, fixed: &fixed, free: &open, pool: &pool, allow, keys: &keys, rank };
     let mut won: Vec<Placement> = Vec::new();
     let mut last: E = E::Format("no fill attempts were made");
     let base: u32 = tries.max(1);
@@ -149,10 +243,16 @@ pub fn fill_ordered(
         if n >= base && !won.is_empty() {
             break;
         }
-        match once(w, &fixed, &open, &pool, allow, order.unwrap_or(allow), rng, rank) {
+        watch.tick()?;
+        let fall: bool = (n >= switch || watch.fell()) && won.is_empty();
+        if fall {
+            watch.falling_back();
+        }
+        let r: Res<Placement> = if fall { once_fit(&j, &g, rng) } else { once(&j, rng) };
+        match r {
             Ok(p) => {
                 won.push(p);
-                if won.len() >= WINS as usize {
+                if fall || won.len() >= WINS as usize {
                     break;
                 }
             }
