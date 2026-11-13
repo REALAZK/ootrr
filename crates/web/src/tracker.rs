@@ -5,6 +5,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use ootrr_core::error::{Error, Res};
 use ootrr_core::json::{self, Json};
+use ootrr_core::tracker::grid;
 use ootrr_core::tracker::index::{self, Index};
 use ootrr_core::tracker::peek::{Peek, Place};
 use ootrr_core::tracker::state::{By, S, Track};
@@ -12,6 +13,7 @@ use ootrr_core::tracker::targets::{self, KINDS, OFF_BY_DEFAULT, Target};
 
 use crate::datadir;
 use crate::events::{Ev, Events, MAX_WAIT};
+use crate::icon_store::{self, Icons};
 use crate::pathsafe;
 use crate::watch::{self, Out, Watcher};
 
@@ -78,6 +80,7 @@ pub struct Inner {
     pub src: Source,
     pub place: Option<Place>,
     pub loaded: bool,
+    pub items: Option<Vec<grid::St>>,
 }
 
 pub struct Tracker {
@@ -87,6 +90,7 @@ pub struct Tracker {
     watch: Mutex<Option<watch::Handle>>,
     boot: Mutex<()>,
     pub poll: Duration,
+    pub icons: Icons,
 }
 
 pub fn now_secs() -> u64 {
@@ -126,12 +130,14 @@ impl Tracker {
                 src: Source::default(),
                 place: None,
                 loaded: false,
+                items: None,
             }),
             events: Events::new(),
             data: data.map(|d| datadir::cache_root(&d)),
             watch: Mutex::new(None),
             boot: Mutex::new(()),
             poll: MAX_WAIT,
+            icons: Icons::new(icon_store::disk_on()),
         }
     }
 
@@ -255,6 +261,7 @@ impl Tracker {
         g.src.keys = p.keys.len();
         g.src.error = None;
         g.place = Some(p.place.clone());
+        g.items = Some(grid::read(p));
         let mut evs: Vec<Ev> = changed
             .iter()
             .map(|i| {

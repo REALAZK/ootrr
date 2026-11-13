@@ -4,7 +4,7 @@ const CSS: &str = "text/css; charset=utf-8";
 const FONT: &str = "font/woff2";
 
 #[cfg(test)]
-pub const JS_FILES: [&str; 33] = [
+pub const JS_FILES: [&str; 35] = [
     "/app.js",
     "/js/dom.js",
     "/js/api.js",
@@ -37,6 +37,8 @@ pub const JS_FILES: [&str; 33] = [
     "/js/tracker_map.js",
     "/js/tracker_card.js",
     "/js/tracker_rail.js",
+    "/js/tracker_fold.js",
+    "/js/tracker_items.js",
     "/js/tracker_app.js",
 ];
 
@@ -58,6 +60,7 @@ pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
         "/hyrule.css" => (CSS, include_str!("../assets/hyrule.css")),
         "/tracker" => (HTML, include_str!("../assets/tracker.html")),
         "/tracker.css" => (CSS, include_str!("../assets/tracker.css")),
+        "/tracker_items.css" => (CSS, include_str!("../assets/tracker_items.css")),
         "/app.js" => (JS, include_str!("../assets/app.js")),
         "/js/dom.js" => (JS, include_str!("../assets/js/dom.js")),
         "/js/api.js" => (JS, include_str!("../assets/js/api.js")),
@@ -90,6 +93,8 @@ pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
         "/js/tracker_map.js" => (JS, include_str!("../assets/js/tracker_map.js")),
         "/js/tracker_card.js" => (JS, include_str!("../assets/js/tracker_card.js")),
         "/js/tracker_rail.js" => (JS, include_str!("../assets/js/tracker_rail.js")),
+        "/js/tracker_fold.js" => (JS, include_str!("../assets/js/tracker_fold.js")),
+        "/js/tracker_items.js" => (JS, include_str!("../assets/js/tracker_items.js")),
         "/js/tracker_app.js" => (JS, include_str!("../assets/js/tracker_app.js")),
         _ => return None,
     };
@@ -141,7 +146,10 @@ mod tests {
             }
             n += 1;
         }
-        assert_eq!(n, 13);
+        assert_eq!(n, 15);
+        let items: &str = get("/tracker_items.css").unwrap().1;
+        assert!(!items.contains("@import") && !items.contains("url(") && !items.contains("http"));
+        assert!(h.contains("<link rel=\"stylesheet\" href=\"/tracker_items.css\">"));
         let css: &str = get("/tracker.css").unwrap().1;
         assert!(!css.contains("@import") && !css.contains("http"));
         let mut fonts: usize = 0;
@@ -196,6 +204,47 @@ mod tests {
             let o = std::process::Command::new("node").arg("--check").arg(&f).output().unwrap();
             assert!(o.status.success(), "{p}: {}", String::from_utf8_lossy(&o.stderr));
         }
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn the_fold_rules_hold_when_node_is_installed() {
+        let probe = std::process::Command::new("node").arg("--version").output();
+        if probe.map(|o| !o.status.success()).unwrap_or(true) {
+            return;
+        }
+        let dir = std::env::temp_dir().join(format!("ootrr_fold_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("fold.mjs"), get("/js/tracker_fold.js").unwrap().1).unwrap();
+        let script: &str = r#"
+import assert from "node:assert";
+import { SIDE_KEY, fold_default, fold_parse, fold_text, clean_shut, clean_marks, next_level, owned } from "./fold.mjs";
+assert.equal(SIDE_KEY, "ootrr.tracker.side");
+assert.equal(fold_default(1100), true);
+assert.equal(fold_default(761), true);
+assert.equal(fold_default(760), false);
+assert.equal(fold_default(375), false);
+assert.equal(fold_default(undefined), true);
+assert.equal(fold_parse("open", 375), true);
+assert.equal(fold_parse("closed", 1500), false);
+assert.equal(fold_parse(null, 375), false);
+assert.equal(fold_parse("junk", 1500), true);
+assert.equal(fold_parse(fold_text(false), 1500), false);
+assert.equal(fold_parse(fold_text(true), 375), true);
+assert.deepEqual(clean_shut({ tools: true, gear: 1, nope: true }, ["tools", "gear"]), { tools: true });
+assert.deepEqual(clean_shut("x", ["tools"]), {});
+assert.deepEqual(clean_marks({ bow: 2, lens: 0, bad: "3", big: 12 }, 10), { bow: 2 });
+assert.deepEqual(clean_marks(null, 10), {});
+assert.equal(next_level(undefined, 1), 1);
+assert.equal(next_level(1, 1), 0);
+assert.equal(next_level(1, 2), 2);
+assert.equal(next_level(2, 2), 0);
+assert.equal(owned([{ id: "a" }, { id: "b" }, { id: "c" }], (c) => ({ lv: c.id === "b" ? 0 : 1 })), 2);
+"#;
+        std::fs::write(dir.join("run.mjs"), script).unwrap();
+        let o = std::process::Command::new("node").arg(dir.join("run.mjs")).output().unwrap();
+        assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
         let _ = std::fs::remove_dir_all(&dir);
     }
 

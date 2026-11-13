@@ -1,3 +1,5 @@
+pub mod grid;
+pub mod icon_map;
 pub mod index;
 pub mod peek;
 pub mod project;

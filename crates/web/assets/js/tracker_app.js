@@ -10,6 +10,7 @@ import { render_card } from "./tracker_card.js";
 import { render_filters, search_box, send_mode, set_reload as filters_reload } from "./tracker_filters.js";
 import { paint_live, offline, open_source, refresh_source, set_reload as source_reload } from "./tracker_source.js";
 import { announce } from "./tracker_news.js";
+import { init_items, load_items, items_button } from "./tracker_items.js";
 
 function fail(msg) {
   fill($("#stage"), h("div", { class: "float title" }, h("h1", null, "Tracker"), notice("error", msg)));
@@ -41,6 +42,7 @@ function paint_tools() {
       h("span", { class: "tr" }),
       "Show all",
     ),
+    items_button(paint_tools),
     h("button", { type: "button", class: "btn", onclick: open_source }, "Folders"),
     h(
       "button",
@@ -82,6 +84,7 @@ async function reload() {
   set_state(st);
   paint();
   refresh_source();
+  load_items();
 }
 
 function apply(r) {
@@ -101,6 +104,7 @@ function apply(r) {
       ts.state.total = e.total;
       ts.state.places = e.places;
       refresh_source();
+      load_items();
     }
   }
   ts.seq = r.seq;
@@ -164,6 +168,7 @@ async function boot() {
     return fail("This page has no session token. Open the tracker from the link at the top of the main page, or open the link that ootrr serve printed and go to the tracker from there.");
   }
   recall();
+  init_items();
   try {
     state.info = await get("/api/info");
     fill($("#searchbox"), search_box());

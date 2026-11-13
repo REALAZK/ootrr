@@ -78,6 +78,7 @@ pub mod teleport_flow;
 pub mod teleport_merge;
 pub mod teleport_sim;
 pub mod teleport_start;
+pub mod tex;
 pub mod tier_chain;
 pub mod tracker;
 pub mod world;

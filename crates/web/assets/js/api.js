@@ -58,3 +58,14 @@ export async function api(method, path, body) {
 export const get = (path) => api("GET", path);
 export const post = (path, body) => api("POST", path, body);
 export const q = (v) => encodeURIComponent(v);
+
+export async function get_blob(path) {
+  let res;
+  try {
+    res = await fetch(path, { headers: { "X-OOTRR-Token": token }, cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" });
+  } catch {
+    throw new ApiError(0, "The local server did not answer. Is ootrr serve still running?");
+  }
+  if (!res.ok) throw new ApiError(res.status, `The server answered ${res.status}.`);
+  return res.blob();
+}
