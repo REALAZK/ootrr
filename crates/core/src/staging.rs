@@ -50,6 +50,31 @@ pub fn rewrite(rf: &mut Romfs, path: &str, f: impl FnOnce(&[u8]) -> Res<Vec<u8>>
     Ok(Out { path: path.to_string(), z: zs::compress_raw(&out, id)?, old: raw.len(), new: out.len() })
 }
 
+/// Grows the size table for an edited file. For an actor pack this also grows the
+/// entries of the files inside it: the table budgets each packed file on its own
+/// (e.g. AI/Player.action.walk.module.ainb at 1560 bytes), and a graph that outgrows
+/// its entry leaves the actor unbuilt (a black screen when loading a save).
+pub fn grow_out(rf: &mut Romfs, t: &mut Rst, o: &Out) -> Res<usize> {
+    let mut n: usize = 0;
+    if o.new > o.old && t.grow(&o.path, o.old as u64, o.new as u64, MARGIN)?.is_some() {
+        n += 1;
+    }
+    if o.path.ends_with(".pack.zs") {
+        let old: Vec<crate::sarc::Entry> = crate::sarc::parse(&rf.read_zs(&o.path)?)?;
+        let new: Vec<crate::sarc::Entry> = crate::sarc::parse(&rf.zs.decompress(&o.z)?)?;
+        for e in &new {
+            let was: Option<usize> = crate::sarc::get(&old, &e.name).map(|x| x.data.len());
+            if let Some(w) = was
+                && e.data.len() > w
+                && t.grow(&e.name, w as u64, e.data.len() as u64, MARGIN)?.is_some()
+            {
+                n += 1;
+            }
+        }
+    }
+    Ok(n)
+}
+
 pub fn commit(rf: &mut Romfs, load: &P, name: &str, outs: &[Out], rst_from: Option<&PB>) -> Res<Committed> {
     let pk: Pack = Pack::create(load, TITLE_ID, name)?;
     let mut rst: Rst = match rst_from {
@@ -61,9 +86,10 @@ pub fn commit(rf: &mut Romfs, load: &P, name: &str, outs: &[Out], rst_from: Opti
     for x in outs {
         pk.write_romfs(&x.path, &x.z)?;
         let mut note: String = String::new();
-        if x.new > x.old && rst.grow(&x.path, x.old as u64, x.new as u64, MARGIN)?.is_some() {
-            grown += 1;
-            note.push_str(" (size table grown)");
+        let g: usize = grow_out(rf, &mut rst, x)?;
+        if g > 0 {
+            grown += g;
+            note.push_str(if g == 1 { " (size table grown)" } else { " (size table grown, packed files too)" });
         }
         let _ = writeln!(report, "{}: {} -> {} bytes{note}", x.path, x.old, x.new);
     }

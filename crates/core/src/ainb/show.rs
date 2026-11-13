@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use super::tab::{NAMES, PSZ};
+use super::tab::{NAMES, OUTSZ, PSZ};
 use super::{Ainb, Input};
 
 fn val(a: &Ainb, k: usize, v: &[u8]) -> String {
@@ -39,8 +39,18 @@ pub fn show(a: &Ainb) -> String {
                 }
             }
         }
+        for k in 0..6 {
+            let (b, n): (usize, usize) = (p.ioe[k][2] as usize, p.ioe[k][3] as usize);
+            for g in b..b + n {
+                if let Some(e) = a.outs[k].get(g * OUTSZ[k]..g * OUTSZ[k] + 4) {
+                    let w: u32 = u32::from_le_bytes([e[0], e[1], e[2], e[3]]);
+                    let _ = writeln!(out, "  out {} {} flags {:#x}", NAMES[k], a.s(w & 0x3fff_ffff), w >> 30);
+                }
+            }
+        }
         for (j, g) in p.plugs.iter().enumerate() {
-            let _ = writeln!(out, "  plug {} -> element {} {:?} extra {}", j, g.a, a.s(g.b), g.extra.len());
+            let hex: String = g.extra.iter().map(|b| format!("{b:02x}")).collect();
+            let _ = writeln!(out, "  plug {} -> element {} {:?} extra {} {}", j, g.a, a.s(g.b), g.extra.len(), hex);
         }
         let gs: Vec<String> = p.pl.iter().map(|g| format!("{}@{}", g[0], g[1])).collect();
         let _ = writeln!(out, "  plug groups {}", gs.join(" "));

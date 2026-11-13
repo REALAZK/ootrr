@@ -432,6 +432,13 @@ pub fn build() -> Schema {
             .opt("everywhere", "Dungeons and overworld", "Also outside dungeons: back to Kokiri Forest as a child, or the Temple of Time as an adult."),
     );
     s.push(
+        Setting::choice(79, crate::qol::BUNNY, "world", "Bunny Hood effect", "off")
+            .tip("Gives the Bunny Hood the speed boost it has in Majora's Mask, like the OoTR option of the same name. Only child Link can wear it. Done in the player's AI graphs, with no code patch: while the hood is worn, Link's forward speed is multiplied by 1.5 each frame. Experimental.")
+            .opt("off", "No effect", "The Bunny Hood is only a mask, as in the original game.")
+            .opt("speed", "Faster running", "Child Link runs 1.5 times as fast while wearing the Bunny Hood.")
+            .opt("jump", "Faster running and longer jumps", "Child Link also leaves the ground 1.5 times as fast when jumping, so jumps go further."),
+    );
+    s.push(
         Setting::toggle(73, "shuffle_treasure_reward", "shuffle", "Treasure Chest Game reward", false)
             .tip("Whether the final reward of the Market Treasure Chest Game, a Piece of Heart, holds a random item. Only the first win gives it, later wins give the usual red rupee. The five rooms keep their keys and rupees. Only unique items that do nothing when found twice can be placed there, so no upgrades, ammo, bottles or keys. Experimental, untested in the game."),
     );

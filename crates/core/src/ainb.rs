@@ -1,4 +1,5 @@
 mod audit;
+pub mod build;
 mod grow;
 mod node;
 mod param;
@@ -234,6 +235,7 @@ impl Ainb {
         let w: usize = if has_exb { 5 } else { 4 };
         let mut h: [u8; HDR] = self.hdr;
         put(&mut h, 0x10, self.els.len());
+        put(&mut h, 0x14, self.els.iter().filter(|e| e[build::ROLE] & build::QUERY != 0).count());
         put(&mut h, 0x20, bbp);
         put(&mut h, 0x24, at[w + 6]);
         put(&mut h, 0x28, at[w + 5]);

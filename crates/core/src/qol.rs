@@ -1,4 +1,5 @@
 pub mod anju;
+pub mod bunny;
 pub mod navi_return;
 pub mod poe;
 pub mod skip;
@@ -17,6 +18,7 @@ pub const SKIP: &str = "skip_cutscenes";
 pub const ANJU: &str = "anju_one_cucco";
 pub const POE: &str = "big_poe_one";
 pub const NAVI: &str = "navi_return";
+pub const BUNNY: &str = "bunny_hood";
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Skip {
@@ -32,13 +34,14 @@ pub struct Opts {
     pub anju: bool,
     pub poe: bool,
     pub navi: navi_return::Mode,
+    pub bunny: bunny::Mode,
 }
 
 pub type Have<'a> = &'a dyn Fn(&str) -> Option<Vec<u8>>;
 
 impl Opts {
     pub fn any(&self) -> bool {
-        self.skip != Skip::Off || self.anju || self.poe || self.navi != navi_return::Mode::Off
+        self.skip != Skip::Off || self.anju || self.poe || self.navi != navi_return::Mode::Off || self.bunny != bunny::Mode::Off
     }
 
     pub fn logic(&self) -> Vec<(&'static str, &'static str)> {
@@ -69,6 +72,11 @@ impl Opts {
             navi_return::Mode::Off => {}
             navi_return::Mode::Dungeons => out.push(navi_return::NOTE_DUNGEONS.to_string()),
             navi_return::Mode::Everywhere => out.push(navi_return::NOTE_EVERYWHERE.to_string()),
+        }
+        match self.bunny {
+            bunny::Mode::Off => {}
+            bunny::Mode::Speed => out.push(bunny::NOTE_SPEED.to_string()),
+            bunny::Mode::Jump => out.push(bunny::NOTE_JUMP.to_string()),
         }
         out
     }
@@ -109,7 +117,20 @@ pub fn read(s: &Settings, bad: &mut Vec<String>) -> Opts {
             navi_return::Mode::Off
         }
     };
-    Opts { skip, anju, poe, navi }
+    let bunny: bunny::Mode = match s.text(BUNNY) {
+        Ok("off") => bunny::Mode::Off,
+        Ok("speed") => bunny::Mode::Speed,
+        Ok("jump") => bunny::Mode::Jump,
+        Ok(v) => {
+            bad.push(format!("{BUNNY} is {v}, which is not a known choice"));
+            bunny::Mode::Off
+        }
+        Err(e) => {
+            bad.push(e.to_string());
+            bunny::Mode::Off
+        }
+    };
+    Opts { skip, anju, poe, navi, bunny }
 }
 
 pub fn files() -> Vec<String> {
@@ -120,6 +141,7 @@ pub fn files() -> Vec<String> {
     out.push(poe::FILE.to_string());
     out.push(navi_return::FILE.to_string());
     out.push(navi_return::SEQ.to_string());
+    out.push(bunny::FILE.to_string());
     out
 }
 
@@ -154,6 +176,7 @@ pub fn stage(rf: &mut Romfs, o: &Opts, have: Have) -> Res<Vec<Out>> {
         outs.push(poe::stage(rf, have)?);
     }
     outs.extend(navi_return::stage(rf, o.navi, have)?);
+    outs.extend(bunny::stage(rf, o.bunny, have)?);
     Ok(outs)
 }
 
@@ -198,7 +221,11 @@ mod tests {
         let mut bad: Vec<String> = Vec::new();
         let o: Opts = read(&s, &mut bad);
         assert!(bad.is_empty());
-        assert_eq!(o, Opts { skip: Skip::Story, anju: true, poe: true, navi: navi_return::Mode::Off });
+        assert_eq!(o, Opts { skip: Skip::Story, anju: true, poe: true, navi: navi_return::Mode::Off, bunny: bunny::Mode::Off });
+        s.set(BUNNY, Value::s("jump")).unwrap();
+        assert_eq!(read(&s, &mut bad).bunny, bunny::Mode::Jump);
+        assert_eq!(read(&s, &mut bad).notes().len(), 4);
+        s.set(BUNNY, Value::s("off")).unwrap();
         assert_eq!(o.logic(), vec![("chicken_count", "1"), ("big_poe_count", "1")]);
         assert_eq!(o.notes().len(), 3);
         s.set(SKIP, Value::s("all")).unwrap();
@@ -396,6 +423,7 @@ mod tests {
             (ANJU, Value::Bool(true)),
             (POE, Value::Bool(true)),
             (NAVI, Value::s("everywhere")),
+            (BUNNY, Value::s("jump")),
             ("shuffle_rewards", Value::s("supported")),
             ("faster_chests", Value::Bool(true)),
             ("skip_intro", Value::Bool(true)),
@@ -418,7 +446,7 @@ mod tests {
     #[test]
     fn the_file_list_is_complete_and_unique() {
         let v: Vec<String> = files();
-        assert_eq!(v.len(), 7);
+        assert_eq!(v.len(), 8);
         let mut w: Vec<String> = v.clone();
         w.sort();
         w.dedup();

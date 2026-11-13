@@ -598,14 +598,12 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     for o in late {
         pk.write_romfs(&o.path, &o.z)?;
         extra += 1;
-        if o.new > o.old {
+        if o.new > o.old || o.path.ends_with(".pack.zs") {
             if rst.is_none() {
                 rst = Some(rsizetable::load(&mut rf)?);
             }
-            if let Some(t) = rst.as_mut()
-                && t.grow(&o.path, o.old as u64, o.new as u64, MARGIN)?.is_some()
-            {
-                grown += 1;
+            if let Some(t) = rst.as_mut() {
+                grown += crate::staging::grow_out(&mut rf, t, &o)?;
             }
         }
     }
