@@ -40,7 +40,7 @@ impl Drops {
     pub fn notes(&self) -> Vec<String> {
         let mut out: Vec<String> = Vec::new();
         if self.pots != Mode::Off {
-            out.push("Pots and flying pots hold shuffled items, only the pots whose spot was matched with confidence and only items the game ships as world pickups. A shuffled pot gives its item once and never refills, its saved row is made permanent. Experimental and untested in the game.".to_string());
+            out.push("Pots and flying pots hold shuffled items, only the pots whose spot was matched with confidence and only items the game ships as world pickups or whose pickup pack is built. A shuffled pot gives its item once and never refills, its saved row is made permanent. Experimental and untested in the game.".to_string());
         }
         if self.crates != Mode::Off {
             out.push("Crates hold shuffled items, only the few crates matched with confidence. A shuffled crate gives its item once and never refills. Experimental and untested in the game.".to_string());

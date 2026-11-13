@@ -81,7 +81,7 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
     let mut free: Vec<LocId> = Vec::new();
     let mut left: BM<String, usize> = BM::new();
     for r in &d.scan.rows {
-        let open: bool = r.state == State::Eligible || (r.state == State::Event && d.event_ok(&r.name));
+        let open: bool = r.state == State::Eligible || (r.state == State::Event && (d.event_ok(&r.name) || crate::slice::treasure::opens(p.treasure, &r.name)));
         let why: Option<String> = if !open {
             Some(r.state.why().to_string())
         } else {
@@ -100,6 +100,9 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
     if p.rewards {
         for l in &d.flow.locs {
             if l.cat == "song" && p.songs != Songs::Off {
+                continue;
+            }
+            if l.cat == crate::slice::support::DUNGEON_REWARD_CAT && !p.dungeon_rewards {
                 continue;
             }
             if crate::scrubs_a::is_a(l) && !p.scrubs {

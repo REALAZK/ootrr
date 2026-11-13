@@ -68,8 +68,8 @@ export async function copy(text) {
   }
 }
 
-export function save_text(name, text) {
-  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+export function save_text(name, text, type = "application/json") {
+  const url = URL.createObjectURL(new Blob([text], { type }));
   const a = h("a", { href: url, download: name });
   document.body.append(a);
   a.click();

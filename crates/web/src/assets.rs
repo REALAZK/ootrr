@@ -1,9 +1,10 @@
 const HTML: &str = "text/html; charset=utf-8";
 const JS: &str = "text/javascript; charset=utf-8";
 const CSS: &str = "text/css; charset=utf-8";
+const FONT: &str = "font/woff2";
 
 #[cfg(test)]
-pub const JS_FILES: [&str; 18] = [
+pub const JS_FILES: [&str; 33] = [
     "/app.js",
     "/js/dom.js",
     "/js/api.js",
@@ -17,18 +18,46 @@ pub const JS_FILES: [&str; 18] = [
     "/js/strings.js",
     "/js/generate.js",
     "/js/viewer.js",
+    "/js/spoiler.js",
     "/js/result.js",
     "/js/theme.js",
     "/js/update.js",
     "/js/report.js",
     "/js/plando.js",
+    "/js/sfx.js",
+    "/js/tracker_api.js",
+    "/js/tracker_store.js",
+    "/js/tracker_news.js",
+    "/js/tracker_list.js",
+    "/js/tracker_filters.js",
+    "/js/tracker_source.js",
+    "/js/tracker_kinds.js",
+    "/js/tracker_places.js",
+    "/js/tracker_art.js",
+    "/js/tracker_map.js",
+    "/js/tracker_card.js",
+    "/js/tracker_rail.js",
+    "/js/tracker_app.js",
 ];
+
+pub fn get_bin(p: &str) -> Option<(&'static str, &'static [u8])> {
+    let r: (&'static str, &'static [u8]) = match p {
+        "/fonts/cinzel.woff2" => (FONT, include_bytes!("../assets/fonts/cinzel-latin-wght-normal.woff2")),
+        "/fonts/garamond.woff2" => (FONT, include_bytes!("../assets/fonts/eb-garamond-latin-wght-normal.woff2")),
+        "/fonts/garamond-italic.woff2" => (FONT, include_bytes!("../assets/fonts/eb-garamond-latin-wght-italic.woff2")),
+        _ => return None,
+    };
+    Some(r)
+}
 
 pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
     let r: (&'static str, &'static str) = match p {
         "/" | "/index.html" => (HTML, include_str!("../assets/index.html")),
         "/style.css" => (CSS, include_str!("../assets/style.css")),
         "/themes.css" => (CSS, include_str!("../assets/themes.css")),
+        "/hyrule.css" => (CSS, include_str!("../assets/hyrule.css")),
+        "/tracker" => (HTML, include_str!("../assets/tracker.html")),
+        "/tracker.css" => (CSS, include_str!("../assets/tracker.css")),
         "/app.js" => (JS, include_str!("../assets/app.js")),
         "/js/dom.js" => (JS, include_str!("../assets/js/dom.js")),
         "/js/api.js" => (JS, include_str!("../assets/js/api.js")),
@@ -42,11 +71,26 @@ pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
         "/js/strings.js" => (JS, include_str!("../assets/js/strings.js")),
         "/js/generate.js" => (JS, include_str!("../assets/js/generate.js")),
         "/js/viewer.js" => (JS, include_str!("../assets/js/viewer.js")),
+        "/js/spoiler.js" => (JS, include_str!("../assets/js/spoiler.js")),
         "/js/result.js" => (JS, include_str!("../assets/js/result.js")),
         "/js/theme.js" => (JS, include_str!("../assets/js/theme.js")),
         "/js/update.js" => (JS, include_str!("../assets/js/update.js")),
         "/js/report.js" => (JS, include_str!("../assets/js/report.js")),
         "/js/plando.js" => (JS, include_str!("../assets/js/plando.js")),
+        "/js/sfx.js" => (JS, include_str!("../assets/js/sfx.js")),
+        "/js/tracker_api.js" => (JS, include_str!("../assets/js/tracker_api.js")),
+        "/js/tracker_store.js" => (JS, include_str!("../assets/js/tracker_store.js")),
+        "/js/tracker_news.js" => (JS, include_str!("../assets/js/tracker_news.js")),
+        "/js/tracker_list.js" => (JS, include_str!("../assets/js/tracker_list.js")),
+        "/js/tracker_filters.js" => (JS, include_str!("../assets/js/tracker_filters.js")),
+        "/js/tracker_source.js" => (JS, include_str!("../assets/js/tracker_source.js")),
+        "/js/tracker_kinds.js" => (JS, include_str!("../assets/js/tracker_kinds.js")),
+        "/js/tracker_places.js" => (JS, include_str!("../assets/js/tracker_places.js")),
+        "/js/tracker_art.js" => (JS, include_str!("../assets/js/tracker_art.js")),
+        "/js/tracker_map.js" => (JS, include_str!("../assets/js/tracker_map.js")),
+        "/js/tracker_card.js" => (JS, include_str!("../assets/js/tracker_card.js")),
+        "/js/tracker_rail.js" => (JS, include_str!("../assets/js/tracker_rail.js")),
+        "/js/tracker_app.js" => (JS, include_str!("../assets/js/tracker_app.js")),
         _ => return None,
     };
     Some(r)
@@ -69,7 +113,7 @@ mod tests {
 
     #[test]
     fn the_page_loads_nothing_from_outside() {
-        let all: [&str; 4] = [get("/").unwrap().1, get("/style.css").unwrap().1, get("/themes.css").unwrap().1, get("/app.js").unwrap().1];
+        let all: [&str; 5] = [get("/").unwrap().1, get("/style.css").unwrap().1, get("/themes.css").unwrap().1, get("/hyrule.css").unwrap().1, get("/app.js").unwrap().1];
         for t in all {
             assert!(!t.contains("http://") && !t.contains("https://"), "external url");
             assert!(!t.contains("@import"));
@@ -78,6 +122,61 @@ mod tests {
         assert!(!h.contains("style=") && !h.contains("onclick") && !h.contains("<style"));
         assert_eq!(h.matches("<script").count(), 1);
         assert!(h.contains("<script type=\"module\" src=\"/app.js\">"));
+    }
+
+    #[test]
+    fn the_tracker_page_is_self_contained() {
+        let h: &str = get("/tracker").unwrap().1;
+        assert!(!h.contains("style=") && !h.contains("onclick") && !h.contains("<style"));
+        assert_eq!(h.matches("<script").count(), 1);
+        assert!(h.contains("<script type=\"module\" src=\"/js/tracker_app.js\">"));
+        let mut n: usize = 0;
+        for p in JS_FILES.iter().filter(|p| p.starts_with("/js/tracker_")) {
+            let t: String = get(p).unwrap().1.replace("http://www.w3.org/2000/svg", "");
+            assert!(!t.contains("http://") && !t.contains("https://"), "{p}");
+            assert!(!t.contains("\"style\"") && !t.contains("sfx.js") && !t.contains("//"), "{p}");
+            for part in t.split(" from \"./").skip(1) {
+                let name: &str = part.split('"').next().unwrap();
+                assert!(get(&format!("/js/{name}")).is_some(), "{p} imports {name}");
+            }
+            n += 1;
+        }
+        assert_eq!(n, 13);
+        let css: &str = get("/tracker.css").unwrap().1;
+        assert!(!css.contains("@import") && !css.contains("http"));
+        let mut fonts: usize = 0;
+        for part in css.split("url(").skip(1) {
+            let p: &str = part.split(')').next().unwrap().trim_matches('"');
+            assert!(get_bin(p).is_some(), "{p}");
+            fonts += 1;
+        }
+        assert_eq!(fonts, 3);
+    }
+
+    #[test]
+    fn fonts_are_woff2_files_and_unknown_fonts_do_not_resolve() {
+        for p in ["/fonts/cinzel.woff2", "/fonts/garamond.woff2", "/fonts/garamond-italic.woff2"] {
+            let (t, b): (&str, &[u8]) = get_bin(p).unwrap();
+            assert_eq!(t, "font/woff2", "{p}");
+            assert_eq!(&b[..4], b"wOF2", "{p}");
+            assert!(b.len() > 10_000, "{p}");
+        }
+        for p in ["/fonts/", "/fonts/../app.js", "/fonts/cinzel.ttf", "/fonts/CINZEL.woff2", "/fonts/cinzel.woff2/", ""] {
+            assert!(get_bin(p).is_none(), "{p}");
+        }
+        assert!(get("/fonts/cinzel.woff2").is_none());
+    }
+
+    #[test]
+    fn the_stylesheet_names_only_served_fonts() {
+        let css: &str = get("/hyrule.css").unwrap().1;
+        let mut n: usize = 0;
+        for part in css.split("url(\"").skip(1) {
+            let p: &str = part.split('"').next().unwrap();
+            assert!(get_bin(p).is_some(), "{p}");
+            n += 1;
+        }
+        assert_eq!(n, 3);
     }
 
     #[test]

@@ -258,6 +258,7 @@ mod tests {
         assert!(!plan_of(&with(false)).unwrap().trade);
         assert!(plan_of(&with(true)).unwrap().trade);
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set(SETTING, Value::Bool(true)).unwrap();
         assert!(!plan_of(&s).unwrap().trade);
         let mut d: Settings = Settings::default();

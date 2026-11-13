@@ -18,7 +18,7 @@ pub fn give_one(y: &mut Byml, t: &Give) -> Res<usize> {
             t.hash, t.name, p.drop, t.was
         )));
     }
-    Ok(give(y, t.hash, t.actor))
+    Ok(give(y, t.hash, &t.actor))
 }
 
 pub fn check_game(rf: &Romfs, d: &Data) -> Res<()> {
@@ -120,7 +120,7 @@ mod tests {
     }
 
     fn give_of(h: u64, was: &str, actor: &'static str) -> Give {
-        Give { name: "Pot".to_string(), kind: Kind::Pot, hash: h, files: vec!["f".to_string()], was: was.to_string(), item: "Rupees (5)".to_string(), actor }
+        Give { name: "Pot".to_string(), kind: Kind::Pot, hash: h, files: vec!["f".to_string()], was: was.to_string(), item: "Rupees (5)".to_string(), actor: actor.to_string() }
     }
 
     #[test]

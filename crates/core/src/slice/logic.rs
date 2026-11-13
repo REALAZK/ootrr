@@ -76,7 +76,10 @@ pub fn spec(d: &Data, over: &[(&str, &str)]) -> Res<Spec> {
     let mut s: Spec = Spec::from_bundle(SHIMS)?;
     s.settings = Settings::from_json(&parse(SETTINGS)?)?;
     for (k, v) in over {
-        s.settings.set_str(k, v);
+        match v.parse::<i64>() {
+            Ok(n) => s.settings.set_int(k, n),
+            Err(_) => s.settings.set_str(k, v),
+        }
     }
     for it in &d.items {
         s.add_item(&it.name, it.adv, 0);
@@ -190,6 +193,23 @@ mod tests {
         assert!(exit_open(&s, &w, "ZR Front -> Zora River", Age::Adult));
         assert!(exit_open(&s, &w, "ZR Front -> Zora River", Age::Child));
         assert!(s.won());
+    }
+
+    #[test]
+    fn open_kakariko_opens_the_death_mountain_gate_for_a_child_without_the_letter() {
+        let d: Data = Data::load().unwrap();
+        let mut s: crate::settings::Settings = crate::settings::Settings::default();
+        let shut: World = world_with(&d, &crate::slice::support::plan(&s).unwrap().logic()).unwrap();
+        s.set("open_kakariko", crate::settings::Value::s("open")).unwrap();
+        let open: World = world_with(&d, &crate::slice::support::plan(&s).unwrap().logic()).unwrap();
+        let gate: &str = "Kakariko Village -> Kak Behind Gate";
+        let a: Search = explore(&shut, &vanilla_without(&shut, &d, &["Zeldas Letter"]), &[]);
+        let b: Search = explore(&open, &vanilla_without(&open, &d, &["Zeldas Letter"]), &[]);
+        assert!(!exit_open(&a, &shut, gate, Age::Child));
+        assert!(exit_open(&b, &open, gate, Age::Child));
+        assert!(exit_open(&a, &shut, gate, Age::Adult));
+        let c: Search = explore(&shut, &vanilla_place(&shut, &d).unwrap(), &[]);
+        assert!(exit_open(&c, &shut, gate, Age::Child));
     }
 
     #[test]

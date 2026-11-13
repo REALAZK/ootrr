@@ -1,0 +1,343 @@
+@font-face {
+  font-family: "Cinzel";
+  src: url("/fonts/cinzel.woff2") format("woff2");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("/fonts/garamond.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("/fonts/garamond-italic.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+html[data-theme="hyrule"] {
+  color-scheme: dark;
+  --bg: #0b2a1f;
+  --card: #061710;
+  --card2: #0d2418;
+  --text: #efe3c2;
+  --muted: #b9ad8f;
+  --line: #4a4120;
+  --accent: #d4a83a;
+  --accent-text: #1b1405;
+  --accent-soft: #17324b;
+  --warn: #ffd777;
+  --warn-bg: #3a2f10;
+  --err: #ff9d8f;
+  --err-bg: #431a15;
+  --ok: #9fe3a8;
+  --ok-bg: #143822;
+  --info: #a9d4f0;
+  --info-bg: #14303f;
+  --focus: #4f8fd1;
+  --radius: 2px;
+  --sans: "EB Garamond", Georgia, "Times New Roman", serif;
+  --display: "Cinzel", "Times New Roman", serif;
+  --gold: #d4a83a;
+  --gold-dim: #8a6d22;
+  --gold-glow: rgba(212, 168, 58, 0.45);
+  --hylian: #2f5d8c;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html[data-theme="hyrule"] body {
+  font-size: 18px;
+  line-height: 1.55;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(60rem 30rem at 20% -10%, rgba(47, 93, 140, 0.18), transparent 60%),
+    radial-gradient(40rem 30rem at 90% 40%, rgba(212, 168, 58, 0.06), transparent 60%);
+  background-attachment: fixed;
+}
+
+html[data-theme="hyrule"] ::selection { background: var(--hylian); color: var(--text); }
+html[data-theme="hyrule"] a:hover { color: #f3d77a; }
+
+html[data-theme="hyrule"] h1,
+html[data-theme="hyrule"] h2,
+html[data-theme="hyrule"] h3 {
+  font-family: var(--display);
+  color: var(--accent);
+  letter-spacing: 0.06em;
+}
+
+html[data-theme="hyrule"] .top {
+  background: rgba(6, 23, 16, 0.94);
+  border-bottom: 2px solid var(--gold-dim);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+html[data-theme="hyrule"] .brand .name {
+  font-family: var(--display);
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 16px var(--gold-glow);
+}
+
+html[data-theme="hyrule"] .logo {
+  width: 24px;
+  height: 22px;
+  background: linear-gradient(135deg, var(--accent), #f3d77a);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  border-radius: 0;
+}
+
+html[data-theme="hyrule"] .steps { gap: 0; }
+
+html[data-theme="hyrule"] .step {
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--display);
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 8px 16px 8px 24px;
+}
+
+html[data-theme="hyrule"] .step::before {
+  content: "\25B6";
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-6px);
+  font-size: 0.55rem;
+  color: var(--accent);
+  opacity: 0;
+}
+
+html[data-theme="hyrule"] .step:hover,
+html[data-theme="hyrule"] .step[aria-current="step"] { color: var(--accent); }
+
+html[data-theme="hyrule"] .step:hover::before,
+html[data-theme="hyrule"] .step[aria-current="step"]::before {
+  opacity: 1;
+  transform: translateY(-50%);
+}
+
+html[data-theme="hyrule"] .step[aria-current="step"] {
+  background: var(--hylian);
+  box-shadow: inset 0 -2px 0 var(--accent), 0 0 14px rgba(79, 143, 209, 0.35);
+}
+
+html[data-theme="hyrule"] .step .n {
+  border-radius: 0;
+  background: transparent;
+  border: 1px solid var(--gold-dim);
+  color: inherit;
+}
+
+html[data-theme="hyrule"] .step[aria-current="step"] .n {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+html[data-theme="hyrule"] .step.done .n {
+  background: var(--ok-bg);
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+html[data-theme="hyrule"] .card {
+  position: relative;
+  border: 2px solid var(--gold);
+  border-radius: 0;
+  background: var(--card);
+  padding: 22px 24px;
+  margin-bottom: 30px;
+  box-shadow:
+    inset 0 0 0 4px var(--card),
+    inset 0 0 0 5px var(--gold-dim),
+    0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="hyrule"] .card::before,
+html[data-theme="hyrule"] .card::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--accent);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+html[data-theme="hyrule"] .card::before { top: -6px; }
+html[data-theme="hyrule"] .card::after { bottom: -6px; }
+
+html[data-theme="hyrule"] .card > h2:first-child {
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+}
+
+html[data-theme="hyrule"] .setting,
+html[data-theme="hyrule"] .stringbar {
+  border: 1px solid var(--gold-dim);
+  border-radius: 0;
+  background: var(--card2);
+}
+
+html[data-theme="hyrule"] .setting:hover { border-color: var(--accent); }
+
+html[data-theme="hyrule"] .dialog {
+  border: 2px solid var(--gold);
+  border-radius: 0;
+  background: var(--card);
+  box-shadow: inset 0 0 0 4px var(--card), inset 0 0 0 5px var(--gold-dim), 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="hyrule"] .dialog > header,
+html[data-theme="hyrule"] .dialog > footer { border-color: var(--gold-dim); }
+
+html[data-theme="hyrule"] .overlay { background: rgba(3, 12, 8, 0.72); }
+
+html[data-theme="hyrule"] .btn {
+  font-family: var(--display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--gold-dim);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+html[data-theme="hyrule"] .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+html[data-theme="hyrule"] .btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+html[data-theme="hyrule"] .btn.primary:hover {
+  color: var(--accent-text);
+  filter: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 18px var(--gold-glow);
+}
+
+html[data-theme="hyrule"] .btn.small { font-size: 0.75rem; }
+html[data-theme="hyrule"] .btn:active { transform: translateY(1px) scale(0.98); }
+
+html[data-theme="hyrule"] .btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(212, 168, 58, 0.25);
+}
+
+html[data-theme="hyrule"] input[type="text"],
+html[data-theme="hyrule"] input[type="number"],
+html[data-theme="hyrule"] input[type="search"],
+html[data-theme="hyrule"] select,
+html[data-theme="hyrule"] textarea {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--gold-dim);
+  border-radius: 0;
+}
+
+html[data-theme="hyrule"] input:focus,
+html[data-theme="hyrule"] select:focus,
+html[data-theme="hyrule"] textarea:focus { border-color: var(--accent); }
+
+html[data-theme="hyrule"] .preset,
+html[data-theme="hyrule"] .tab,
+html[data-theme="hyrule"] .chip {
+  border: 1px solid var(--gold-dim);
+  border-radius: 0;
+  background: transparent;
+}
+
+html[data-theme="hyrule"] .tab { font-family: var(--display); font-size: 0.85rem; letter-spacing: 0.08em; }
+html[data-theme="hyrule"] .preset b { font-family: var(--display); letter-spacing: 0.06em; }
+
+html[data-theme="hyrule"] .preset:hover:not(:disabled),
+html[data-theme="hyrule"] .tab:hover,
+html[data-theme="hyrule"] .chip:hover { border-color: var(--accent); background: rgba(47, 93, 140, 0.25); }
+
+html[data-theme="hyrule"] .tab[aria-selected="true"],
+html[data-theme="hyrule"] .preset[aria-pressed="true"],
+html[data-theme="hyrule"] .chip.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+html[data-theme="hyrule"] .badge { border-color: var(--gold-dim); border-radius: 0; }
+
+html[data-theme="hyrule"] .notice {
+  border-radius: 0;
+  border-left: 3px solid currentColor;
+}
+
+html[data-theme="hyrule"] .table-wrap { border: 1px solid var(--gold-dim); border-radius: 0; }
+
+html[data-theme="hyrule"] th {
+  background: var(--card2);
+  color: var(--accent);
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+html[data-theme="hyrule"] .toast .t {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  border-radius: 0;
+  box-shadow: 0 0 18px var(--gold-glow);
+}
+
+html[data-theme="hyrule"] .ents button:hover:not(:disabled) { background: rgba(47, 93, 140, 0.25); }
+html[data-theme="hyrule"] .update { border-bottom: 1px solid var(--gold-dim); }
+
+@media (max-width: 520px) {
+  html[data-theme="hyrule"] .card { padding: 16px 14px; }
+  html[data-theme="hyrule"] .step { padding: 8px 12px 8px 20px; font-size: 0.75rem; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-theme="hyrule"] .btn,
+  html[data-theme="hyrule"] .step,
+  html[data-theme="hyrule"] .tab,
+  html[data-theme="hyrule"] .preset,
+  html[data-theme="hyrule"] .chip,
+  html[data-theme="hyrule"] .setting {
+    transition:
+      transform 0.2s var(--ease-out),
+      box-shadow 0.2s,
+      border-color 0.2s,
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  html[data-theme="hyrule"] .step::before { transition: opacity 0.2s, transform 0.25s var(--ease-out); }
+  html[data-theme="hyrule"] .btn:hover { transform: translateY(-2px); }
+  html[data-theme="hyrule"] .btn:active { transform: translateY(1px) scale(0.98); }
+  html[data-theme="hyrule"] .logo { animation: hy-float 4s ease-in-out infinite; }
+}
+
+@keyframes hy-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}

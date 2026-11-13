@@ -4,10 +4,13 @@ use crate::byml::{Byml, Node};
 use crate::catalog::{Loc, Via};
 use crate::error::{Error as E, Res};
 use crate::logic_items::ItemId;
+use crate::pickup_pack::default_name;
+use crate::pickup_persist::Extra;
 use crate::placement::hash_of;
 use crate::settings::Settings;
 use crate::slice::data::Data;
 use crate::slice::edit::Target;
+use crate::slice::key_spots as ks;
 use crate::slice::support::{Mode, Plan};
 use crate::world::{LocId, World};
 
@@ -19,7 +22,7 @@ pub const HELD: [(&str, bool); 3] = [
     ("Graveyard Dampe Race Freestanding PoH", true),
 ];
 
-pub const NOTE: &str = "Freestanding items are shuffled. Heart pieces, rupees and recovery hearts on the ground swap their actor for another world pickup, and three heart piece chests join the chest pool. Only rupees, recovery hearts and heart pieces can lie on the ground. Experimental and untested in the game.";
+pub const NOTE: &str = "Freestanding items are shuffled. Heart pieces, rupees and recovery hearts on the ground swap their actor for another world pickup, and three heart piece chests join the chest pool. Rupees, recovery hearts, heart pieces, the two shields and every item with a built pickup pack can lie on the ground. Experimental and untested in the game.";
 
 pub const WORLD_ONLY: [&str; 1] = ["Recovery Heart"];
 
@@ -98,12 +101,30 @@ pub fn swap_gyaml(y: &mut Byml, hash: u64, old: &str, new: &str) -> usize {
     n
 }
 
+pub fn pack_actor(d: &Data, extra: &Extra, item: &str, tier: Option<&str>) -> Option<String> {
+    let i: &crate::slice::data::Item = d.item(item)?;
+    let content: &str = match tier {
+        Some(t) => t,
+        None if i.tiers.is_empty() => i.actor.as_deref()?,
+        None => return None,
+    };
+    let name: String = ks::pick(content).map(|p| p.pack).unwrap_or_else(|| default_name(content));
+    extra.has(&name).then_some(name)
+}
+
 pub fn targets(d: &Data, l: &Loc, item: &str) -> Res<Vec<Target>> {
+    targets_with(d, l, item, &Extra::default(), None)
+}
+
+pub fn targets_with(d: &Data, l: &Loc, item: &str, extra: &Extra, tier: Option<&str>) -> Res<Vec<Target>> {
     let vanilla: &str = d.vanilla_of(&l.name).ok_or_else(|| E::Msg(format!("{} has no vanilla item", l.name)))?;
     if item == vanilla {
         return Ok(Vec::new());
     }
-    let new: &str = world_actor(item).ok_or_else(|| E::Msg(format!("{item} has no world pickup and cannot be placed at {}", l.name)))?;
+    let new: String = match world_actor(item).or_else(|| ks::shield(item)) {
+        Some(a) => a.to_string(),
+        None => pack_actor(d, extra, item, tier).ok_or_else(|| E::Msg(format!("{item} has no world pickup and cannot be placed at {}", l.name)))?,
+    };
     let mut out: Vec<Target> = Vec::new();
     for r in &l.refs {
         out.push(Target {
@@ -178,7 +199,8 @@ pub fn select(d: &Data, w: &World, p: &Plan, free: &mut Vec<LocId>, left: &mut B
 
 pub fn at(d: &Data, name: &str, item: &str) -> Option<bool> {
     if d.cat.by_name(name).is_some_and(is_world) {
-        return Some(world_actor(item).is_some());
+        let known: bool = world_actor(item).is_some() || ks::shield(item).is_some() || ks::placeable(d, item, ks::Spot::Free);
+        return Some(known && crate::slice::copies::fits(d, name, item));
     }
     None
 }
@@ -322,7 +344,8 @@ mod tests {
                 assert!(crate::slice::generate::allowed(&d, &w, &p, w.item(item).unwrap(), l), "{item} at {loc}");
                 let world_loc: bool = d.cat.by_name(loc).is_some_and(is_world);
                 if world_loc {
-                    assert!(world_actor(item).is_some(), "{loc} holds {item}");
+                    let ok: bool = world_actor(item).is_some() || ks::shield(item).is_some() || ks::placeable(&d, item, ks::Spot::Free);
+                    assert!(ok, "{loc} holds {item}");
                 }
                 if item == "Recovery Heart" {
                     assert!(world_loc, "{loc} holds a recovery heart");

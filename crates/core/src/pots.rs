@@ -41,6 +41,23 @@ pub fn give(y: &mut Byml, hash: u64, item: &str) -> usize {
     n
 }
 
+pub fn saved(r: &Node) -> (i64, i64) {
+    let num = |k: &str| -> Option<i64> {
+        match r.get(k) {
+            Some(Node::I32(x)) => Some(*x as i64),
+            Some(Node::U32(x)) => Some(*x as i64),
+            Some(Node::I64(x)) => Some(*x),
+            Some(Node::U64(x)) => i64::try_from(*x).ok(),
+            _ => None,
+        }
+    };
+    (num("ResetTypeValue").unwrap_or(-1), num("ExtraByte").unwrap_or(0))
+}
+
+pub fn permanent(row: (i64, i64)) -> bool {
+    row == (KEPT as i64, 0)
+}
+
 fn kept(r: &mut Node) {
     let v: Node = match r.get("ResetTypeValue") {
         Some(Node::U32(_)) => Node::U32(KEPT as u32),
@@ -115,6 +132,25 @@ pub fn build(romfs: &P, load: &P, name: &str, picks: &[(u64, String)], o: &Opts)
 mod tests {
     use super::*;
 
+    #[test]
+    fn a_permanent_row_is_reset_type_24_with_no_extra_byte_at_any_width() {
+        let row = |kind: Node, extra: Option<Node>| -> Node {
+            let mut r: Node = Node::Map(vec![("ResetTypeValue".to_string(), kind)]);
+            if let Some(e) = extra {
+                r.set("ExtraByte", e);
+            }
+            r
+        };
+        assert!(permanent(saved(&row(Node::I32(24), None))));
+        assert!(permanent(saved(&row(Node::U32(24), None))));
+        assert!(permanent(saved(&row(Node::I64(24), None))));
+        assert!(permanent(saved(&row(Node::I32(24), Some(Node::I32(0))))));
+        assert!(!permanent(saved(&row(Node::I32(24), Some(Node::I32(7))))));
+        assert!(!permanent(saved(&row(Node::I32(88), None))));
+        assert_eq!(saved(&Node::Map(Vec::new())), (-1, 0));
+        assert!(!permanent(saved(&Node::Map(Vec::new()))));
+    }
+
     fn actor(h: u64, dynamic: Option<Node>) -> Node {
         let mut m: Vec<(String, Node)> = vec![
             ("Gyaml".to_string(), Node::Str("Obj_Pot_A_01".to_string())),
@@ -157,6 +193,7 @@ mod tests {
         let t: &[Node] = y.root.get("Data").unwrap().get(TABLE).unwrap().as_arr().unwrap();
         assert_eq!(t[1].get("ResetTypeValue"), Some(&Node::I32(24)));
         assert!(t[1].get("ExtraByte").is_none());
+        assert!(!permanent(saved(&t[0])) && permanent(saved(&t[1])));
         assert_eq!(t[0].get("ResetTypeValue"), Some(&Node::I32(88)));
         assert!(one_time(&mut y, &[99]).is_err());
     }

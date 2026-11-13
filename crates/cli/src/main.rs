@@ -15,20 +15,28 @@ mod flags_cmd;
 mod flow_cmd;
 mod flow_sim_cmd;
 mod game_cmd;
+mod gen_progress;
 mod hints_cmd;
 mod intro_cmd;
 mod items_cmd;
 mod key_credit_cmd;
 mod logic_cmd;
+mod pack_add_cmd;
+mod pack_kit_cmd;
 mod pot_cmd;
 mod pot_scan_cmd;
 mod pots_persist_cmd;
 mod progressive_cmd;
+mod qol_cmd;
 mod save_cmd;
 mod serve_cmd;
 mod settings_cmd;
+mod teleport_check;
 mod teleport_cmd;
+mod teleport_merge_cmd;
 mod slice_cmd;
+mod start_defaults_cmd;
+mod treasure_cmd;
 
 use std::env;
 use std::fs;
@@ -64,15 +72,18 @@ const USAGE: &str = "usage:
   ootrr flow-scale <romfs_root> <load_dir> <mod_name> <factor> <min_frames> <relative_path>...
   ootrr flow-force <romfs_root> <load_dir> <mod_name> <relative_path> <event_name> <case_value> [<event_name> <case_value>]...
   ootrr intro-skip <romfs_root> <load_dir> <mod_name> [--movie-only | --scene-only | --hold | --hold-and-scene]
+  ootrr qol-mod <romfs_root> <load_dir> <mod_name> <skip-story | skip-all | anju | poe>
   ootrr door-fix <romfs_root> <load_dir> <mod_name>
-  ootrr door-open <romfs_root> <load_dir> <mod_name>
+  ootrr start-defaults <romfs_root> <load_dir> <mod_name> [--preset setting=value]... [--control] [--bool N=v] [--int N=v] [--enum N=v] [--grant Actor:n] [--opening-step S]
   ootrr flow-rewards <romfs_root> <out_json>
   ootrr flow-sim <romfs_root> <flow> <entry> [--set name=value]... [--own Item[:n]]... [--choose n]... [--hour h] [--follow] [--verbose] [--mod dir] [--patch doorfix] [--nodep Challenge] [--never lit,!lit] [--expect rule] [--compare] [--run Flow:Entry]...
   ootrr flow-vocab <romfs_root>
   ootrr flow-sim-scan <romfs_root> [paths_per_entry] [--adult]
-  ootrr tp-chests <romfs_root> <out_tsv> [map_filter]
-  ootrr tp-picks <romfs_root> <out_tsv> <banc_hash_pairs_tsv>
-  ootrr tp-build <romfs_root> <load_dir> <mod_name> <start|coords> <dests_tsv> [--flag NAME] [--rot deg|rad]
+  ootrr tp-chests <romfs_root> <out_tsv> [map_filter] [--stand kind=dist:lift,...]
+  ootrr tp-picks <romfs_root> <out_tsv> <banc_hash_kind_tsv> [--stand kind=dist:lift,...]
+  ootrr tp-build <romfs_root> <load_dir> <mod_name> <start|coords> <dests_tsv> [--flag NAME] [--mflag NAME] [--rot deg|rad] [--layout shared|direct] [--groups on|off] [--autosave on|off]
+  ootrr tp-check <romfs_root> <mod_folder> <dests_tsv> [--mode start|coords] [--base <seed_mod_folder>] [the options of tp-build]
+  ootrr tp-merge <romfs_root> <seed_load_dir> <seed_mod_name> <dests_tsv> <out_load_dir> <out_mod_name> [--mode start|coords] [the options of tp-build]
   ootrr flow-locations-report [--tests] [--all]
   ootrr flow-locations-check <romfs_root> [flags_json]
   ootrr flow-apply <romfs_root> <load_dir> <mod_name> [--untested] <location=Item_Actor>...
@@ -87,6 +98,8 @@ const USAGE: &str = "usage:
   ootrr slice-scan <romfs_root> <out_json>
   ootrr pot-scan <romfs_root> <out_json>
   ootrr pots-persist <romfs_root> <load_dir> <mod_name>
+  ootrr pack-add <romfs_root> <load_dir> <mod_name> <Item_Actor> [--name <Obj_Actor>] [--press] [--heap N] [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--place <ActorHash>]... [--tag <TagName>]... [--ammo] [--magic] [--dry]
+  ootrr pack-kit <romfs_root> <load_dir> <mod_name> <Item_Actor|Obj_Actor> [--name <Obj_Actor_GS>] [--heap N] [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--drop <SkulltulaHash>]... [--dry]
   ootrr flags-build <romfs_root> <out_json>
   ootrr flags-lookup <flags_json> <name_or_hash> ...
   ootrr flags-check <romfs_root> <flags_json>
@@ -98,6 +111,7 @@ const USAGE: &str = "usage:
   ootrr event-chests <romfs_root> <locations_json> <slice_json> <out_json>
   ootrr event-chest-show <romfs_root> <event_name> ...
   ootrr event-chests-testmod <romfs_root> <event_chests_json> <load_dir> <mod_name>
+  ootrr treasure-testmod <romfs_root> <load_dir> <mod_name> <item_actor> [keep-view]
   ootrr find-drop <romfs_root> <item_name_or_star>
   ootrr set-drop <romfs_root> <load_dir> <mod_name> <actor_hash> <item_name> [no-event]
   ootrr hints-show <seed.ootrr> <romfs_root>
@@ -325,8 +339,9 @@ fn main() -> ExitCode {
         Some("flow-durations") => check_bfevfl::durations(&a[1..]),
         Some("flow-scale") => check_bfevfl::scale(&a[1..]),
         Some("intro-skip") => intro_cmd::run(&a[1..]),
+        Some("qol-mod") => qol_cmd::run(&a[1..]),
         Some("door-fix") => door_fix_cmd::run(&a[1..]),
-        Some("door-open") => door_open_cmd::run(&a[1..]),
+        Some("start-defaults") => start_defaults_cmd::run(&a[1..]),
         Some("progressive") => progressive_cmd::run(&a[1..]),
         Some("key-credit") => key_credit_cmd::run(&a[1..]),
         Some("boss-heart") => boss_heart_cmd::run(&a[1..]),
@@ -340,6 +355,8 @@ fn main() -> ExitCode {
         Some("tp-chests") => teleport_cmd::chests(&a[1..]),
         Some("tp-picks") => teleport_cmd::picks(&a[1..]),
         Some("tp-build") => teleport_cmd::build(&a[1..]),
+        Some("tp-check") => teleport_check::run(&a[1..]),
+        Some("tp-merge") => teleport_merge_cmd::run(&a[1..]),
         Some("flow-locations-report") => flow_cmd::report(&a[1..]),
         Some("flow-locations-check") => flow_cmd::check(&a[1..]),
         Some("flow-apply") => flow_cmd::run_apply(&a[1..]),
@@ -359,6 +376,8 @@ fn main() -> ExitCode {
         Some("slice-scan") => slice_cmd::scan_cmd(&a[1..]),
         Some("pot-scan") => pot_scan_cmd::run(&a[1..]),
         Some("pots-persist") => pots_persist_cmd::run(&a[1..]),
+        Some("pack-add") => pack_add_cmd::run(&a[1..]),
+        Some("pack-kit") => pack_kit_cmd::run(&a[1..]),
         Some("flags-build") => flags_cmd::build(&a[1..]),
         Some("flags-lookup") => flags_cmd::lookup(&a[1..]),
         Some("flags-check") => flags_cmd::check(&a[1..]),
@@ -370,6 +389,7 @@ fn main() -> ExitCode {
         Some("event-chests") => event_chests_cmd::run(&a[1..]),
         Some("event-chest-show") => event_chests_cmd::show(&a[1..]),
         Some("event-chests-testmod") => event_chests_cmd::testmod(&a[1..]),
+        Some("treasure-testmod") => treasure_cmd::testmod(&a[1..]),
         Some("find-drop") => find_drop(&a[1..]),
         Some("set-drop") => set_drop(&a[1..]),
         Some("zs-extract") => zs_extract(&a[1..]),

@@ -1,5 +1,7 @@
 use std::collections::{BTreeMap as BM, HashMap as HM};
 use std::fmt::Write as W;
+use std::sync::Arc;
+use std::time::Duration;
 
 use crate::error::{Error as E, Res};
 use crate::logic_items::ItemId;
@@ -8,28 +10,33 @@ use crate::rng::Rng;
 use crate::settings::Settings;
 use crate::settings::seed::SeedFile;
 use crate::slice::data::{Data, State};
-use crate::slice::fill::{changed, fill_ranked, vanilla_place};
+use crate::slice::fill::{changed, fill_ordered, vanilla_place, SWITCH};
 use crate::slice::logic::world_with;
 use crate::slice::pick::{pick, scoped, Pick};
 use crate::slice::pickups as pu;
 use crate::slice::plando::{loc_of, resolve, Entry};
-use crate::start_reward::pick as pick_start;
 use crate::slice::support::{plan, Keep, Mode, Plan, Songs};
+use crate::slice::watch::{Live, Watch};
 use crate::spoiler::{playthrough, Spoiler};
 use crate::world::{LocId, Placement, World};
 
 pub const TRIES: u32 = 600;
+pub const TIER_TRIES: u32 = 40;
+pub const LIMIT: Duration = Duration::from_secs(90);
 
 #[derive(Debug, Clone)]
 pub struct GenOpts {
     pub spoiler: bool,
     pub tries: u32,
     pub plando: Vec<Entry>,
+    pub limit: Option<Duration>,
+    pub live: Option<Arc<Live>>,
+    pub switch: u32,
 }
 
 impl Default for GenOpts {
     fn default() -> GenOpts {
-        GenOpts { spoiler: false, tries: TRIES, plando: Vec::new() }
+        GenOpts { spoiler: false, tries: TRIES, plando: Vec::new(), limit: None, live: None, switch: SWITCH }
     }
 }
 
@@ -58,6 +65,9 @@ pub fn is_song(actor: &str) -> bool {
 fn by_place(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> Option<bool> {
     let name: &str = &w.locs[l].name;
     let item: &str = &w.items.names[it];
+    if let Some(ok) = crate::slice::treasure::at(p.treasure, name, item) {
+        return Some(ok);
+    }
     if p.remake && crate::slice::remake_overworld::keeps_out(d, name, item) {
         return Some(false);
     }
@@ -208,6 +218,7 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     if d.scan.rows.is_empty() {
         return Err(E::Format("the chest list in data/slice.json is empty, run slice-scan first"));
     }
+    let watch: Watch = Watch::new(o.limit, o.live.clone());
     let mut p: Plan = plan(s)?;
     let mut w: World = world_with(d, &p.logic())?;
     let mut named: Vec<String> = Vec::with_capacity(p.excluded.len());
@@ -271,10 +282,38 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     let got: Placement = if pk.free.is_empty() {
         vanilla.clone()
     } else {
-        let caps: HM<LocId, usize> = crate::pot_slice::rules::caps(d, &w, &pk.free, &vanilla, &ok);
+        let fix: bool = crate::slice::tier_fix::active(d, &w, &pk.free);
+        let narrow = |it: ItemId, l: LocId| ok(it, l) && !crate::slice::key_spots::widened(d, &w.locs[l].name, &w.items.names[it]);
+        let order: Option<&dyn Fn(ItemId, LocId) -> bool> = if fix { Some(&narrow) } else { None };
+        let caps: HM<LocId, usize> = crate::pot_slice::rules::caps(d, &w, &pk.free, &vanilla, order.unwrap_or(&ok));
         let rank = |l: LocId| caps.get(&l).copied().unwrap_or(0);
         let r: Option<&dyn Fn(LocId) -> usize> = if caps.is_empty() { None } else { Some(&rank) };
-        fill_ranked(&w, &vanilla, &pk.free, &ok, &mut rng, o.tries, &plan, !p.keys_roam(), r)?
+        let keep: Vec<LocId> = plan.iter().map(|x| x.0).collect();
+        let mut n: u32 = 0;
+        loop {
+            let g: Placement = fill_ordered(&w, &vanilla, &pk.free, &ok, order, &mut rng, o.tries, &plan, !p.keys_roam(), r, o.switch, &watch)
+                .map_err(|e| crate::slice::advice::explain(&p, e))?;
+            if crate::slice::tier_order::fits(d, &w, &g, &pk.free)? {
+                break g;
+            }
+            if fix {
+                let mut fr: Rng = Rng::from_text(&format!("{seed} tier repair {n}"));
+                let c: crate::slice::tier_fix::Ctx = crate::slice::tier_fix::Ctx { d, w: &w, free: &pk.free, keep: &keep, ok: &ok };
+                if let Some(x) = crate::slice::tier_fix::repair(&c, &g, &mut fr)? {
+                    break x;
+                }
+            }
+            n += 1;
+            if n >= TIER_TRIES {
+                let hint: &str = if o.plando.is_empty() {
+                    "these settings leave too little room, try another seed text or fewer shuffled pickup spots"
+                } else {
+                    "check the plando entries for upgrade items, or try another seed text"
+                };
+                let last: Vec<String> = crate::slice::tier_fix::verdict(d, &w, &g, &pk.free)?.bad.into_iter().take(2).collect();
+                return Err(E::Msg(format!("no fill in {TIER_TRIES} tries kept every fixed upgrade tier in order, {hint}. The last fill failed because {}", last.join(", and "))));
+            }
+        }
     };
     if p.skulls != crate::slice::skulls::Mode::Off {
         crate::slice::skulls::check_tokens(&w, &vanilla, &got)?;
@@ -299,7 +338,13 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     let seed_file: SeedFile = SeedFile::new(seed, s, &d.scan.game, map)?;
     let (sp, spheres): (Option<String>, Steps) = if o.spoiler {
         let (mut t, st): (String, Steps) = spoiler_text(&w, &vanilla, &got, &pk)?;
-        t.push_str(&crate::slice::skulls::spoiler(d, &w, &p, &pk.free, &got));
+        let fixed: BM<String, String> = if crate::slice::tier_fix::active(d, &w, &pk.free) {
+            crate::slice::tier_fix::verdict(d, &w, &got, &pk.free)?.assign
+        } else {
+            BM::new()
+        };
+        t.push_str(&crate::slice::skulls::spoiler_with(d, &w, &p, &pk.free, &got, &fixed));
+        t.push_str(&crate::slice::key_spots::spoiler(d, &w, &pk.free, &got, &fixed));
         (Some(t), st)
     } else {
         (None, Vec::new())
@@ -504,6 +549,7 @@ mod tests {
     fn chest_modes_and_vanilla_keys_change_the_pool() {
         let d: Data = Data::load().unwrap();
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set("shuffle_chests", Value::s("off")).unwrap();
         let off: Generated = generate_data(&d, &s, "x", &GenOpts::default()).unwrap();
         assert_eq!(off.counts.randomized, 0);
@@ -762,10 +808,212 @@ mod tests {
         assert!(e.contains("disabled locations: no location is named") && e.contains("KF Midos Top Left Chest"), "{e}");
     }
 
+    fn digest(p: &BM<String, String>) -> u64 {
+        let mut h: u64 = 0xCBF2_9CE4_8422_2325;
+        for (k, v) in p {
+            for b in format!("{k}\t{v}\n").as_bytes() {
+                h ^= *b as u64;
+                h = h.wrapping_mul(0x0000_0100_0000_01B3);
+            }
+        }
+        h
+    }
+
+    #[test]
+    fn seeds_that_generated_before_keep_their_exact_placements() {
+        let d: Data = Data::load().unwrap();
+        let cases: [(&[(&str, &str)], &str, usize, u64); 4] = [
+            (&[], "default 0", 77, 0x9b41_25fb_b7b3_954b),
+            (&[], "default 1", 77, 0x74e9_a4ba_5cb4_40b9),
+            (&[("shuffle_chests", "overworld")], "chests_ow 0", 10, 0x842f_cb4b_1197_ea2a),
+            (&[("shuffle_chests", "dungeons")], "dungeons 0", 67, 0x169a_7c8a_d12b_3980),
+        ];
+        for (pairs, seed, n, want) in cases {
+            let mut all: Vec<(&str, &str)> = vec![("shuffle_rewards", "off")];
+            all.extend_from_slice(pairs);
+            let g: Generated = generate_data(&d, &with(&all), seed, &GenOpts::default()).unwrap();
+            assert_eq!(g.seed_file.placements.len(), n, "{seed}");
+            assert_eq!(digest(&g.seed_file.placements), want, "{seed}");
+        }
+    }
+
+    #[test]
+    fn a_setting_that_cannot_fit_fails_at_once_with_a_plain_message() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = with(&[("shuffle_chests", "dungeons"), ("shuffle_bosskeys", "overworld")]);
+        let t0: std::time::Instant = std::time::Instant::now();
+        let e: String = generate_data(&d, &s, "x", &GenOpts::default()).err().unwrap().to_string();
+        assert!(e.starts_with("No seed can be made with these settings, the shuffled items cannot all fit"), "{e}");
+        assert!(e.contains("Boss Key") && e.contains("can only go to 0 free locations"), "{e}");
+        assert!(t0.elapsed() < std::time::Duration::from_secs(20));
+    }
+
+    fn xcykrix() -> Settings {
+        let mut s: Settings = with(&[
+            ("open_forest", "open"),
+            ("shuffle_rewards", "supported"),
+            ("shuffle_songs", "anywhere"),
+            ("shuffle_skulltulas", "matched"),
+            (crate::slice::remake_chests::SETTING, "on"),
+        ]);
+        for k in ["shuffle_boss_hearts", "gossip_hints", "faster_chests"] {
+            s.set(k, Value::Bool(true)).unwrap();
+        }
+        s
+    }
+
+    #[test]
+    fn the_careful_fill_is_deterministic_and_its_seeds_are_valid() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = xcykrix();
+        let p: Plan = plan(&s).unwrap();
+        let w: World = world_with(&d, &p.logic()).unwrap();
+        let o: GenOpts = GenOpts { switch: 0, spoiler: true, ..GenOpts::default() };
+        let a: Generated = generate_data(&d, &s, "careful", &o).unwrap();
+        let b: Generated = generate_data(&d, &s, "careful", &o).unwrap();
+        assert_eq!(a.seed_file.to_text(), b.seed_file.to_text());
+        assert_eq!(a.spoiler, b.spoiler);
+        assert!(rebuilt(&d, &p, &a.seed_file.placements));
+        for (loc, item) in &a.seed_file.placements {
+            assert!(allowed(&d, &w, &p, w.item(item).unwrap(), w.loc(loc).unwrap()), "{item} at {loc}");
+        }
+        assert!(a.spoiler.unwrap().contains("Sphere 1"));
+        let c: Generated = generate_data(&d, &s, "careful other", &o).unwrap();
+        assert_ne!(a.seed_file.placements, c.seed_file.placements);
+    }
+
+    #[test]
+    fn the_time_limit_and_a_cancel_end_the_run_with_a_message() {
+        let d: Data = Data::load().unwrap();
+        let o: GenOpts = GenOpts { limit: Some(Duration::ZERO), ..GenOpts::default() };
+        let e: String = generate_data(&d, &xcykrix(), "slow", &o).err().unwrap().to_string();
+        assert!(e.contains("time limit of 0 seconds") && e.contains("set Gold Skulltulas to Confident matches"), "{e}");
+        let l: Arc<Live> = Arc::new(Live::default());
+        l.cancel();
+        let c: GenOpts = GenOpts { live: Some(Arc::clone(&l)), ..GenOpts::default() };
+        let e: String = generate_data(&d, &Settings::default(), "stop", &c).err().unwrap().to_string();
+        assert_eq!(e, crate::slice::watch::STOPPED);
+        let r: Generated = generate_data(&d, &Settings::default(), "free", &GenOpts { limit: Some(LIMIT), ..GenOpts::default() }).unwrap();
+        let n: Generated = generate_data(&d, &Settings::default(), "free", &GenOpts::default()).unwrap();
+        assert_eq!(r.seed_file.to_text(), n.seed_file.to_text());
+    }
+
     #[test]
     fn an_empty_scan_is_refused() {
         let scan: &str = "{\"format\":1,\"game\":\"g\",\"files\":[],\"chests\":[]}";
         let d: Data = Data::new(ITEMS_JSON, VANILLA_JSON, scan, CATALOG_JSON).unwrap();
         assert!(generate_data(&d, &all_chests(), "x", &GenOpts::default()).is_err());
+    }
+
+    const HELD: [(&str, &str); 9] = [
+        ("ToT Reward from Rauru", "Light Medallion"),
+        ("Queen Gohma", "Kokiri Emerald"),
+        ("King Dodongo", "Goron Ruby"),
+        ("Barinade", "Zora Sapphire"),
+        ("Phantom Ganon", "Forest Medallion"),
+        ("Volvagia", "Fire Medallion"),
+        ("Morpha", "Water Medallion"),
+        ("Bongo Bongo", "Shadow Medallion"),
+        ("Twinrova", "Spirit Medallion"),
+    ];
+
+    fn held_loc(name: &str) -> bool {
+        HELD.iter().any(|h| h.0 == name)
+    }
+
+    fn held_item(name: &str) -> bool {
+        HELD.iter().any(|h| h.1 == name)
+    }
+
+    #[test]
+    fn the_held_locations_are_the_nine_dungeon_reward_events() {
+        let d: Data = Data::load().unwrap();
+        let mut got: Vec<(&str, &str)> = d
+            .flow
+            .locs
+            .iter()
+            .filter(|l| l.cat == crate::slice::support::DUNGEON_REWARD_CAT)
+            .map(|l| (l.name.as_str(), l.vanilla.as_str()))
+            .collect();
+        let mut want: Vec<(&str, &str)> = HELD.to_vec();
+        got.sort();
+        want.sort();
+        assert_eq!(got, want);
+        for (l, i) in HELD {
+            assert_eq!(d.vanilla_of(l), Some(i), "{l}");
+        }
+    }
+
+    #[test]
+    fn stones_and_medallions_stay_with_their_bosses_by_default() {
+        let d: Data = Data::load().unwrap();
+        let mut need: usize = 0;
+        for (s, tag) in [(Settings::default(), "default"), (with(&[("shuffle_chests", "overworld")]), "overworld")] {
+            assert!(plan(&s).unwrap().rewards);
+            assert!(!plan(&s).unwrap().dungeon_rewards);
+            for n in 0..3 {
+                let g: Generated = generate_data(&d, &s, &format!("held {tag} {n}"), &GenOpts { spoiler: true, ..GenOpts::default() }).unwrap();
+                assert!(g.seed_file.placements.contains_key("Kak Man on Roof"), "{tag} {n}");
+                for (loc, item) in &g.seed_file.placements {
+                    assert!(!held_loc(loc), "{tag} {n} shuffled {loc}");
+                    assert!(!held_item(item), "{tag} {n} put {item} at {loc}");
+                }
+                for (loc, item) in g.spheres.iter().flatten() {
+                    if held_item(item) {
+                        assert!(HELD.contains(&(loc.as_str(), item.as_str())), "{loc} {item}");
+                        need += 1;
+                    }
+                }
+            }
+        }
+        assert!(need > 0);
+    }
+
+    #[test]
+    fn stones_and_medallions_move_when_asked() {
+        let d: Data = Data::load().unwrap();
+        let mut s: Settings = Settings::default();
+        s.set("shuffle_dungeon_rewards", Value::Bool(true)).unwrap();
+        assert!(plan(&s).unwrap().dungeon_rewards);
+        let mut moved: usize = 0;
+        for n in 0..3 {
+            let g: Generated = generate_data(&d, &s, &format!("moved {n}"), &GenOpts::default()).unwrap();
+            for (l, _) in HELD {
+                assert!(g.seed_file.placements.contains_key(l), "{n} {l}");
+            }
+            moved += g.seed_file.placements.iter().filter(|(l, i)| held_item(i) && !held_loc(l)).count();
+        }
+        assert!(moved > 0);
+    }
+
+    #[test]
+    fn rewards_off_and_stones_and_medallions_on_keep_the_old_seeds() {
+        let d: Data = Data::load().unwrap();
+        let mut on: Settings = Settings::default();
+        on.set("shuffle_dungeon_rewards", Value::Bool(true)).unwrap();
+        let mut pots: Settings = on.clone();
+        pots.set("shuffle_pots", Value::s("all")).unwrap();
+        pots.set("shuffle_crates", Value::s("all")).unwrap();
+        let cases: [(Settings, &str, &str, &str); 8] = [
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin a", "b8c6c4b31b12abcb42c5014a827ce94e22ee7e61cf01ac815ef80ffa384446a4"),
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin b", "070cc4b39ce519c165aaae10678e7030ef9d0a331790a09a44f4198a90a3ad99"),
+            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin a", "c755bab551e408965a8e15647c62f760d9d76875d86b2590c6708ab9c6614baf"),
+            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin b", "398e2947c1a5116badd6b90121f7e2c8721946edff989067b3213e65e7ea45af"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin a", "bc08991c7936566a71d7fbbe597c5fe15160ae4143f68117c1eaacf7576d85c7"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin b", "43749dd1040da34ad3600ec3e8a5b1babfd75a7c1a93f721c9e110efc2219011"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "d97f824ef573940b9510579cb7e56490826f7cad856da33063f5c230d2f8e960"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "f475e2f2ab973177840bf44e89641bea638ec7f44ab991e35e8004f2f71f1a58"),
+        ];
+        for (s, old, seed, sum) in cases {
+            let g: Generated = generate_data(&d, &s, seed, &GenOpts::default()).unwrap();
+            let mut f: SeedFile = g.seed_file.clone();
+            if s.flag("shuffle_dungeon_rewards").unwrap() {
+                assert_ne!(f.settings_string, old);
+            } else {
+                assert_eq!(f.settings_string, old);
+            }
+            f.settings_string = old.to_string();
+            assert_eq!(f.checksum(), sum, "{old} {seed}");
+        }
     }
 }

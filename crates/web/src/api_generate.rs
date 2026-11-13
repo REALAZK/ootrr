@@ -1,14 +1,18 @@
+use std::sync::Arc;
+
 use ootrr_core::json::Json;
 use ootrr_core::settings::Loaded;
 use ootrr_core::slice::data::Data;
 use ootrr_core::slice::plando::Entry;
 use ootrr_core::slice::support::plan;
+use ootrr_core::slice::generate::LIMIT;
 use ootrr_core::slice::{self, GenOpts, Generated};
 
 use crate::api_seed;
 use crate::api_settings;
 use crate::body;
 use crate::error::{Fail, Hr};
+use crate::gen_live::{Gens, Slot};
 use crate::token;
 
 fn slug(seed: &str) -> String {
@@ -21,15 +25,18 @@ fn slug(seed: &str) -> String {
     if t.is_empty() { "seed".to_string() } else { t.to_string() }
 }
 
-pub fn run(b: &Json) -> Hr<Json> {
+pub fn run_in(gens: &Gens, b: &Json) -> Hr<Json> {
     let l: Loaded = api_settings::from_body(b)?;
     let seed: String = match body::opt_text(b, "seed")? {
         Some(s) if !s.trim().is_empty() => s.to_string(),
         _ => token::seed_text(12),
     };
     let want_spoiler: bool = b.get("spoiler").and_then(|x| x.as_bool()).unwrap_or(true);
-    let opts: GenOpts = GenOpts { spoiler: want_spoiler, plando: plando_of(b)?, ..GenOpts::default() };
+    let plando: Vec<Entry> = plando_of(b)?;
+    let slot: Slot = gens.begin(body::opt_text(b, "ticket")?)?;
+    let opts: GenOpts = GenOpts { spoiler: want_spoiler, plando, limit: Some(LIMIT), live: Some(Arc::clone(&slot.live)), ..GenOpts::default() };
     let g: Generated = slice::generate_with(&l.settings, &seed, &opts)?;
+    drop(slot);
     let mut out: Json = api_seed::describe(&g.seed_file)?;
     let w: Json = Json::strs(l.warnings.iter().map(|x| x.as_str()));
     out.put("warnings", w);
@@ -40,6 +47,16 @@ pub fn run(b: &Json) -> Hr<Json> {
     out.put("seed_text", g.seed_file.to_text().into());
     out.put("spoiler", spoiler(&g, want_spoiler));
     Ok(out)
+}
+
+pub fn progress(gens: &Gens, ticket: Option<&str>) -> Hr<Json> {
+    let t: &str = ticket.ok_or_else(|| Fail::bad("the ticket is missing"))?;
+    Ok(gens.progress(t))
+}
+
+pub fn cancel(gens: &Gens, b: &Json) -> Hr<Json> {
+    let t: &str = body::text(b, "ticket")?;
+    Ok(Json::obj().with("cancelled", gens.cancel(t).into()))
 }
 
 fn notes(l: &Loaded) -> Vec<String> {
@@ -102,6 +119,10 @@ mod tests {
     use super::*;
     use ootrr_core::json;
     use ootrr_core::settings::seed::SeedFile;
+
+    fn run(b: &Json) -> Hr<Json> {
+        run_in(&Gens::default(), b)
+    }
 
     fn j(t: &str) -> Json {
         json::parse(t).unwrap()

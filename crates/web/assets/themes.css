@@ -234,36 +234,6 @@ html[data-theme="pinkblack"] .step[aria-current="step"] { box-shadow: 0 0 12px r
 html[data-theme="pinkblack"] progress { accent-color: #ff2d95; }
 html[data-theme="pinkblack"] th { color: #ff7ac1; }
 
-html[data-theme="hyrule"] {
-  color-scheme: dark;
-  --bg: #0d1a12;
-  --card: #15271b;
-  --card2: #1d3425;
-  --text: #f2ead0;
-  --muted: #b7b89a;
-  --line: #34553a;
-  --accent: #dba93a;
-  --accent-text: #1b1405;
-  --accent-soft: #3a3a1c;
-  --warn: #ffd777;
-  --warn-bg: #3a2f10;
-  --err: #ff9d8f;
-  --err-bg: #431a15;
-  --ok: #9fe3a8;
-  --ok-bg: #143822;
-  --info: #a9d4f0;
-  --info-bg: #14303f;
-  --focus: #f4d06f;
-  --radius: 6px;
-  --sans: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-}
-html[data-theme="hyrule"] body { background: radial-gradient(ellipse at 50% 0%, #1e3a27 0%, #0d1a12 65%) fixed; }
-html[data-theme="hyrule"] .top { border-bottom: 2px solid #dba93a; }
-html[data-theme="hyrule"] .brand .name { color: #dba93a; letter-spacing: 0.14em; }
-html[data-theme="hyrule"] .logo { background: linear-gradient(135deg, #dba93a, #f4d06f); clip-path: polygon(50% 0, 100% 100%, 0 100%); border-radius: 0; }
-html[data-theme="hyrule"] .card { border: 2px solid #34553a; box-shadow: inset 0 0 0 1px #0d1a12, 0 2px 10px rgba(0, 0, 0, 0.4); }
-html[data-theme="hyrule"] h1, html[data-theme="hyrule"] h2, html[data-theme="hyrule"] h3 { color: #f4d06f; }
-
 html[data-theme="terminal"] {
   color-scheme: dark;
   --bg: #000000;

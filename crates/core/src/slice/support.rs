@@ -47,6 +47,9 @@ pub enum Fountain {
 pub const MIDO_WALL: &str = "KokiriForest_Npc_Kokiri_Mido_Child_Blocker";
 pub const EXIT_WALL: &str = "KokiriForest_Npc_Kokiri_007_Child_Blocker_00";
 pub const DOOR_OPENED: &str = "Market_Child_TimeTempleDoor_Opened";
+pub const KAKARIKO: (&str, &str) = ("open_kakariko", "open");
+pub const DUNGEON_REWARDS: &str = "shuffle_dungeon_rewards";
+pub const DUNGEON_REWARD_CAT: &str = "dungeon_reward";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Songs {
@@ -63,6 +66,7 @@ pub struct Plan {
     pub map: Keep,
     pub ganon: Keep,
     pub rewards: bool,
+    pub dungeon_rewards: bool,
     pub extra: bool,
     pub trade: bool,
     pub scrubs: bool,
@@ -85,6 +89,9 @@ pub struct Plan {
     pub drops: crate::pot_slice::Drops,
     pub skulls: crate::slice::skulls::Mode,
     pub remake: bool,
+    pub chus: bool,
+    pub qol: crate::qol::Opts,
+    pub treasure: bool,
 }
 
 const GEAR: &[(&str, &str, &str)] = &[
@@ -202,7 +209,25 @@ impl Plan {
         if self.keys_roam() {
             out.extend(KEY_LAYOUTS.iter().map(|k| (*k, "shuffled")));
         }
+        if self.chus {
+            out.push((crate::slice::bombchus::LOGIC_KEY, "true"));
+        }
+        if self.kakariko {
+            out.push(KAKARIKO);
+        }
+        out.extend(self.qol.logic());
         out
+    }
+
+    pub fn defaults(&self) -> Vec<(&'static str, &'static str)> {
+        if self.kakariko { vec![KAKARIKO] } else { Vec::new() }
+    }
+
+    pub fn opening_step(&self) -> Option<&'static str> {
+        match self.forest {
+            Forest::Open => Some(crate::start_defaults::opening::OPEN_STEP),
+            _ => None,
+        }
     }
 }
 
@@ -251,6 +276,11 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             false
         }
     };
+    let dungeon_rewards: bool = rewards
+        && s.flag(DUNGEON_REWARDS).unwrap_or_else(|e| {
+            bad.push(e.to_string());
+            false
+        });
     let extra: bool = rewards
         && s.flag(crate::flow_extra::SETTING).unwrap_or_else(|e| {
             bad.push(e.to_string());
@@ -374,6 +404,9 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     }
     let skulls: crate::slice::skulls::Mode = crate::slice::skulls::mode(s, &mut bad);
     let remake: bool = crate::slice::remake_chests::mode(s, &mut bad);
+    let chus: bool = crate::slice::bombchus::mode(s, &mut bad);
+    let qol: crate::qol::Opts = crate::qol::read(s, &mut bad);
+    let treasure: bool = crate::slice::treasure::mode(s, &mut bad);
     let excluded: Vec<String> = s.items("disabled_locations").map(|v| v.to_vec()).unwrap_or_default();
     if !bad.is_empty() {
         let lines: Vec<String> = bad.iter().map(|b| format!("  {b}")).collect();
@@ -403,6 +436,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         (fountain == Fountain::Open, "Zora's Fountain starts open. A new game sets the Water Stone quest to the state after Ruto's Letter was shown, so King Zora already stands aside, and marks his moving scene as played, which removes the wall in front of the passage. Ruto's Letter can still be found and stays a bottle. Experimental and untested in the game."),
         (fountain == Fountain::Adult, "Zora's Fountain counts as open for the adult in the logic only. The game is not changed: the adult Zora's Domain has no wall or quest check in front of the passage in the game data."),
         (door, "The Door of Time starts open. The Temple of Time logic is edited so the door is always open and the Master Sword can be drawn without the Door of Time quest, and the door's opened flag is set when a new game starts, so the Ocarina and the Song of Time are not needed to reach the Master Sword. The quest itself is left alone, so Zelda's escape and the Song of Time stay checks, and the adult pedestal works before the Forest Sage so you can return to childhood at any time. Experimental and untested in the game."),
+        (forest == Forest::Open, "The Deku Tree quest starts at the step Mido normally sets when he steps aside (Meet_DekuTree Step03), so Mido stands aside and the Kokiri Shop shows its later stock. Experimental and untested in the game."),
         (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
         (extra, "Kak 20 Gold Skulltula Reward, DMT Biggoron and GC Medigoron are shuffled with structural event edits. Experimental and untested in the game."),
         (trade, "The ten adult trade quest hand ins each give one extra shuffled item the first time. The trade chain itself stays vanilla. Experimental and untested in the game."),
@@ -411,10 +445,19 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             notes.push(text.to_string());
         }
     }
+    if kakariko {
+        notes.push(crate::start_defaults::presets::note(KAKARIKO.0, KAKARIKO.1)?);
+    }
     notes.extend(di::notes(boss, ganon, map));
     notes.extend(drops.notes());
     if skulls != crate::slice::skulls::Mode::Off {
         notes.push(crate::slice::skulls::NOTE.to_string());
+    }
+    if world != Mode::Off || drops.any() || skulls != crate::slice::skulls::Mode::Off {
+        notes.push(crate::slice::key_spots::NOTE.to_string());
+    }
+    if drops.pots != Mode::Off {
+        notes.push(crate::slice::key_spots::LOST.to_string());
     }
     if scrubs {
         notes.push(crate::scrubs_a::NOTE.to_string());
@@ -425,7 +468,16 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if remake {
         notes.push(crate::slice::remake_chests::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, door, kakariko, fountain, gear, pouch, excluded, notes, drops, skulls, remake })
+
+    if chus {
+        notes.push(crate::slice::bombchus::NOTE.to_string());
+    }
+    notes.extend(qol.notes());
+    if treasure {
+        notes.push(crate::slice::treasure::NOTE.to_string());
+    }
+  
+    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, door, kakariko, fountain, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure })
 }
 
 #[cfg(test)]
@@ -566,6 +618,36 @@ mod tests {
     }
 
     #[test]
+    fn the_kakariko_gate_is_vanilla_by_default_and_open_becomes_a_default_edit_and_a_logic_value() {
+        let mut s: Settings = Settings::default();
+        assert_eq!(s.text("open_kakariko").unwrap(), "zelda");
+        let p: Plan = plan(&s).unwrap();
+        assert!(!p.kakariko && p.defaults().is_empty() && p.logic().is_empty());
+        assert!(!p.notes.iter().any(|n| n.contains("open_kakariko")));
+        s.set("open_kakariko", Value::s("open")).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert!(p.kakariko);
+        assert_eq!(p.defaults(), vec![KAKARIKO]);
+        assert_eq!(p.logic(), vec![KAKARIKO]);
+        assert!(p.notes.iter().any(|n| n.contains("Death Mountain starts open") && n.contains("Mask Shop")));
+        assert!(p.start_flags().is_empty());
+        s.set("open_kakariko", Value::s("closed")).unwrap();
+        assert!(plan(&s).err().unwrap().to_string().contains("open_kakariko is closed"));
+    }
+
+    #[test]
+    fn only_an_open_forest_moves_the_opening_quest_step() {
+        let mut s: Settings = Settings::default();
+        assert_eq!(plan(&s).unwrap().opening_step(), None);
+        s.set("open_forest", Value::s("closed_deku")).unwrap();
+        assert_eq!(plan(&s).unwrap().opening_step(), None);
+        s.set("open_forest", Value::s("open")).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert_eq!(p.opening_step(), Some("Step03"));
+        assert!(p.notes.iter().any(|n| n.contains("Meet_DekuTree Step03")));
+    }
+
+    #[test]
     fn starting_sword_shield_and_slingshot_are_accepted() {
         let mut s: Settings = Settings::default();
         s.set("starting_items", Value::set(&["slingshot", "kokiri_sword", "deku_shield"])).unwrap();
@@ -576,6 +658,7 @@ mod tests {
         assert!(plan(&s).err().unwrap().to_string().contains("ocarina"));
     }
 
+    #[test]
     fn excluded_locations_pass_through() {
         let mut s: Settings = Settings::default();
         s.set("disabled_locations", Value::set(&["ZD Chest"])).unwrap();

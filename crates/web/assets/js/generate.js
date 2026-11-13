@@ -1,10 +1,10 @@
 import { h, fill, notice, copy, save_text } from "./dom.js";
 import { button as report_button } from "./report.js";
 import { panel as plando_panel } from "./plando.js";
-import { post } from "./api.js";
+import { get, post, q } from "./api.js";
 import { state, touch } from "./store.js";
 import { effective, match_preset, changed } from "./rules.js";
-import { viewer } from "./viewer.js";
+import { panel as spoiler_panel } from "./spoiler.js";
 import { go, bar } from "./nav.js";
 import { live, refresh_string } from "./strings.js";
 
@@ -25,6 +25,11 @@ function summary(res) {
   );
 }
 
+export function progress_text(p) {
+  const base = `${p.seconds} s so far, attempt ${p.attempts}.`;
+  return p.fallback ? `${base} The usual fill keeps failing with these settings, so the careful fill is running now.` : base;
+}
+
 export function render() {
   const schema = state.schema;
   const out = h("div", { "aria-live": "polite" });
@@ -34,6 +39,11 @@ export function render() {
     touch();
   } });
   const go_btn = h("button", { type: "button", class: "btn primary" }, "Generate seed");
+  const hide = h("input", { type: "checkbox", id: "hide_spoiler", checked: state.hide_spoiler, onchange: () => {
+    state.hide_spoiler = hide.checked;
+    touch();
+    if (state.result) show(state.result);
+  } });
   const pick = h("input", { type: "file", accept: ".ootrr,.json,application/json", class: "hide" });
   const preset_id = match_preset(schema, state.vals);
   const preset = preset_id ? schema.presets.find((p) => p.id === preset_id).name : "Custom";
@@ -63,15 +73,33 @@ export function render() {
           h("button", { type: "button", class: "btn", onclick: () => go("result") }, "Continue to build"),
         ),
       ),
-      h("section", { class: "card" }, h("h2", null, "Spoiler"), viewer(res)),
+      h("section", { class: "card" }, h("h2", null, "Spoiler"), spoiler_panel(res, state.hide_spoiler)),
     );
   }
 
   async function run() {
     go_btn.disabled = true;
-    fill(out, h("section", { class: "card" }, h("p", null, "Generating"), h("progress", { "aria-label": "Generating" })));
+    const ticket = `g${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+    const t0 = Date.now();
+    const line = h("p", { class: "muted" }, "Starting");
+    const stop = h("button", { type: "button", class: "btn" }, "Cancel");
+    stop.onclick = () => {
+      stop.disabled = true;
+      line.textContent = "Cancelling";
+      post("/api/generate/cancel", { ticket }).catch(() => {});
+    };
+    fill(out, h("section", { class: "card stack" }, h("p", null, "Generating"), h("progress", { "aria-label": "Generating" }), line, h("div", { class: "row" }, stop)));
+    const timer = setInterval(async () => {
+      if (stop.disabled) return;
+      try {
+        const p = await get(`/api/generate/progress?ticket=${q(ticket)}`);
+        if (p && p.running) line.textContent = progress_text(p);
+      } catch {
+        line.textContent = `${Math.round((Date.now() - t0) / 1000)} s so far`;
+      }
+    }, 1000);
     try {
-      const res = await post("/api/generate", { seed: seed.value, settings: effective(schema, state.vals), spoiler: true, plando: state.plando });
+      const res = await post("/api/generate", { seed: seed.value, settings: effective(schema, state.vals), spoiler: true, plando: state.plando, ticket });
       seed.value = res.seed;
       state.seed = res.seed;
       state.last_error = "";
@@ -83,6 +111,7 @@ export function render() {
       bar();
       fill(out, notice("error", e.message));
     }
+    clearInterval(timer);
     go_btn.disabled = false;
   }
 
@@ -130,6 +159,7 @@ export function render() {
       { class: "card stack" },
       h("div", null, h("label", { class: "lbl", for: "seed" }, "Seed"), seed, h("p", { class: "hint" }, "The same seed with the same settings (and no plandomizer entries) always gives the same seed file.")),
       h("p", { class: "muted" }, `Settings: ${preset}${n ? `, ${n} changed from the defaults` : ""}. `, h("a", { href: "#/settings" }, "Change settings")),
+      h("div", null, h("label", { class: "switch", for: "hide_spoiler" }, hide, h("span", null, "Hide the spoiler")), h("p", { class: "hint" }, "Keeps the spoiler out of sight when the seed is made. You can still show it or download a copy. This only hides it on this page, the seed file still holds the placements.")),
       h(
         "div",
         { class: "row" },

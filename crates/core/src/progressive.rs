@@ -11,6 +11,7 @@ use crate::placement::{banc_files, hash_of};
 use crate::romfs::Romfs;
 use crate::slice::data::Data;
 use crate::staging::{banc_out, banc_raw, commit, rewrite, Committed, Out};
+use crate::tier_chain::Step;
 
 pub const FAMILIES: &[(&str, &[&str])] = &[
     ("Hookshot", &["Item_Hookshot", "Item_Longshot"]),
@@ -127,12 +128,6 @@ fn give(f: &mut Flow, actor: &str) -> Res<u16> {
     push(f, Kind::Sub { next: NONE, params: Some(c), flow: String::new(), entry: ROOT_ENTRY.to_string() })
 }
 
-fn ask(f: &mut Flow, a: u16, q: u16, actor: &str, no: u16, yes: u16) -> Res<u16> {
-    let c: Cont = Cont { items: vec![("ActorName".to_string(), Val::Str(actor.to_string()))] };
-    let cases: Vec<Case> = vec![Case { val: 0, ev: yes }, Case { val: 1, ev: no }];
-    push(f, Kind::Switch { actor: a, query: q, cases, params: Some(c) })
-}
-
 fn ensure_query(f: &mut Flow) -> Res<(u16, u16)> {
     let i: usize = match f.actors.iter().position(|a| a.name == HOLDER && a.sub.is_empty()) {
         Some(i) => i,
@@ -181,12 +176,30 @@ pub fn wrap(f: &mut Flow, family: &str) -> Res<()> {
     for x in t {
         subs.push(give(f, x)?);
     }
-    let mut next: u16 = subs[t.len() - 1];
-    for i in (0..t.len() - 1).rev() {
-        next = ask(f, a, q, o[i], subs[i], next)?;
-    }
-    f.entries.push(Entry { name, subs, vars: Vec::new(), main: next, pad });
+    let root: Kind = chain(f, a, q, family, o, &subs)?;
+    let main: u16 = push(f, root)?;
+    f.entries.push(Entry { name, subs, vars: Vec::new(), main, pad });
     Ok(())
+}
+
+fn chain(f: &mut Flow, a: u16, q: u16, family: &str, o: &[&str], gives: &[u16]) -> Res<Kind> {
+    let s: Vec<Step> = crate::tier_chain::of(family, gives.len());
+    let mut at: Vec<u16> = gives.to_vec();
+    let mut root: Option<Kind> = None;
+    for (i, x) in s.iter().enumerate().skip(gives.len()) {
+        let Step::Ask { owner, yes, no } = *x else {
+            return Err(Error::Format("progressive: a chain step past the gives is not a question"));
+        };
+        let c: Cont = Cont { items: vec![("ActorName".to_string(), Val::Str(o[owner].to_string()))] };
+        let cases: Vec<Case> = vec![Case { val: 0, ev: at[yes] }, Case { val: 1, ev: at[no] }];
+        let k: Kind = Kind::Switch { actor: a, query: q, cases, params: Some(c) };
+        if i + 1 == s.len() {
+            root = Some(k);
+        } else {
+            at.push(push(f, k)?);
+        }
+    }
+    root.ok_or(Error::Format("progressive: a family needs at least two tiers"))
 }
 
 fn with_param(k: &Kind, param: &str, value: &str) -> Res<Kind> {
@@ -220,13 +233,7 @@ pub fn wrap_grant(f: &mut Flow, index: usize, event: &str, param: &str, family: 
     for x in t {
         gives.push(push(f, with_param(&base, param, x)?)?);
     }
-    let mut next: u16 = gives[t.len() - 1];
-    for i in (1..t.len() - 1).rev() {
-        next = ask(f, a, q, o[i], gives[i], next)?;
-    }
-    let c: Cont = Cont { items: vec![("ActorName".to_string(), Val::Str(o[0].to_string()))] };
-    let cases: Vec<Case> = vec![Case { val: 0, ev: next }, Case { val: 1, ev: gives[0] }];
-    f.events[index].kind = Kind::Switch { actor: a, query: q, cases, params: Some(c) };
+    f.events[index].kind = chain(f, a, q, family, o, &gives)?;
     let at: u16 = idx(index)?;
     for e in f.entries.iter_mut() {
         if let Some(p) = e.subs.iter().position(|x| *x == at) {
@@ -450,7 +457,7 @@ pub fn build(romfs: &P, load: &P, name: &str, plans: &[(String, Vec<u64>)], o: &
             let Some(size) = probe else {
                 continue;
             };
-            let first: &str = tiers(family)?[0];
+            let first: &str = crate::pregrant::chest_drop(family)?;
             if edit_chest(&mut y, *h, first, &event_name(family, size)).is_some() {
                 used.insert((family.clone(), size));
                 found.insert(*h);
@@ -536,32 +543,29 @@ mod tests {
     fn wraps_three_tiers_into_a_chain() {
         let mut f: Flow = flow();
         wrap(&mut f, "Strength").unwrap();
-        assert_eq!(f.events.len(), 5);
+        assert_eq!(f.events.len(), 6);
         let e: &Entry = &f.entries[1];
         assert_eq!(e.subs, vec![0, 1, 2]);
-        assert_eq!(e.main, 4);
-        let Kind::Switch { cases, .. } = &f.events[4].kind else {
-            panic!("expected a switch");
-        };
-        assert_eq!(cases, &vec![Case { val: 0, ev: 3 }, Case { val: 1, ev: 0 }]);
-        let Kind::Switch { cases, .. } = &f.events[3].kind else {
-            panic!("expected a switch");
-        };
-        assert_eq!(cases, &vec![Case { val: 0, ev: 2 }, Case { val: 1, ev: 1 }]);
+        assert_eq!(e.main, 5);
+        let want: [(usize, u16, u16); 3] = [(5, 2, 4), (4, 2, 3), (3, 1, 0)];
+        for (i, yes, no) in want {
+            let Kind::Switch { cases, .. } = &f.events[i].kind else {
+                panic!("expected a switch");
+            };
+            assert_eq!(cases, &vec![Case { val: 0, ev: yes }, Case { val: 1, ev: no }], "event {i}");
+        }
     }
 
     #[test]
     fn ownership_is_checked_on_the_pouch_actor_not_the_chest_actor() {
         let mut f: Flow = flow();
         wrap(&mut f, "Strength").unwrap();
-        let Kind::Switch { params, .. } = &f.events[4].kind else {
-            panic!("expected a switch");
-        };
-        assert_eq!(params.as_ref().and_then(|c| c.get("ActorName")), Some(&Val::Str("Armor_Child_Gauntlet_Goron".to_string())));
-        let Kind::Switch { params, .. } = &f.events[3].kind else {
-            panic!("expected a switch");
-        };
-        assert_eq!(params.as_ref().and_then(|c| c.get("ActorName")), Some(&Val::Str("Armor_Adult_Gauntlet_Silver".to_string())));
+        for (i, who) in [(5usize, "Armor_Adult_Gauntlet_Gold"), (4, "Armor_Adult_Gauntlet_Silver"), (3, "Armor_Child_Gauntlet_Goron")] {
+            let Kind::Switch { params, .. } = &f.events[i].kind else {
+                panic!("expected a switch");
+            };
+            assert_eq!(params.as_ref().and_then(|c| c.get("ActorName")), Some(&Val::Str(who.to_string())));
+        }
         for (fam, _) in FAMILIES.iter().map(|x| (x.0, x.1)) {
             assert_eq!(owners(fam).unwrap().len(), tiers(fam).unwrap().len(), "{fam}");
         }
@@ -586,13 +590,13 @@ mod tests {
         wrap_grant(&mut f, 0, "Event127", "ActorName", "Strength").unwrap();
         assert_eq!(f.actors.len(), 2);
         assert_eq!(f.actors[1].name, HOLDER);
-        assert_eq!(f.events.len(), 5);
+        assert_eq!(f.events.len(), 6);
         assert_eq!(f.entries[0].subs, vec![1, 2, 3]);
         let Kind::Switch { cases, params, .. } = &f.events[0].kind else {
             panic!("expected a switch at the old index");
         };
-        assert_eq!(cases, &vec![Case { val: 0, ev: 4 }, Case { val: 1, ev: 1 }]);
-        assert_eq!(params.as_ref().and_then(|c| c.get("ActorName")), Some(&Val::Str("Armor_Child_Gauntlet_Goron".to_string())));
+        assert_eq!(cases, &vec![Case { val: 0, ev: 3 }, Case { val: 1, ev: 5 }]);
+        assert_eq!(params.as_ref().and_then(|c| c.get("ActorName")), Some(&Val::Str("Armor_Adult_Gauntlet_Gold".to_string())));
         for (i, want) in [(1usize, "Item_Gauntlet_Goron"), (2, "Item_Gauntlet_Silver"), (3, "Item_Gauntlet_Gold")] {
             let Kind::Sub { next, params, flow, entry } = &f.events[i].kind else {
                 panic!("expected a sub");
@@ -604,6 +608,51 @@ mod tests {
         wrap_grant(&mut f, 0, "Event127", "ActorName", "Strength").unwrap();
         assert_eq!(f, before);
         assert!(wrap_grant(&mut f, 0, "Other", "ActorName", "Strength").is_err());
+    }
+
+    fn walk(f: &Flow, main: u16, owned: &[&str]) -> String {
+        let mut at: u16 = main;
+        for _ in 0..f.events.len() {
+            match &f.events[at as usize].kind {
+                Kind::Switch { cases, params, .. } => {
+                    let who: Option<&Val> = params.as_ref().and_then(|c| c.get("ActorName"));
+                    let has: bool = matches!(who, Some(Val::Str(s)) if owned.contains(&s.as_str()));
+                    let v: u32 = if has { 0 } else { 1 };
+                    at = cases.iter().find(|c| c.val == v).map(|c| c.ev).unwrap();
+                }
+                Kind::Sub { params, .. } => {
+                    let c: &Cont = params.as_ref().unwrap();
+                    let v: Option<&Val> = c.get("ContentName").or_else(|| c.get("ActorName"));
+                    let Some(Val::Str(s)) = v else {
+                        panic!("a give without an actor");
+                    };
+                    return s.clone();
+                }
+                _ => panic!("unexpected event"),
+            }
+        }
+        panic!("the chain loops")
+    }
+
+    #[test]
+    fn the_built_chain_follows_ownership_and_never_lowers_a_tier() {
+        let cases: [(&str, &[&str], &str); 9] = [
+            ("BombBag", &[], "Item_BombBag_Small"),
+            ("BombBag", &["Item_BombBag_Small"], "Item_BombBag_Medium"),
+            ("BombBag", &["Item_BombBag_Small", "Item_BombBag_Medium"], "Item_BombBag_Large"),
+            ("BombBag", &["Item_BombBag_Medium"], "Item_BombBag_Large"),
+            ("BombBag", &["Item_BombBag_Large"], "Item_BombBag_Large"),
+            ("Bow", &["Item_Quiver_Medium"], "Item_Range_Bow"),
+            ("Bow", &["Weapon_Range_Bow", "Item_Quiver_Large"], "Item_Quiver_Large"),
+            ("Scale", &["Item_Scale_Gold"], "Item_Scale_Gold"),
+            ("Hookshot", &["Item_Hookshot"], "Item_Longshot"),
+        ];
+        for (fam, owned, want) in cases {
+            let mut f: Flow = flow();
+            wrap(&mut f, fam).unwrap();
+            let main: u16 = f.entries[1].main;
+            assert_eq!(walk(&f, main, owned), want, "{fam} {owned:?}");
+        }
     }
 
     #[test]

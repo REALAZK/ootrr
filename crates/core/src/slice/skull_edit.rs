@@ -1,14 +1,14 @@
-use std::collections::BTreeSet as BS;
+use std::collections::{BTreeMap as BM, BTreeSet as BS};
 
 use crate::byml::{Byml, Node};
 use crate::error::{Error as E, Res};
 use crate::placement::hash_of;
 use crate::pots::DROP;
-use crate::romfs::Romfs;
 use crate::settings::seed::SeedFile;
 use crate::slice::data::Data;
 use crate::slice::edit::Edited;
-use crate::slice::skulls::{is_skull, pickup, table, Table, TOKEN};
+use crate::slice::skull_kit::kit_actor;
+use crate::slice::skulls::{drop_actor, is_skull, pickup, table, Table, TOKEN};
 
 pub const SKULL: &str = "Enemy_Skulltula_Gold";
 pub const LISTED: usize = 10;
@@ -29,13 +29,21 @@ pub fn vanilla_actor(d: &Data, loc: &str) -> Option<String> {
 }
 
 pub fn drops(d: &Data, seed: &SeedFile) -> Res<Vec<Drop>> {
+    let v: crate::slice::tier_order::Verdict = crate::slice::tier_order::fixed_actors(d, seed)?;
+    drops_with(d, seed, &v.assign)
+}
+
+pub fn drops_with(d: &Data, seed: &SeedFile, fixed: &BM<String, String>) -> Res<Vec<Drop>> {
     let t: Table = table()?;
     let mut out: Vec<Drop> = Vec::new();
     for (loc, item) in seed.placements.iter().filter(|(l, _)| is_skull(d, l)) {
         if item == TOKEN {
             continue;
         }
-        let actor: String = pickup(&t, d, item).ok_or_else(|| E::Msg(format!("{item} has no world pickup, so {loc} cannot drop it")))?;
+        let actor: String = match pickup(&t, d, item) {
+            Some(from) => kit_actor(&from),
+            None => drop_actor(&t, d, item, fixed.get(loc).map(|s| s.as_str())).map_err(|e| E::Msg(format!("{item} has no world pickup, so {loc} cannot drop it: {e}")))?,
+        };
         let l: &crate::catalog::Loc = d.cat.by_name(loc).ok_or_else(|| E::Msg(format!("{loc} is not in the catalog")))?;
         for r in &l.refs {
             out.push(Drop { name: loc.clone(), item: item.clone(), hash: r.hash, actor: actor.clone() });
@@ -114,23 +122,13 @@ pub fn all_found(ds: &[Drop], hit: &BS<u64>) -> Res<()> {
     }
 }
 
-pub fn check_packs(rf: &Romfs, ds: &[Drop]) -> Res<()> {
-    let actors: BS<&str> = ds.iter().map(|d| d.actor.as_str()).collect();
-    for a in actors {
-        if !rf.root.join("Pack").join("Actor").join(format!("{a}.pack.zs")).is_file() {
-            return Err(E::Msg(format!("the game folder has no pickup actor {a}, a skulltula cannot drop it")));
-        }
-    }
-    Ok(())
-}
-
 pub fn notes(ds: &[Drop]) -> Vec<String> {
     if ds.is_empty() {
         return Vec::new();
     }
     let names: BS<(&str, &str, &str)> = ds.iter().map(|d| (d.name.as_str(), d.item.as_str(), d.actor.as_str())).collect();
     let mut out: Vec<String> = vec![format!(
-        "{} Gold Skulltulas drop another item than the token and the skulltula death table now keeps every skulltula dead once killed. Check these in game ({} of {}):",
+        "{} Gold Skulltulas drop another item than the token. Each drop is a kit pickup that plays the get window, and a skulltula is only saved when its item is picked up, so an item left behind comes back with the skulltula. Untested in the game. Check these ({} of {}):",
         names.len(),
         names.len().min(LISTED),
         names.len()
@@ -195,13 +193,14 @@ mod tests {
     fn a_generated_seed_turns_into_drops_with_world_pickups_only() {
         let d: Data = Data::load().unwrap();
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set("shuffle_skulltulas", Value::s("matched")).unwrap();
         let mut seen: usize = 0;
         for n in 0..3 {
             let g: Generated = generate_data(&d, &s, &format!("drops {n}"), &GenOpts::default()).unwrap();
             let ds: Vec<Drop> = drops(&d, &g.seed_file).unwrap();
             for x in &ds {
-                assert!(x.actor.starts_with("Obj_"), "{}", x.actor);
+                assert!(x.actor.starts_with("Obj_") && x.actor.ends_with("_GS"), "{}", x.actor);
                 assert_ne!(x.item, TOKEN);
                 assert!(is_skull(&d, &x.name));
             }

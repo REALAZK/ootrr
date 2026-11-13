@@ -41,7 +41,7 @@ mod tests {
     }
 
     fn dest(id: &str, banc: &str) -> Dest {
-        Dest { id: id.to_string(), banc: banc.to_string(), pos: [4.0, 5.0, 6.0], yaw: 1.0, label: String::new() }
+        Dest { id: id.to_string(), banc: banc.to_string(), pos: [4.0, 5.0, 6.0], yaw: 1.0, label: String::new(), kind: "chest".to_string() }
     }
 
     #[test]

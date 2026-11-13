@@ -1,4 +1,4 @@
-use super::model::{Group, Schema, Setting, Tag};
+use super::model::{Group, Schema, Setting, Tag, Value};
 
 pub const SCHEMA_VERSION: u32 = 1;
 
@@ -204,13 +204,13 @@ pub fn build() -> Schema {
     s.push(
         where_checks(
             Setting::choice(9, "shuffle_pots", "shuffle", "Pots", "off")
-                .tip("Which pots, including flying pots, hold random items."),
+                .tip("Which pots, including flying pots, hold random items. Key items whose pickup pack is built can sit in a pot. A pot item that is not picked up, falls into a pit or is left behind on a room change is lost for good."),
         ),
     );
     s.push(
         where_checks(
             Setting::choice(10, "shuffle_crates", "shuffle", "Crates", "off")
-                .tip("Which crates hold random items."),
+                .tip("Which crates hold random items. Key items whose pickup pack is built can sit in a crate, given once."),
         ),
     );
     s.push(
@@ -224,7 +224,7 @@ pub fn build() -> Schema {
     s.push(
         where_checks(
             Setting::choice(12, "shuffle_freestanding_items", "shuffle", "Freestanding items", "off")
-                .tip("Which rupees, hearts and heart pieces lying on the ground hold random items. Only heart pieces, rupees and recovery hearts can be placed there. Experimental, untested in the game."),
+                .tip("Which rupees, hearts and heart pieces lying on the ground hold random items. Rupees, hearts, heart pieces, the two shields and every key item whose pickup pack is built can be placed there. A spot that exists once per age only takes items that can be found twice. Experimental, untested in the game."),
         ),
     );
     s.push(
@@ -296,14 +296,20 @@ pub fn build() -> Schema {
             .tip("How many heart containers you begin with."),
     );
     s.push(
-        Setting::choice(38, "shuffle_rewards", "shuffle", "Story and NPC rewards", "off")
-            .tip("Whether the items that boss rooms, NPCs, minigames and Great Fairies hand out are shuffled. Songs are never shuffled yet.")
+        Setting::choice(38, "shuffle_rewards", "shuffle", "Story and NPC rewards", "supported")
+            .wire_as(Value::s("off"))
+            .tip("Whether the items that NPCs, minigames, Great Fairies and story scenes hand out are shuffled. This is on by default but still experimental, none of these edits are tested in the game yet. The Spiritual Stones and Medallions from the bosses and Rauru stay in place unless Stones and Medallions is also on. Songs have their own setting.")
             .opt("off", "Vanilla", "These rewards keep their original items.")
             .opt("supported", "Supported rewards", "The rewards whose event the tool can edit. Experimental, none of these edits are tested in the game yet."),
     );
     s.push(
         Setting::toggle(51, "shuffle_rewards_extra", "shuffle", "More NPC rewards", false)
             .tip("Also shuffle the rewards that need bigger event edits: the 20 token Skulltula reward, Biggoron and Medigoron. Experimental, none of these edits are tested in the game yet.")
+            .when("shuffle_rewards", "supported"),
+    );
+    s.push(
+        Setting::toggle(74, "shuffle_dungeon_rewards", "shuffle", "Stones and Medallions", false)
+            .tip("Also shuffle the three Spiritual Stones and six Medallions that the bosses and Rauru hand out. When this is off, every boss and Rauru give their usual Stone or Medallion, and no Stone or Medallion turns up anywhere else. Experimental, none of these edits are tested in the game yet.")
             .when("shuffle_rewards", "supported"),
     );
     s.push(
@@ -354,7 +360,7 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::choice(52, "shuffle_skulltulas", "shuffle", "Gold Skulltulas", "off")
-            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can only drop items that the game has a pickup for, and it stays dead once killed. Experimental, untested in the game.")
+            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can drop items that the game has a pickup for and key items whose pickup pack is built, as a kit pickup that plays the get window. A killed skulltula stays gone only once its dropped item is picked up, and it comes back if the item is left behind. Experimental, untested in the game.")
             .opt("off", "Vanilla", "Every skulltula drops its token.")
             .opt("pinned", "Confident matches", "Only the skulltulas whose remake actor is known for sure are shuffled.")
             .opt("matched", "Confident and pooled", "Also the pools of skulltulas that share the same logic, so a mixed up pairing cannot matter."),
@@ -364,6 +370,29 @@ pub fn build() -> Schema {
             .tip("Whether the chests that only the remake has, and the dungeon and overworld chests newly paired with their OoTR spot, join the item pool. Their rules come from research. Seven overworld chests whose spot is unproven only take items that are not progression. Experimental, untested in the game.")
             .opt("off", "Vanilla", "These chests keep their original items.")
             .opt("on", "Shuffled", "These chests hold random items."),
+    );
+    s.push(
+        Setting::toggle(57, "bombchus_in_logic", "world", "Bombchus in logic (experimental)", false)
+            .tip("Experimental. Bombchus count as explosives in the seed logic, so walls, switches and enemies that need an explosive can be handled with Bombchus and no Bomb Bag. This follows the OoTR option that considers Bombchus in logic. Only the logic side is done here, the remake gets no separate Bombchu bag and no Bombchu drops. Caution: in our test of the remake, Bombchus only worked once a Bomb Bag and its ammo maximum were set, and a Bombchu pickup gave a count of 0 without them. The game is also reported to gate Bombchu use on a bag or a defeated Dodongo. A seed with this ticked may expect Bombchus where the game will not let you use them."),
+    );
+    s.push(
+        Setting::choice(70, crate::qol::SKIP, "world", "Skippable cutscenes", "off")
+            .tip("Removes the lock that stops the player from skipping some cutscenes. Most cutscenes can already be skipped by holding the skip button, only eight are locked. Experimental, untested in the game.")
+            .opt("off", "Vanilla", "The locked cutscenes stay locked.")
+            .opt("story", "Opening and credits", "The opening movie and the first credits movie can be skipped. The six title screen demos stay locked.")
+            .opt("all", "All locks", "Also unlocks the six title screen demos. Pressing the skip button on the title screen may then skip a demo."),
+    );
+    s.push(
+        Setting::toggle(71, crate::qol::ANJU, "world", "Anju needs one cucco", false)
+            .tip("Anju in Kakariko Village counts the cucco game as won when one cucco is in the pen instead of seven. The Bottle reward is the same. The logic needs one cucco too. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(72, crate::qol::POE, "world", "Big poe bottle at the first big poe", false)
+            .tip("The Ghost Shop owner in the Market gives the Bottle for the first big poe, where the game wants five. The golden reward after ten big poes is unchanged. The logic needs one big poe. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(73, "shuffle_treasure_reward", "shuffle", "Treasure Chest Game reward", false)
+            .tip("Whether the final reward of the Market Treasure Chest Game, a Piece of Heart, holds a random item. Only the first win gives it, later wins give the usual red rupee. The five rooms keep their keys and rupees. Only unique items that do nothing when found twice can be placed there, so no upgrades, ammo, bottles or keys. Experimental, untested in the game."),
     );
     s.push(starting_items());
     s.push(starting_songs());

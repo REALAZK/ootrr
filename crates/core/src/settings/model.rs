@@ -147,6 +147,7 @@ pub struct Setting {
     pub max_items: usize,
     pub deps: Vec<Dep>,
     pub disabled: Option<Value>,
+    pub wire: Option<Value>,
 }
 
 impl Setting {
@@ -167,6 +168,7 @@ impl Setting {
             max_items: 0,
             deps: Vec::new(),
             disabled: None,
+            wire: None,
         }
     }
 
@@ -242,6 +244,15 @@ impl Setting {
     pub fn disabled_as(mut self, v: Value) -> Setting {
         self.disabled = Some(v);
         self
+    }
+
+    pub fn wire_as(mut self, v: Value) -> Setting {
+        self.wire = Some(v);
+        self
+    }
+
+    pub fn wire_value(&self) -> &Value {
+        self.wire.as_ref().unwrap_or(&self.default)
     }
 
     pub fn choice_index(&self, id: &str) -> Option<usize> {

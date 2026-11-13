@@ -298,4 +298,67 @@ mod tests {
         assert!(t.len() < 16, "{t}");
         assert_eq!(Settings::decode(&t).unwrap().settings, Settings::default());
     }
+
+    #[test]
+    fn rewards_are_on_by_default_and_stones_and_medallions_are_not() {
+        let s: Settings = Settings::default();
+        assert_eq!(s.text("shuffle_rewards").unwrap(), "supported");
+        assert!(!s.flag("shuffle_dungeon_rewards").unwrap());
+        assert!(s.is_enabled("shuffle_dungeon_rewards"));
+        let d: &Setting = schema().get("shuffle_dungeon_rewards").unwrap();
+        assert_eq!(d.num, 74);
+        assert_eq!(d.kind, Kind::Toggle);
+        assert_eq!(d.group, "shuffle");
+        assert_eq!(d.deps, vec![model::Dep { on: "shuffle_rewards".into(), cond: Cond::Is(Value::s("supported")) }]);
+        assert!(d.tip.contains("Experimental"));
+        assert!(!schema().get("shuffle_rewards").unwrap().tip.contains("never shuffled yet"));
+    }
+
+    #[test]
+    fn stones_and_medallions_only_show_under_supported_rewards() {
+        let mut s: Settings = Settings::default();
+        s.set("shuffle_dungeon_rewards", Value::Bool(true)).unwrap();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
+        s.normalize();
+        assert!(!s.is_enabled("shuffle_dungeon_rewards"));
+        assert!(!s.flag("shuffle_dungeon_rewards").unwrap());
+        s.set("shuffle_rewards", Value::s("supported")).unwrap();
+        assert!(s.is_enabled("shuffle_dungeon_rewards"));
+    }
+
+    #[test]
+    fn old_strings_keep_the_rewards_they_were_written_with() {
+        let cases: [(&str, &str, bool, bool, &str); 4] = [
+            ("OOTRR1-XZLA", "off", false, false, "all"),
+            ("OOTRR1-EYAQD32I", "supported", false, false, "all"),
+            ("OOTRR1-EYAQCMYBAHY7A", "supported", false, true, "all"),
+            ("OOTRR1-BAAQFSMI", "off", false, false, "dungeons"),
+        ];
+        for (t, rewards, dungeon, extra, chests) in cases {
+            let l: Loaded = Settings::decode(t).unwrap();
+            assert!(l.warnings.is_empty(), "{t}");
+            let s: Settings = l.settings;
+            assert_eq!(s.text("shuffle_rewards").unwrap(), rewards, "{t}");
+            assert_eq!(s.flag("shuffle_dungeon_rewards").unwrap(), dungeon, "{t}");
+            assert_eq!(s.flag("shuffle_rewards_extra").unwrap(), extra, "{t}");
+            assert_eq!(s.text("shuffle_chests").unwrap(), chests, "{t}");
+            assert_eq!(s.encode().unwrap(), t);
+        }
+    }
+
+    #[test]
+    fn rewards_off_writes_the_old_default_string_and_the_new_toggle_round_trips() {
+        let mut s: Settings = Settings::default();
+        assert_eq!(s.encode().unwrap(), "OOTRR1-EYAQD32I");
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
+        assert_eq!(s.encode().unwrap(), "OOTRR1-XZLA");
+        let mut s: Settings = Settings::default();
+        s.set("shuffle_dungeon_rewards", Value::Bool(true)).unwrap();
+        let t: String = s.encode().unwrap();
+        assert_ne!(t, "OOTRR1-EYAQD32I");
+        let l: Loaded = Settings::decode(&t).unwrap();
+        assert!(l.warnings.is_empty());
+        assert_eq!(l.settings, s);
+        assert!(l.settings.flag("shuffle_dungeon_rewards").unwrap());
+    }
 }

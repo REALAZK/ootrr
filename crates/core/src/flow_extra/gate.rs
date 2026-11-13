@@ -60,6 +60,7 @@ mod tests {
         assert!(!plan(&with(Some(false))).unwrap().extra);
         assert!(plan(&with(Some(true))).unwrap().extra);
         let mut s: Settings = Settings::default();
+        s.set("shuffle_rewards", Value::s("off")).unwrap();
         s.set(crate::flow_extra::SETTING, Value::Bool(true)).unwrap();
         assert!(!plan(&s).unwrap().extra);
         assert_eq!(Settings::default().encode().unwrap(), with(None).encode().unwrap());

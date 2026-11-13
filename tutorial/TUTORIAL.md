@@ -74,7 +74,7 @@ Things to know:
 
 - Only the **Default** preset is available right now. The others are greyed out because they need settings the tool cannot apply yet. Hover over one to see what is missing.
 - Many settings are visible but do nothing yet, for example the Rainbow Bridge or Starting age. The build report lists them under "Not applied by this build" so you always know what really changed.
-- The settings that do change the game are: which chests are shuffled and how dungeon keys, maps and compasses are placed, boss and NPC rewards, boss heart containers, songs, gossip stone hints, faster item pickups, starting with a Stone or Medallion, and an open Kokiri Forest. Anything marked experimental has not been played in the game yet.
+- The settings that do change the game are: which chests are shuffled and how dungeon keys, maps and compasses are placed, story and NPC rewards (on by default), Stones and Medallions, boss heart containers, songs, gossip stone hints, faster item pickups, starting with a Stone or Medallion, and an open Kokiri Forest. Anything marked experimental has not been played in the game yet.
 - The short code under the presets is your **settings string**. Share it with friends so they can use the same settings.
 
 When you are happy, click the **Generate** step.

@@ -27,7 +27,8 @@ The mod build needs your own extracted copy of the game with the 1.1.1 update in
 Everything is optional and off unless noted. All of these are experimental and some have not been played in the game yet.
 
 - Chest shuffle, dungeon item placement and progressive upgrades (Hookshot, Strength, bags, wallets, scales and more).
-- Boss and NPC rewards, boss heart containers as chests, and songs shuffled among the song teachers or anywhere.
+- Story and NPC rewards (on by default, experimental and untested in the game). The Spiritual Stones and Medallions stay with the bosses and Rauru unless Stones and Medallions is also on.
+- Boss heart containers as chests, and songs shuffled among the song teachers or anywhere.
 - Gossip stones that tell you where an important item lies, without the Mask of Truth.
 - Start with one random Spiritual Stone or Medallion.
 - Faster chest and item pickup scenes.
@@ -37,6 +38,7 @@ Everything is optional and off unless noted. All of these are experimental and s
 - The Kakariko gate can start open (on by default), which also skips the castle visit: a new game sets the castle, Door of Time and Fire Stone quests to the state after Impa's send off and the guard, marks Saria's house scenes, the owl and Talon's castle scene as played, opens the Threads of Time menu, and gives the items of Zelda's Letter and the Song from Impa. Malon's egg can no longer be collected and never holds an important item. These writes go into the opening event flow, next to the game's own first quest step. Saria's bridge scene normally marks Hyrule Field as first visited, which fixes its daylight and stops the clock until Impa's send off; with the send off skipped that write is turned into a clear, so the day and night cycle runs from the first visit. The field's clock also waits for Zelda's courtyard talk, so its markers are written too, and Navi's monster lesson from the Deku Tree is marked as seen, so the D-pad calls Navi and gives enemy information from the start.
 - The Door of Time can start open (on by default): the Temple of Time logic modules are edited so the door is always open and the Master Sword can be drawn without the Door of Time quest, a new game sets the door's opened flag, and the logic places items accordingly. The quest is left alone so Zelda's escape and the Song of Time stay checks, and drawing the sword before the quest reached the door no longer completes the quest, since a completed quest would hide those two checks. The adult pedestal also works before the Forest Sage is awakened, so you can return to childhood at any time; on the way back the child is given the Kokiri Sword instead of the Master Sword, and Sheik stands a little off the centre line so the pedestal prompt is easy to reach. `ootrr door-open` writes a test mod with only those edits.
 - Zora's Fountain can start open: a new game sets the Water Stone quest to the step after Ruto's Letter was shown (King Zora stands aside) and marks his moving scene as played, which removes the wall in front of the passage. Ruto's Letter can still be found at the lake and stays a bottle. "Open as adult" only tells the logic; the adult domain has no blocker in the game data.
+- Bombchus in logic (experimental, off by default): the seed logic counts Bombchus as explosives without a Bomb Bag, as OoTR does. Only the logic is changed. In our test the game only let Bombchus work once a Bomb Bag and its ammo maximum were set, so a seed with this ticked may expect Bombchus where the game will not let you use them.
 - A plandomizer on the Generate page, or --plando Location=Item on the command line, to fix chosen items at chosen locations. The seed is only made if it can still be beaten.
 
 ## Troubleshooting
@@ -88,3 +90,7 @@ git push origin v0.1.0
 ```
 
 The workflow in `.github/workflows/release.yml` runs the tests, builds with the build paths stripped, audits each binary with `tools/audit.py`, makes the installers in `packaging/` and publishes a prerelease with `SHA256SUMS.txt`. To try the build without publishing, start the workflow by hand from the Actions tab. That builds everything and keeps the files as artifacts.
+
+## License
+
+OOTRR is free software under the GNU General Public License, version 3 or any later version (see `LICENSE`). Releases up to and including 0.4.0 were published under the MIT License, kept in `LICENSE-MIT`. Credits for the ported OoT Randomizer logic and the embedded fonts are in `NOTICE`. No game files are included.

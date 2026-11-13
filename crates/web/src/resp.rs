@@ -2,7 +2,7 @@ use ootrr_core::json::Json;
 
 use crate::error::Fail;
 
-pub const CSP: &str = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; font-src 'none'; object-src 'none'; media-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+pub const CSP: &str = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; media-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Resp {
@@ -109,6 +109,14 @@ mod tests {
         assert!(CSP.contains("script-src 'self'"));
         assert!(CSP.contains("style-src 'self'"));
         assert!(CSP.contains("default-src 'none'"));
+    }
+
+    #[test]
+    fn csp_allows_only_own_fonts_and_no_media() {
+        assert!(CSP.contains("font-src 'self';"));
+        assert!(CSP.contains("media-src 'none'"));
+        assert!(CSP.contains("img-src 'self'"));
+        assert!(!CSP.contains("font-src 'none'"));
     }
 
     #[test]

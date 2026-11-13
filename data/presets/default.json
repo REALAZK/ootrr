@@ -1,7 +1,7 @@
 {
   "id": "default",
   "name": "Default",
-  "tip": "Chests are shuffled and keys stay in their own dungeon. Everything else keeps the standard rules.",
+  "tip": "Chests and the story and NPC rewards are shuffled, and keys stay in their own dungeon. Everything else keeps the standard rules.",
   "order": 0,
   "settings": {}
 }

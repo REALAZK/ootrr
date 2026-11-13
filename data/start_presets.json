@@ -1,0 +1,17 @@
+{
+  "format": 1,
+  "source": "GameData/GameDataList.Product.110",
+  "presets": [
+    {
+      "setting": "open_kakariko",
+      "value": "open",
+      "edits": [
+        {"kind": "bool", "name": "Npc_Hylia_Soldier_003_GateOpen", "value": true}
+      ],
+      "note": "The Kakariko gate to Death Mountain starts open. The guard flag it reads also opens the Happy Mask Shop and changes some Market and Kakariko talk. The flag's new game value is set in the flag list, experimental and untested in the game."
+    }
+  ],
+  "control": [
+    {"kind": "int", "name": "PlayerStatus.CurrentRupee", "value": 42}
+  ]
+}

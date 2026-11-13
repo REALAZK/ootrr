@@ -13,6 +13,7 @@ export const state = {
   game_check: null,
   mod_check: null,
   result: null,
+  hide_spoiler: false,
 };
 
 const subs = new Set();
@@ -39,7 +40,7 @@ function take(store, key) {
 }
 
 export function save() {
-  put(localStorage, KEY, { vals: state.vals, seed: state.seed, plando: state.plando, paths: state.paths });
+  put(localStorage, KEY, { vals: state.vals, seed: state.seed, plando: state.plando, paths: state.paths, hide_spoiler: state.hide_spoiler });
   put(sessionStorage, RKEY, state.result);
 }
 
@@ -53,6 +54,7 @@ export function restore(schema) {
   const s = take(localStorage, KEY);
   state.vals = sanitize(schema, s && s.vals);
   if (s && typeof s.seed === "string") state.seed = s.seed.slice(0, 100);
+  if (s && typeof s.hide_spoiler === "boolean") state.hide_spoiler = s.hide_spoiler;
   if (s && Array.isArray(s.plando)) {
     state.plando = s.plando
       .filter((p) => p && typeof p.location === "string" && typeof p.item === "string")

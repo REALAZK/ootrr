@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path as P;
+use std::sync::Arc;
 
 use ootrr_core::error::{Error, Res};
 use ootrr_core::modpack::Host;
@@ -7,7 +8,11 @@ use ootrr_core::json::{self, Json};
 use ootrr_core::settings::presets::{self, Preset};
 use ootrr_core::settings::seed::SeedFile;
 use ootrr_core::settings::{Loaded, Settings};
+use ootrr_core::slice::generate::LIMIT;
+use ootrr_core::slice::watch::Live;
 use ootrr_core::slice::{self, plando, scan, BuildCounts, Built, GenOpts, Generated};
+
+use crate::gen_progress;
 
 fn arg<'a>(a: &'a [String], i: usize, what: &'static str) -> Res<&'a str> {
     a.get(i).map(|s| s.as_str()).ok_or(Error::Format(what))
@@ -65,7 +70,13 @@ pub fn generate(a: &[String]) -> Res<()> {
     for w in &s.warnings {
         eprintln!("warning: {w}");
     }
-    let g: Generated = slice::generate_with(&s.settings, seed, &o)?;
+    let live: Arc<Live> = Arc::new(Live::default());
+    o.limit = Some(LIMIT);
+    o.live = Some(Arc::clone(&live));
+    let line: gen_progress::Line = gen_progress::start(live);
+    let r: Res<Generated> = slice::generate_with(&s.settings, seed, &o);
+    line.stop();
+    let g: Generated = r?;
     g.seed_file.write(P::new(out))?;
     if let (Some(p), Some(t)) = (spoiler, &g.spoiler) {
         fs::write(p, t)?;

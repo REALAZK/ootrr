@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" data-theme="hyrule">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="referrer" content="no-referrer">
+<title>OOTRR Tracker</title>
+<link rel="stylesheet" href="/tracker.css">
+<script type="module" src="/js/tracker_app.js"></script>
+</head>
+<body>
+<div class="app">
+<header class="top">
+<div class="brand"><b>OOTRR</b> Tracker</div>
+<a class="chip link" href="/">Randomizer</a>
+<div id="live" class="live" role="status" aria-live="polite">Starting</div>
+<div class="grow"></div>
+<div id="total" class="total"></div>
+<div id="tools" class="tools"></div>
+</header>
+<nav id="rail" class="rail" aria-label="Places"></nav>
+<main id="stage" class="stage"><div class="float title"><h1>Tracker</h1><p>Loading</p></div></main>
+<aside class="side" aria-label="Locations">
+<div id="searchbox"></div>
+<div id="filters" class="filters" role="group" aria-label="Kinds"></div>
+<div id="list" class="list"></div>
+<div id="card"></div>
+</aside>
+</div>
+<div id="news" class="news" role="status" aria-live="polite"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<noscript><p class="notice error">This page needs JavaScript.</p></noscript>
+</body>
+</html>
