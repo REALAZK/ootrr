@@ -86,7 +86,13 @@ fn page(r: &Req) -> Hr<Resp> {
             need(r, "GET")?;
             Ok(Resp::new(200, t, b.as_bytes().to_vec()))
         }
-        None => Err(Fail::new(404, "not found")),
+        None => match assets::get_bin(&r.path) {
+            Some((t, b)) => {
+                need(r, "GET")?;
+                Ok(Resp::new(200, t, b.to_vec()))
+            }
+            None => Err(Fail::new(404, "not found")),
+        },
     }
 }
 

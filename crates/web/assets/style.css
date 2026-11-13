@@ -88,6 +88,7 @@ a { color: var(--accent); }
 .step.done .n { background: var(--ok-bg); color: var(--ok); }
 
 main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 80px; outline: none; }
+main:focus-visible { outline: none; }
 
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: var(--gap); }
 .card > :last-child { margin-bottom: 0; }
@@ -217,6 +218,10 @@ progress { width: 100%; height: 14px; accent-color: var(--accent); }
 .plando-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
 .plando-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .plando-list li span { min-width: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 700px) {
+  .steps { order: 3; flex: 1 1 100%; }
+}
 
 @media (max-width: 520px) {
   main { padding: 14px 12px 80px; }

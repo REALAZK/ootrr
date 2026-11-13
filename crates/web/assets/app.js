@@ -7,6 +7,7 @@ import { render as settings } from "/js/settings.js";
 import { render as generate } from "/js/generate.js";
 import { render as result } from "/js/result.js";
 import { start as start_theme } from "/js/theme.js";
+import { start as start_sfx } from "/js/sfx.js";
 import { start as start_update } from "/js/update.js";
 
 function fail(msg) {
@@ -15,6 +16,7 @@ function fail(msg) {
 
 async function boot() {
   start_theme();
+  start_sfx();
   if (!init_token()) {
     return fail("This page has no session token. Open the link that ootrr serve printed in your terminal.");
   }

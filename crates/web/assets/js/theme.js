@@ -1,12 +1,12 @@
 import { h } from "./dom.js";
 
 export const THEMES = [
+  { id: "hyrule", label: "Hyrule" },
   { id: "system", label: "System" },
   { id: "win95", label: "Windows 95" },
   { id: "winxp", label: "Windows XP" },
   { id: "vista", label: "Windows Vista" },
   { id: "pinkblack", label: "Pink and black" },
-  { id: "hyrule", label: "Hyrule" },
   { id: "terminal", label: "Terminal" },
   { id: "nord", label: "Nord" },
   { id: "sunset", label: "Sunset" },
@@ -15,6 +15,7 @@ export const THEMES = [
 ];
 
 const KEY = "ootrr.theme";
+const DEFAULT = "hyrule";
 
 function known(id) {
   return THEMES.some((t) => t.id === id);
@@ -23,9 +24,9 @@ function known(id) {
 function saved() {
   try {
     const v = localStorage.getItem(KEY);
-    return v && known(v) ? v : "system";
+    return v && known(v) ? v : DEFAULT;
   } catch {
-    return "system";
+    return DEFAULT;
   }
 }
 
