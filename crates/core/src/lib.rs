@@ -64,6 +64,7 @@ pub mod settings;
 pub mod slice;
 pub mod song_models;
 pub mod special;
+pub mod start_defaults;
 pub mod start_reward;
 pub mod songs;
 pub mod spoiler;

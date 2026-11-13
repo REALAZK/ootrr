@@ -545,6 +545,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         more.push(crate::start_reward::stage_all(&mut rf, &give, &flags)?);
     }
     crate::pot_slice::rows::stage(&mut rf, &mut more, &crate::pot_slice::apply::hashes(&pot_ts))?;
+    crate::start_defaults::stage(&mut rf, &mut more, &crate::start_defaults::presets::chosen(&p.defaults())?)?;
     if scrub_rows == 0 {
         crate::scrubs_b::stage_rows(&mut rf, &scrub_jobs, &mut more, true)?;
     }
@@ -565,8 +566,11 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     if p.fast {
         extra += crate::fast::apply(&mut rf, &pk)?;
     }
-    if p.intro {
-        let (outs, _): (Vec<crate::staging::Out>, crate::intro_skip::Report) = crate::intro_skip::stage(&mut rf, crate::intro_skip::Opts::FULL)?;
+    if p.intro || p.opening_step().is_some() {
+        let mut outs: Vec<crate::staging::Out> = if p.intro { crate::intro_skip::stage(&mut rf, crate::intro_skip::Opts::FULL)?.0 } else { Vec::new() };
+        if let Some(st) = p.opening_step() {
+            crate::start_defaults::opening::stage(&mut rf, &mut outs, st)?;
+        }
         for o in outs {
             pk.write_romfs(&o.path, &o.z)?;
             extra += 1;

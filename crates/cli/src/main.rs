@@ -32,6 +32,7 @@ mod teleport_check;
 mod teleport_cmd;
 mod teleport_merge_cmd;
 mod slice_cmd;
+mod start_defaults_cmd;
 
 use std::env;
 use std::fs;
@@ -68,6 +69,7 @@ const USAGE: &str = "usage:
   ootrr flow-force <romfs_root> <load_dir> <mod_name> <relative_path> <event_name> <case_value> [<event_name> <case_value>]...
   ootrr intro-skip <romfs_root> <load_dir> <mod_name> [--movie-only | --scene-only | --hold | --hold-and-scene]
   ootrr door-fix <romfs_root> <load_dir> <mod_name>
+  ootrr start-defaults <romfs_root> <load_dir> <mod_name> [--preset setting=value]... [--control] [--bool N=v] [--int N=v] [--enum N=v] [--grant Actor:n] [--opening-step S]
   ootrr flow-rewards <romfs_root> <out_json>
   ootrr flow-sim <romfs_root> <flow> <entry> [--set name=value]... [--own Item[:n]]... [--choose n]... [--hour h] [--follow] [--verbose] [--mod dir] [--patch doorfix] [--nodep Challenge] [--never lit,!lit] [--expect rule] [--compare] [--run Flow:Entry]...
   ootrr flow-vocab <romfs_root>
@@ -332,6 +334,7 @@ fn main() -> ExitCode {
         Some("flow-scale") => check_bfevfl::scale(&a[1..]),
         Some("intro-skip") => intro_cmd::run(&a[1..]),
         Some("door-fix") => door_fix_cmd::run(&a[1..]),
+        Some("start-defaults") => start_defaults_cmd::run(&a[1..]),
         Some("progressive") => progressive_cmd::run(&a[1..]),
         Some("key-credit") => key_credit_cmd::run(&a[1..]),
         Some("boss-heart") => boss_heart_cmd::run(&a[1..]),

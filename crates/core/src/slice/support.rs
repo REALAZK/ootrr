@@ -38,6 +38,7 @@ pub enum Forest {
 
 pub const MIDO_WALL: &str = "KokiriForest_Npc_Kokiri_Mido_Child_Blocker";
 pub const EXIT_WALL: &str = "KokiriForest_Npc_Kokiri_007_Child_Blocker_00";
+pub const KAKARIKO: (&str, &str) = ("open_kakariko", "open");
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Songs {
@@ -66,6 +67,7 @@ pub struct Plan {
     pub intro: bool,
     pub start: Reward,
     pub forest: Forest,
+    pub kakariko: bool,
     pub gear: Vec<&'static str>,
     pub pouch: Vec<&'static str>,
     pub excluded: Vec<String>,
@@ -82,10 +84,9 @@ const GEAR: &[(&str, &str, &str)] = &[
     ("slingshot", "Slingshot", "Weapon_Range_SlingShot"),
 ];
 
-const UNCHANGED: [&str; 24] = [
+const UNCHANGED: [&str; 23] = [
     "logic_rules",
     "starting_age",
-    "open_kakariko",
     "open_door_of_time",
     "zora_fountain",
     "gerudo_fortress",
@@ -182,7 +183,21 @@ impl Plan {
         if self.chus {
             out.push((crate::slice::bombchus::LOGIC_KEY, "true"));
         }
+        if self.kakariko {
+            out.push(KAKARIKO);
+        }
         out
+    }
+
+    pub fn defaults(&self) -> Vec<(&'static str, &'static str)> {
+        if self.kakariko { vec![KAKARIKO] } else { Vec::new() }
+    }
+
+    pub fn opening_step(&self) -> Option<&'static str> {
+        match self.forest {
+            Forest::Open => Some(crate::start_defaults::opening::OPEN_STEP),
+            _ => None,
+        }
     }
 }
 
@@ -286,6 +301,18 @@ pub fn plan(s: &Settings) -> Res<Plan> {
             Forest::Closed
         }
     };
+    let kakariko: bool = match s.text(KAKARIKO.0) {
+        Ok("zelda") => false,
+        Ok("open") => true,
+        Ok(v) => {
+            bad.push(format!("open_kakariko is {v}, which this build cannot apply yet (only zelda and open work)"));
+            false
+        }
+        Err(e) => {
+            bad.push(e.to_string());
+            false
+        }
+    };
     let songs: Songs = match s.text("shuffle_songs") {
         Ok("off") => Songs::Off,
         Ok("own") => Songs::Own,
@@ -341,6 +368,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         (!pouch.is_empty(), "The ticked starting gear is added to the pouch when a new game starts. A copy can still be found in the world."),
         (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
         (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
+        (forest == Forest::Open, "The Deku Tree quest starts at the step Mido normally sets when he steps aside (Meet_DekuTree Step03), so Mido stands aside and the Kokiri Shop shows its later stock. Experimental and untested in the game."),
         (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
         (extra, "Kak 20 Gold Skulltula Reward, DMT Biggoron and GC Medigoron are shuffled with structural event edits. Experimental and untested in the game."),
         (trade, "The ten adult trade quest hand ins each give one extra shuffled item the first time. The trade chain itself stays vanilla. Experimental and untested in the game."),
@@ -348,6 +376,9 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         if on {
             notes.push(text.to_string());
         }
+    }
+    if kakariko {
+        notes.push(crate::start_defaults::presets::note(KAKARIKO.0, KAKARIKO.1)?);
     }
     notes.extend(di::notes(boss, ganon, map));
     notes.extend(drops.notes());
@@ -372,7 +403,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if chus {
         notes.push(crate::slice::bombchus::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, gear, pouch, excluded, notes, drops, skulls, remake, chus })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus })
 }
 
 #[cfg(test)]
@@ -447,6 +478,36 @@ mod tests {
         let p: Plan = plan(&s).unwrap();
         assert_eq!(p.start_flags().len(), 2);
         assert!(p.notes.iter().any(|n| n.contains("Kokiri Forest starts open")));
+    }
+
+    #[test]
+    fn the_kakariko_gate_is_vanilla_by_default_and_open_becomes_a_default_edit_and_a_logic_value() {
+        let mut s: Settings = Settings::default();
+        assert_eq!(s.text("open_kakariko").unwrap(), "zelda");
+        let p: Plan = plan(&s).unwrap();
+        assert!(!p.kakariko && p.defaults().is_empty() && p.logic().is_empty());
+        assert!(!p.notes.iter().any(|n| n.contains("open_kakariko")));
+        s.set("open_kakariko", Value::s("open")).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert!(p.kakariko);
+        assert_eq!(p.defaults(), vec![KAKARIKO]);
+        assert_eq!(p.logic(), vec![KAKARIKO]);
+        assert!(p.notes.iter().any(|n| n.contains("Death Mountain starts open") && n.contains("Mask Shop")));
+        assert!(p.start_flags().is_empty());
+        s.set("open_kakariko", Value::s("closed")).unwrap();
+        assert!(plan(&s).err().unwrap().to_string().contains("open_kakariko is closed"));
+    }
+
+    #[test]
+    fn only_an_open_forest_moves_the_opening_quest_step() {
+        let mut s: Settings = Settings::default();
+        assert_eq!(plan(&s).unwrap().opening_step(), None);
+        s.set("open_forest", Value::s("closed_deku")).unwrap();
+        assert_eq!(plan(&s).unwrap().opening_step(), None);
+        s.set("open_forest", Value::s("open")).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert_eq!(p.opening_step(), Some("Step03"));
+        assert!(p.notes.iter().any(|n| n.contains("Meet_DekuTree Step03")));
     }
 
     #[test]

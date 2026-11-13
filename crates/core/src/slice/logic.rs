@@ -182,6 +182,23 @@ mod tests {
     }
 
     #[test]
+    fn open_kakariko_opens_the_death_mountain_gate_for_a_child_without_the_letter() {
+        let d: Data = Data::load().unwrap();
+        let mut s: crate::settings::Settings = crate::settings::Settings::default();
+        let shut: World = world_with(&d, &crate::slice::support::plan(&s).unwrap().logic()).unwrap();
+        s.set("open_kakariko", crate::settings::Value::s("open")).unwrap();
+        let open: World = world_with(&d, &crate::slice::support::plan(&s).unwrap().logic()).unwrap();
+        let gate: &str = "Kakariko Village -> Kak Behind Gate";
+        let a: Search = explore(&shut, &vanilla_without(&shut, &d, &["Zeldas Letter"]), &[]);
+        let b: Search = explore(&open, &vanilla_without(&open, &d, &["Zeldas Letter"]), &[]);
+        assert!(!exit_open(&a, &shut, gate, Age::Child));
+        assert!(exit_open(&b, &open, gate, Age::Child));
+        assert!(exit_open(&a, &shut, gate, Age::Adult));
+        let c: Search = explore(&shut, &vanilla_place(&shut, &d).unwrap(), &[]);
+        assert!(exit_open(&c, &shut, gate, Age::Child));
+    }
+
+    #[test]
     fn the_wallet_and_hookshot_gates_bind() {
         let d: Data = Data::load().unwrap();
         let w: World = world(&d).unwrap();

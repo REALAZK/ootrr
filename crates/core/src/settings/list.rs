@@ -168,8 +168,8 @@ pub fn build() -> Schema {
             .opt("closed", "Closed", "The forest and the Deku Tree stay closed until the story opens them."),
     );
     s.push(
-        Setting::choice(4, "open_kakariko", "world", "Kakariko Gate", "open")
-            .tip("Whether the gate to Kakariko Village needs Zelda's Letter.")
+        Setting::choice(4, "open_kakariko", "world", "Kakariko Gate", "zelda")
+            .tip("Whether the Kakariko Village gate to Death Mountain needs Zelda's Letter.")
             .opt("open", "Open", "The gate is open from the start.")
             .opt("zelda", "Zelda's Letter", "The gate opens when you show the letter.")
             .opt("closed", "Closed", "The gate stays closed until the story opens it."),
