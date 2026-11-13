@@ -113,10 +113,14 @@ fn actors_for(d: &Data, seed: &SeedFile) -> Res<BM<String, String>> {
         pool.entry(vanilla.to_string()).or_default().push(vanilla_actor(d, loc)?);
         dests.entry(item.clone()).or_default().push(loc.clone());
     }
+    let stripped: bool = crate::start_items::pool::active(&plan(&seed.settings()?.settings)?);
     let mut out: BM<String, String> = BM::new();
     for (item, locs) in &dests {
         let mut acts: Vec<String> = pool.get(item).cloned().unwrap_or_default();
         crate::pot_slice::targets::balance(d, seed, item, &mut acts);
+        if stripped {
+            crate::start_items::pool::fit_actors(d, item, locs.len(), &mut acts);
+        }
         if acts.len() != locs.len() {
             return Err(E::Msg(format!(
                 "the seed places {} copies of {item} but its chests hold {}, this seed does not belong to these game files",
@@ -546,6 +550,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     if !give.is_empty() || !flags.is_empty() {
         more.push(crate::start_reward::stage_all(&mut rf, &give, &flags)?);
     }
+    crate::start_items::stage::stage(&mut rf, &mut more, &p.kit)?;
     crate::pot_slice::rows::stage(&mut rf, &mut more, &crate::pot_slice::apply::hashes(&pot_ts))?;
     crate::start_defaults::stage(&mut rf, &mut more, &crate::start_defaults::presets::chosen(&p.defaults())?)?;
     if scrub_rows == 0 {

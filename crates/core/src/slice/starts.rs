@@ -18,6 +18,10 @@ pub fn add(d: &Data, p: &Plan, w: &mut World, seed: &str) -> Res<()> {
         let i: ItemId = w.item(&name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
         w.start.push((i, 1));
     }
+    for (name, n) in p.kit.logic() {
+        let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
+        w.start.push((i, n));
+    }
     for name in &p.gear {
         let i: ItemId = w.item(name).ok_or_else(|| E::Msg(format!("{name} is not in the logic item list")))?;
         if !w.start.iter().any(|(id, _)| *id == i) {
@@ -29,10 +33,21 @@ pub fn add(d: &Data, p: &Plan, w: &mut World, seed: &str) -> Res<()> {
 
 pub fn rebuild(d: &Data, seed: &SeedFile) -> Res<(World, Placement)> {
     let loaded: Loaded = seed.settings()?;
-    let p: Plan = plan(&loaded.settings)?;
+    let mut p: Plan = plan(&loaded.settings)?;
     let mut w: World = world_with(d, &p.logic())?;
     add(d, &p, &mut w, &seed.seed)?;
     let mut place: Placement = vanilla_place(&w, d)?;
+    if crate::start_items::pool::active(&p) {
+        let mut named: Vec<String> = Vec::with_capacity(p.excluded.len());
+        for e in &p.excluded {
+            if let Ok(l) = crate::slice::plando::loc_of(&w, e) {
+                named.push(w.locs[l].name.clone());
+            }
+        }
+        p.excluded = named;
+        let pk: crate::slice::pick::Pick = crate::slice::pick::pick(d, &w, &p);
+        place = crate::start_items::pool::base(d, &w, &p, &place, &pk.free)?.0;
+    }
     for (loc, item) in &seed.placements {
         let (Some(l), Some(i)) = (w.loc(loc), w.item(item)) else {
             continue;

@@ -48,7 +48,7 @@ pub fn rank(f: &str, actor: &str) -> Option<usize> {
     t.iter().position(|x| *x == actor).or_else(|| o.iter().position(|x| *x == actor))
 }
 
-fn native(d: &Data, f: &str, loc: &str) -> Give {
+pub fn native(d: &Data, f: &str, loc: &str) -> Give {
     if let Some(l) = d.flow.by_name(loc) {
         let ks: BS<usize> = l.edits.iter().filter_map(|e| rank(f, &e.item)).collect();
         if ks.len() > 1 {

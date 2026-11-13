@@ -88,7 +88,7 @@ fn ganon_key() -> Vec<Setting> {
 
 fn starting_items() -> Setting {
     Setting::multi(36, "starting_items", "starting", "Starting items")
-        .tip("Items you begin the game with. They are removed from the item pool.")
+        .tip("Items you begin the game with. One copy of each is taken out of the item pool and replaced by Rupee (1). Upgrades are ticked by tier and the highest ticked tier counts: Longshot means two progressive Hookshots, Big Quiver means the Bow and one quiver upgrade, Giant's Wallet means two wallet upgrades, Double Magic means two magic upgrades, Ocarina of Time means both ocarinas, Golden Gauntlets means all three strength upgrades. Bags start full. Bombchus need a bomb bag. Zelda's Letter cannot be given. Experimental, untested in the game.")
         .opts(&[
             ("ocarina", "Ocarina"),
             ("slingshot", "Slingshot"),
@@ -122,12 +122,34 @@ fn starting_items() -> Setting {
             ("adult_wallet", "Adult's Wallet"),
             ("kokiri_sword", "Kokiri Sword"),
             ("deku_shield", "Deku Shield"),
+            ("big_bullet_bag", "Big Bullet Bag"),
+            ("biggest_bullet_bag", "Biggest Bullet Bag"),
+            ("big_quiver", "Big Quiver"),
+            ("biggest_quiver", "Biggest Quiver"),
+            ("big_bomb_bag", "Big Bomb Bag"),
+            ("biggest_bomb_bag", "Biggest Bomb Bag"),
+            ("deku_sticks", "Deku Sticks"),
+            ("big_stick_bag", "Bigger Stick Capacity"),
+            ("biggest_stick_bag", "Biggest Stick Capacity"),
+            ("deku_nuts", "Deku Nuts"),
+            ("big_nut_bag", "Bigger Nut Capacity"),
+            ("biggest_nut_bag", "Biggest Nut Capacity"),
+            ("silver_gauntlets", "Silver Gauntlets"),
+            ("golden_gauntlets", "Golden Gauntlets"),
+            ("golden_scale", "Golden Scale"),
+            ("giant_wallet", "Giant's Wallet"),
+            ("double_magic", "Double Magic"),
+            ("ocarina_of_time", "Ocarina of Time"),
+            ("two_bottles", "Two Empty Bottles"),
+            ("three_bottles", "Three Empty Bottles"),
+            ("four_bottles", "Four Empty Bottles"),
+            ("hylian_shield", "Hylian Shield"),
         ])
 }
 
 fn starting_songs() -> Setting {
     Setting::multi(37, "starting_songs", "starting", "Starting songs")
-        .tip("Songs you already know when the game starts.")
+        .tip("Songs you already know when the game starts. Each one is taken out of the item pool when its lesson is shuffled. Playing them still needs an Ocarina. Experimental, untested in the game.")
         .opts(&[
             ("zeldas_lullaby", "Zelda's Lullaby"),
             ("eponas_song", "Epona's Song"),
@@ -291,7 +313,7 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::number(35, "starting_hearts", "starting", "Starting hearts", 3, 1, 20)
-            .tip("How many heart containers you begin with."),
+            .tip("How many heart containers you begin with. Any value other than 3 is written into the game start module. Experimental, untested in the game."),
     );
     s.push(
         Setting::choice(38, "shuffle_rewards", "shuffle", "Story and NPC rewards", "supported")

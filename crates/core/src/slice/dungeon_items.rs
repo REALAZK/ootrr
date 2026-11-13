@@ -39,9 +39,9 @@ pub const GROUPS: [(&str, &[&str]); 6] = [
 ];
 
 pub const ROAM_BOSS: &str = "Boss Keys can be found outside their own dungeon. The chest sets the boss key of the dungeon it belongs to and says which. Experimental and untested in the game.";
-pub const START_BOSS: &str = "Boss Keys are removed and you start with every boss door key, experimental and untested in the game.";
+pub const START_BOSS: &str = "Boss Keys are removed and you start with every boss door key. The Boss Keys in shuffled locations are replaced by Rupee (1), experimental and untested in the game.";
 pub const ROAM_MAP: &str = "Maps and Compasses can be found outside their own dungeon. The chest sets the map or compass of the dungeon it belongs to and says which. Experimental and untested in the game.";
-pub const START_MAP: &str = "You start with every Map and Compass. The Map and Compass items left in the world do nothing, experimental and untested in the game.";
+pub const START_MAP: &str = "You start with every Map and Compass. The Maps and Compasses in shuffled locations are replaced by Rupee (1), experimental and untested in the game.";
 
 pub fn keep_value(v: &str) -> Keep {
     match v {
@@ -366,7 +366,16 @@ mod tests {
             let g: Generated = generate_data(d, s, &format!("{tag} {k}"), &GenOpts::default()).unwrap();
             let (w, pl): (World, Placement) = full(d, s, &g);
             assert!(explore(&w, &pl, &[]).won(), "{tag} {k} is not beatable");
-            assert_eq!(dungeon_items(&counts(&w, &pl)), want, "{tag} {k}");
+            let gone = |n: &str| d.item(n).is_some_and(|i| keep_of(&p, &i.kind) == Some(Keep::Start));
+            let fr: Vec<LocId> = crate::slice::pick::pick(d, &w, &p).free;
+            let van: Placement = vanilla_place(&w, d).unwrap();
+            let mut kept: BM<String, usize> = want.iter().filter(|(n, _)| !gone(n)).map(|(n, c)| (n.clone(), *c)).collect();
+            for l in w.real.iter().filter(|l| !fr.contains(l)) {
+                if let Some(i) = van.get(*l).filter(|i| gone(&w.items.names[*i])) {
+                    *kept.entry(w.items.names[i].clone()).or_insert(0) += 1;
+                }
+            }
+            assert_eq!(dungeon_items(&counts(&w, &pl)), kept, "{tag} {k}");
             for (loc, item) in &g.seed_file.placements {
                 let Some(i) = d.item(item) else {
                     continue;

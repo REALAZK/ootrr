@@ -228,6 +228,8 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     if p.world != Mode::Off && !pk.free.iter().any(|l| pu::listed(d, &w.locs[*l].name)) {
         p.notes.retain(|n| n != pu::NOTE);
     }
+    let (base, gone): (Placement, Vec<String>) = crate::start_items::pool::base(d, &w, &p, &vanilla, &pk.free)?;
+    p.notes.extend(gone);
     let ok = |it: ItemId, l: LocId| allowed(d, &w, &p, it, l);
     for l in &pk.free {
         if let Some(i) = vanilla.get(*l)
@@ -254,18 +256,18 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     }
     let mut rng: Rng = Rng::from_text(seed);
     let got: Placement = if pk.free.is_empty() {
-        vanilla.clone()
+        base.clone()
     } else {
         let fix: bool = crate::slice::tier_fix::active(d, &w, &pk.free);
         let narrow = |it: ItemId, l: LocId| ok(it, l) && !crate::slice::key_spots::widened(d, &w.locs[l].name, &w.items.names[it]);
         let order: Option<&dyn Fn(ItemId, LocId) -> bool> = if fix { Some(&narrow) } else { None };
-        let caps: HM<LocId, usize> = crate::pot_slice::rules::caps(d, &w, &pk.free, &vanilla, order.unwrap_or(&ok));
+        let caps: HM<LocId, usize> = crate::pot_slice::rules::caps(d, &w, &pk.free, &base, order.unwrap_or(&ok));
         let rank = |l: LocId| caps.get(&l).copied().unwrap_or(0);
         let r: Option<&dyn Fn(LocId) -> usize> = if caps.is_empty() { None } else { Some(&rank) };
         let keep: Vec<LocId> = plan.iter().map(|x| x.0).collect();
         let mut n: u32 = 0;
         loop {
-            let g: Placement = fill_ordered(&w, &vanilla, &pk.free, &ok, order, &mut rng, o.tries, &plan, !p.keys_roam(), r, o.switch, &watch)
+            let g: Placement = fill_ordered(&w, &base, &pk.free, &ok, order, &mut rng, o.tries, &plan, !p.keys_roam(), r, o.switch, &watch)
                 .map_err(|e| crate::slice::advice::explain(&p, e))?;
             if crate::slice::tier_order::fits(d, &w, &g, &pk.free)? {
                 break g;

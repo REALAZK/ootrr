@@ -81,6 +81,7 @@ pub struct Plan {
     pub chus: bool,
     pub qol: crate::qol::Opts,
     pub treasure: bool,
+    pub kit: crate::start_items::Kit,
 }
 
 const GEAR: &[(&str, &str, &str)] = &[
@@ -114,6 +115,8 @@ const UNCHANGED: [&str; 23] = [
     "ganon_bosskey_tokens",
     "ganon_bosskey_hearts",
 ];
+
+const APPLIED: [&str; 2] = ["starting_hearts", "starting_songs"];
 
 const OFF_ONLY: [&str; 1] = ["shuffle_scrubs"];
 
@@ -214,6 +217,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     for id in UNCHANGED {
         match (s.get(id), def.get(id)) {
             (Some(a), Some(b)) if a == b => noted.push(format!("{id}={}", show(a))),
+            (Some(_), _) if APPLIED.contains(&id) => {}
             (Some(a), _) => bad.push(format!(
                 "{id} is {}, which this build cannot apply yet (only the default works)",
                 show(a)
@@ -341,16 +345,12 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     let mut gear: Vec<&'static str> = Vec::new();
     let mut pouch: Vec<&'static str> = Vec::new();
     for id in &chosen {
-        match GEAR.iter().find(|(k, _, _)| *k == id) {
-            Some((_, logic, actor)) => {
-                gear.push(*logic);
-                pouch.push(*actor);
-            }
-            None => bad.push(format!(
-                "starting_items includes {id}, which this build cannot give yet (kokiri_sword, deku_shield and slingshot work)"
-            )),
+        if let Some((_, logic, actor)) = GEAR.iter().find(|(k, _, _)| *k == id) {
+            gear.push(*logic);
+            pouch.push(*actor);
         }
     }
+    let kit: crate::start_items::Kit = crate::start_items::read(s, &mut bad);
     let skulls: crate::slice::skulls::Mode = crate::slice::skulls::mode(s, &mut bad);
     let remake: bool = crate::slice::remake_chests::mode(s, &mut bad);
     let chus: bool = crate::slice::bombchus::mode(s, &mut bad);
@@ -378,7 +378,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         (fast, "Chest and item pickup scenes are sped up."),
         (intro, "The new game intro is skipped. The opening movie and the wake up scene are bypassed, experimental and untested in the game."),
         (start != Reward::Off, "You start the game with one random Stone or Medallion. Experimental and untested in the game."),
-        (!pouch.is_empty(), "The ticked starting gear is added to the pouch when a new game starts. A copy can still be found in the world."),
+        (!pouch.is_empty(), "The ticked Kokiri Sword, Deku Shield or Slingshot is added to the pouch when a new game starts."),
         (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
         (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
         (forest == Forest::Open, "The Deku Tree quest starts at the step Mido normally sets when he steps aside (Meet_DekuTree Step03), so Mido stands aside and the Kokiri Shop shows its later stock. Experimental and untested in the game."),
@@ -417,10 +417,11 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         notes.push(crate::slice::bombchus::NOTE.to_string());
     }
     notes.extend(qol.notes());
+    notes.extend(kit.notes.iter().cloned());
     if treasure {
         notes.push(crate::slice::treasure::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure, kit })
 }
 
 #[cfg(test)]
@@ -460,7 +461,7 @@ mod tests {
         assert!(e.contains("shuffle_scrubs is low"));
         assert!(e.contains("shuffle_smallkeys is remove"));
         assert!(e.contains("bridge is open"));
-        assert!(e.contains("starting_hearts is 5"));
+        assert!(!e.contains("starting_hearts"));
     }
 
     #[test]
@@ -535,7 +536,24 @@ mod tests {
         assert_eq!(p.gear, vec!["Slingshot", "Kokiri Sword", "Deku Shield"]);
         assert_eq!(p.pouch, vec!["Weapon_Range_SlingShot", "Weapon_Sword_Kokiri", "Weapon_Shield_Deku"]);
         s.set("starting_items", Value::set(&["ocarina"])).unwrap();
-        assert!(plan(&s).err().unwrap().to_string().contains("ocarina"));
+        let p: Plan = plan(&s).unwrap();
+        assert!(p.gear.is_empty() && p.kit.logic() == vec![("Ocarina", 1)]);
+        s.set("starting_items", Value::set(&["zeldas_letter"])).unwrap();
+        assert!(plan(&s).err().unwrap().to_string().contains("zeldas_letter"));
+    }
+
+    #[test]
+    fn starting_hearts_and_songs_are_applied_and_only_noted_at_their_defaults() {
+        let d: Plan = plan(&Settings::default()).unwrap();
+        assert!(d.notes[0].contains("starting_hearts=3") && d.notes[0].contains("starting_songs=[]"));
+        assert_eq!(d.kit, crate::start_items::Kit::default());
+        let mut s: Settings = Settings::default();
+        s.set("starting_hearts", Value::Int(6)).unwrap();
+        s.set("starting_songs", Value::set(&["sarias_song"])).unwrap();
+        let p: Plan = plan(&s).unwrap();
+        assert!(!p.notes[0].contains("starting_hearts") && !p.notes[0].contains("starting_songs"));
+        assert_eq!(p.kit.hearts, Some(6));
+        assert_eq!(p.kit.logic(), vec![("Sarias Song", 1)]);
     }
 
     #[test]
