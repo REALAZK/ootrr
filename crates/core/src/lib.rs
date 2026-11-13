@@ -77,6 +77,7 @@ pub mod teleport_merge;
 pub mod teleport_sim;
 pub mod teleport_start;
 pub mod tier_chain;
+pub mod tracker;
 pub mod world;
 pub mod zs;
 

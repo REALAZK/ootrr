@@ -4,7 +4,7 @@ const CSS: &str = "text/css; charset=utf-8";
 const FONT: &str = "font/woff2";
 
 #[cfg(test)]
-pub const JS_FILES: [&str; 20] = [
+pub const JS_FILES: [&str; 33] = [
     "/app.js",
     "/js/dom.js",
     "/js/api.js",
@@ -25,6 +25,19 @@ pub const JS_FILES: [&str; 20] = [
     "/js/report.js",
     "/js/plando.js",
     "/js/sfx.js",
+    "/js/tracker_api.js",
+    "/js/tracker_store.js",
+    "/js/tracker_news.js",
+    "/js/tracker_list.js",
+    "/js/tracker_filters.js",
+    "/js/tracker_source.js",
+    "/js/tracker_kinds.js",
+    "/js/tracker_places.js",
+    "/js/tracker_art.js",
+    "/js/tracker_map.js",
+    "/js/tracker_card.js",
+    "/js/tracker_rail.js",
+    "/js/tracker_app.js",
 ];
 
 pub fn get_bin(p: &str) -> Option<(&'static str, &'static [u8])> {
@@ -43,6 +56,8 @@ pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
         "/style.css" => (CSS, include_str!("../assets/style.css")),
         "/themes.css" => (CSS, include_str!("../assets/themes.css")),
         "/hyrule.css" => (CSS, include_str!("../assets/hyrule.css")),
+        "/tracker" => (HTML, include_str!("../assets/tracker.html")),
+        "/tracker.css" => (CSS, include_str!("../assets/tracker.css")),
         "/app.js" => (JS, include_str!("../assets/app.js")),
         "/js/dom.js" => (JS, include_str!("../assets/js/dom.js")),
         "/js/api.js" => (JS, include_str!("../assets/js/api.js")),
@@ -63,6 +78,19 @@ pub fn get(p: &str) -> Option<(&'static str, &'static str)> {
         "/js/report.js" => (JS, include_str!("../assets/js/report.js")),
         "/js/plando.js" => (JS, include_str!("../assets/js/plando.js")),
         "/js/sfx.js" => (JS, include_str!("../assets/js/sfx.js")),
+        "/js/tracker_api.js" => (JS, include_str!("../assets/js/tracker_api.js")),
+        "/js/tracker_store.js" => (JS, include_str!("../assets/js/tracker_store.js")),
+        "/js/tracker_news.js" => (JS, include_str!("../assets/js/tracker_news.js")),
+        "/js/tracker_list.js" => (JS, include_str!("../assets/js/tracker_list.js")),
+        "/js/tracker_filters.js" => (JS, include_str!("../assets/js/tracker_filters.js")),
+        "/js/tracker_source.js" => (JS, include_str!("../assets/js/tracker_source.js")),
+        "/js/tracker_kinds.js" => (JS, include_str!("../assets/js/tracker_kinds.js")),
+        "/js/tracker_places.js" => (JS, include_str!("../assets/js/tracker_places.js")),
+        "/js/tracker_art.js" => (JS, include_str!("../assets/js/tracker_art.js")),
+        "/js/tracker_map.js" => (JS, include_str!("../assets/js/tracker_map.js")),
+        "/js/tracker_card.js" => (JS, include_str!("../assets/js/tracker_card.js")),
+        "/js/tracker_rail.js" => (JS, include_str!("../assets/js/tracker_rail.js")),
+        "/js/tracker_app.js" => (JS, include_str!("../assets/js/tracker_app.js")),
         _ => return None,
     };
     Some(r)
@@ -94,6 +122,35 @@ mod tests {
         assert!(!h.contains("style=") && !h.contains("onclick") && !h.contains("<style"));
         assert_eq!(h.matches("<script").count(), 1);
         assert!(h.contains("<script type=\"module\" src=\"/app.js\">"));
+    }
+
+    #[test]
+    fn the_tracker_page_is_self_contained() {
+        let h: &str = get("/tracker").unwrap().1;
+        assert!(!h.contains("style=") && !h.contains("onclick") && !h.contains("<style"));
+        assert_eq!(h.matches("<script").count(), 1);
+        assert!(h.contains("<script type=\"module\" src=\"/js/tracker_app.js\">"));
+        let mut n: usize = 0;
+        for p in JS_FILES.iter().filter(|p| p.starts_with("/js/tracker_")) {
+            let t: String = get(p).unwrap().1.replace("http://www.w3.org/2000/svg", "");
+            assert!(!t.contains("http://") && !t.contains("https://"), "{p}");
+            assert!(!t.contains("\"style\"") && !t.contains("sfx.js") && !t.contains("//"), "{p}");
+            for part in t.split(" from \"./").skip(1) {
+                let name: &str = part.split('"').next().unwrap();
+                assert!(get(&format!("/js/{name}")).is_some(), "{p} imports {name}");
+            }
+            n += 1;
+        }
+        assert_eq!(n, 13);
+        let css: &str = get("/tracker.css").unwrap().1;
+        assert!(!css.contains("@import") && !css.contains("http"));
+        let mut fonts: usize = 0;
+        for part in css.split("url(").skip(1) {
+            let p: &str = part.split(')').next().unwrap().trim_matches('"');
+            assert!(get_bin(p).is_some(), "{p}");
+            fonts += 1;
+        }
+        assert_eq!(fonts, 3);
     }
 
     #[test]
