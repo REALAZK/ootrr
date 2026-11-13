@@ -44,9 +44,12 @@ pub fn drops_with(d: &Data, seed: &SeedFile, fixed: &BM<String, String>) -> Res<
             Some(from) => kit_actor(&from),
             None => drop_actor(&t, d, item, fixed.get(loc).map(|s| s.as_str())).map_err(|e| E::Msg(format!("{item} has no world pickup, so {loc} cannot drop it: {e}")))?,
         };
-        let l: &crate::catalog::Loc = d.cat.by_name(loc).ok_or_else(|| E::Msg(format!("{loc} is not in the catalog")))?;
-        for r in &l.refs {
-            out.push(Drop { name: loc.clone(), item: item.clone(), hash: r.hash, actor: actor.clone() });
+        let hs: Vec<u64> = crate::slice::skull_names::hashes(d, loc);
+        if hs.is_empty() {
+            return Err(E::Msg(format!("{loc} is not in the catalog")));
+        }
+        for h in hs {
+            out.push(Drop { name: loc.clone(), item: item.clone(), hash: h, actor: actor.clone() });
         }
     }
     Ok(out)

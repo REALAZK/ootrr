@@ -73,7 +73,7 @@ pub fn mode(s: &Settings, bad: &mut Vec<String>) -> Mode {
 }
 
 pub fn is_skull(d: &Data, name: &str) -> bool {
-    d.cat.by_name(name).is_some_and(|c| c.kind == KIND)
+    d.cat.by_name(name).is_some_and(|c| c.kind == KIND) || crate::slice::skull_names::listed(name)
 }
 
 pub fn pickup(t: &Table, d: &Data, item: &str) -> Option<String> {
@@ -121,15 +121,32 @@ fn pool_ok(d: &Data, w: &World, p: &Plan, pool: &str) -> bool {
     first.is_some() && members.iter().all(|l| key(w, &l.name) == first)
 }
 
-pub fn why(d: &Data, w: &World, p: &Plan, t: &Table, l: &Loc) -> Option<String> {
+fn gate(w: &World, p: &Plan, name: &str) -> Option<String> {
     if p.skulls == Mode::Off {
         return Some("skulltula shuffle is off".to_string());
     }
-    if w.loc(&l.name).is_none() {
+    if w.loc(name).is_none() {
         return Some("location is not in the logic world".to_string());
     }
-    if p.excluded.contains(&l.name) {
+    if p.excluded.iter().any(|e| e == name) {
         return Some("excluded by the player".to_string());
+    }
+    None
+}
+
+pub fn why_extra(w: &World, p: &Plan, name: &str) -> Option<String> {
+    if let Some(m) = gate(w, p, name) {
+        return Some(m);
+    }
+    crate::slice::skull_names::verdict(p.skulls, name).unwrap_or_else(|| Some(crate::slice::skull_names::HELD.to_string()))
+}
+
+pub fn why(d: &Data, w: &World, p: &Plan, t: &Table, l: &Loc) -> Option<String> {
+    if let Some(m) = gate(w, p, &l.name) {
+        return Some(m);
+    }
+    if let Some(v) = crate::slice::skull_names::verdict(p.skulls, &l.name) {
+        return v;
     }
     if t.contested.contains(&l.name) {
         return Some("the actor research pairs this skulltula with another remake actor".to_string());
@@ -173,6 +190,19 @@ pub fn pick(d: &Data, w: &World, p: &Plan, left: &mut BM<String, usize>) -> (Vec
                 }
             }
             Some(m) => *left.entry(m).or_insert(0) += 1,
+        }
+    }
+    if p.skulls == Mode::Matched {
+        for name in crate::slice::skull_names::extra(d) {
+            n += 1;
+            match why_extra(w, p, name) {
+                None => {
+                    if let Some(x) = w.loc(name) {
+                        free.push(x);
+                    }
+                }
+                Some(m) => *left.entry(m).or_insert(0) += 1,
+            }
         }
     }
     (free, n)
@@ -235,6 +265,7 @@ pub fn spoiler_with(d: &Data, w: &World, p: &Plan, free: &[LocId], got: &Placeme
         }
         let reason: String = match (cat.get(n), t.as_ref()) {
             (Some(c), Some(t)) => why(d, w, p, t, c).unwrap_or_else(|| "not picked".to_string()),
+            (None, _) if p.skulls == Mode::Matched && crate::slice::skull_names::listed(n) => why_extra(w, p, n).unwrap_or_else(|| "not picked".to_string()),
             (None, _) => "no remake actor is matched to it".to_string(),
             (Some(_), None) => "skulltula data is broken".to_string(),
         };
@@ -307,13 +338,21 @@ mod tests {
         let (pin, n): (Vec<LocId>, usize) = pick(&d, &w, &plan(&with("pinned")).unwrap(), &mut left);
         assert_eq!(n, 96);
         assert_eq!(pin.len(), 44);
-        let (all, _): (Vec<LocId>, usize) = pick(&d, &w, &plan(&with("matched")).unwrap(), &mut BM::new());
-        assert!(all.len() > pin.len());
+        let (all, m): (Vec<LocId>, usize) = pick(&d, &w, &plan(&with("matched")).unwrap(), &mut BM::new());
+        assert_eq!(m, 100);
+        assert_eq!(all.len(), 77);
         assert!(pin.iter().all(|l| all.contains(l)));
         for l in &all {
             assert_eq!(d.vanilla_of(&w.locs[*l].name), Some(TOKEN));
         }
-        assert!(!all.iter().any(|l| w.locs[*l].name == "LH GS Tree"));
+        let names: Vec<&str> = all.iter().map(|l| w.locs[*l].name.as_str()).collect();
+        for n in ["LH GS Tree", "LH GS Lab Wall", "Shadow Temple GS Invisible Blades Room", "Colossus GS Hill", "Fire Temple GS Boss Key Loop", "Jabu Jabus Belly GS Near Boss"] {
+            assert!(names.contains(&n), "{n}");
+            assert!(!pin.iter().any(|l| w.locs[*l].name == n), "{n}");
+        }
+        for n in ["Water Temple GS Central Pillar", "Shadow Temple GS Triple Giant Pot", "Colossus GS Tree", "ZR GS Tree", "HF GS Cow Grotto", "Jabu Jabus Belly GS Water Switch Room"] {
+            assert!(!names.contains(&n), "{n}");
+        }
     }
 
     #[test]
@@ -341,7 +380,8 @@ mod tests {
                 let sp: String = g.spoiler.unwrap();
                 assert!(sp.contains("Gold Skulltulas, 100 in the logic"), "{sp}");
                 assert!(sp.contains("KF GS Know It All House:"));
-                assert!(sp.contains("ZR GS Tree: Gold Skulltula Token (vanilla, no remake actor"));
+                let held: String = if v == "matched" { crate::slice::skull_names::HELD.to_string() } else { "no remake actor".to_string() };
+                assert!(sp.contains(&format!("ZR GS Tree: Gold Skulltula Token (vanilla, {held}")), "{sp}");
             }
             assert!(moved > 0, "{v}");
         }

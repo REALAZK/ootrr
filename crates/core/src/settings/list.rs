@@ -397,7 +397,7 @@ pub fn build() -> Schema {
             .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can drop items that the game has a pickup for and key items whose pickup pack is built, as a kit pickup that plays the get window. A killed skulltula stays gone only once its dropped item is picked up, and it comes back if the item is left behind. Experimental, untested in the game.")
             .opt("off", "Vanilla", "Every skulltula drops its token.")
             .opt("pinned", "Confident matches", "Only the skulltulas whose remake actor is known for sure are shuffled.")
-            .opt("matched", "Confident and pooled", "Also the pools of skulltulas that share the same logic, so a mixed up pairing cannot matter."),
+            .opt("matched", "Confident and pooled", "Also the pools of skulltulas that share the same logic, and the skulltulas that our hash research pairs with their spot."),
     );
     s.push(
         Setting::choice(55, "shuffle_remake_chests", "shuffle", "Remake chests", "off")

@@ -23,6 +23,8 @@ pub mod scan;
 pub mod seed_packs;
 pub mod skull_edit;
 pub mod skull_kit;
+pub mod skull_names;
+pub mod skull_rules;
 pub mod skulls;
 pub mod starts;
 pub mod support;

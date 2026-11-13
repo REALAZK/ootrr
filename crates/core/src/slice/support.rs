@@ -195,6 +195,9 @@ impl Plan {
         }
         out.extend(self.qol.logic());
         out.extend(self.open.logic());
+        if self.skulls != crate::slice::skulls::Mode::Off {
+            out.push((crate::slice::skull_rules::KEY, crate::slice::skull_rules::ON));
+        }
         out
     }
 
