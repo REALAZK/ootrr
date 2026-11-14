@@ -673,7 +673,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
                 f.unread.join(", ")
             ));
         }
-        if !f.later.is_empty() {
+        if host == Host::Longshot && !f.later.is_empty() {
             notes.push(format!(
                 "The game uses the size table of the mod whose folder name sorts last, and {} sorts after this one. Rename this mod so it sorts last (for example zz-{mod_name}), or the larger files here may not load.",
                 f.later.join(", ")

@@ -241,14 +241,10 @@ pub fn load(rf: &mut Romfs) -> Res<Rst> {
 
 pub struct Fold {
     pub grew: usize,
-    /// Mods whose size table is there but could not be read.
     pub unread: Vec<String>,
-    /// Mods with a size table whose name sorts after the skipped mod, so the game serves their table instead.
     pub later: Vec<String>,
 }
 
-/// The enabled mods under `dir`, as Hookshot and Longshot find them: a folder holding romfs or exefs is a mod, other
-/// folders are searched up to four levels down, and a name starting with `_`, `-` or `.` is off.
 fn enabled_mods(dir: &P, name: &str, depth: usize, out: &mut Vec<(String, PB)>) {
     if depth > 0 && (dir.join("romfs").is_dir() || dir.join("exefs").is_dir()) {
         out.push((name.to_string(), dir.to_path_buf()));

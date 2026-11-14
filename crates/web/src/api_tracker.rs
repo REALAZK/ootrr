@@ -173,7 +173,6 @@ fn hosts() -> Json {
     Json::Arr(out)
 }
 
-/// Longshot's save folder where its builder puts it: `<game folder>\user\save` on Windows, the XDG data folder elsewhere.
 fn longshot_saves() -> Option<PB> {
     let base: Option<PB> = if cfg!(windows) {
         env::var("USERPROFILE").ok().map(|h| PB::from(h).join("Games").join("Longshot").join("user"))
