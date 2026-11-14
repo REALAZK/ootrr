@@ -35,6 +35,19 @@ fn edit(j: &Json) -> Res<Edit> {
         "enum" => v.as_str().map(|s| Edit::Enum(name.clone(), s.to_string())).ok_or_else(|| Error::Msg(format!("start presets: {name} needs a value name"))),
         "int" => Ok(Edit::Int(name.clone(), int(v, &name)?)),
         "grant" => Ok(Edit::Grant(name.clone(), int(v, &name)?)),
+        "exp" => {
+            let mut terms: Vec<(i32, String)> = Vec::new();
+            for t in v.as_arr().unwrap_or(&[]) {
+                match t.as_arr() {
+                    Some([op, f]) => terms.push((int(op, &name)?, f.as_str().ok_or_else(|| Error::Msg(format!("start presets: {name} names a flag that is not text")))?.to_string())),
+                    _ => return Err(Error::Msg(format!("start presets: {name} needs a list of [op, flag] pairs"))),
+                }
+            }
+            if terms.is_empty() {
+                return Err(Error::Msg(format!("start presets: {name} has an empty formula")));
+            }
+            Ok(Edit::Exp(name.clone(), terms))
+        }
         k => Err(Error::Msg(format!("start presets: {name} has an unknown kind {k}"))),
     }
 }
@@ -100,7 +113,13 @@ mod tests {
     #[test]
     fn the_shipped_book_parses_and_names_known_settings() {
         let b: Book = book().unwrap();
-        assert_eq!(b.presets.len(), 4);
+        assert_eq!(b.presets.len(), 7);
+        assert_eq!(find(&b, "skip_epona_race", "true").unwrap().edits, vec![Edit::Exp("Get_Epona_IsCompleted_Exp".to_string(), vec![(0, "IsGet.Item_Melody_EponaSong".to_string())])]);
+        assert_eq!(find(&b, "skip_mask_quest", "true").unwrap().edits, vec![Edit::Enum("Step_SubEvent_MaskSalesman".to_string(), "Complete".to_string())]);
+        let beans: &Preset = find(&b, "plant_beans", "true").unwrap();
+        assert_eq!(beans.edits.iter().filter(|e| matches!(e, Edit::Bool(n, true) if n.starts_with("IsPlantedMagicBean_SmallFarm."))).count(), 10);
+        assert!(!beans.edits.contains(&Edit::Bool("IsPlantedMagicBean_SmallFarm.9976156629905609191".to_string(), true)));
+        assert!(beans.edits.contains(&Edit::Int("Get_MagicBeans".to_string(), 9)));
         let z: &Preset = find(&b, "zora_fountain", "open").unwrap();
         assert_eq!(z.edits, vec![Edit::Enum("Step_Get_StoneOfWater".to_string(), "Step07".to_string())]);
         assert_eq!(find(&b, "jabu_open", "true").unwrap().edits.len(), 2);
@@ -140,6 +159,13 @@ mod tests {
                 Edit::Int(n, _) => vec![(n.clone(), "Int")],
                 Edit::Enum(n, _) => vec![(n.clone(), "Enum")],
                 Edit::Grant(a, _) => vec![(crate::start_defaults::got(a), "Bool"), (crate::start_defaults::stock(a), "Int")],
+                Edit::Exp(n, t) => {
+                    assert_eq!(l.find(n).unwrap_or_else(|| panic!("{n} is not in flags.json")).ty, "BoolExp", "{n}");
+                    for (_, f) in t {
+                        assert!(l.find(f).is_some(), "{f} is not in flags.json");
+                    }
+                    continue;
+                }
             };
             for (n, ty) in pairs {
                 let f: &crate::flags::Flag = l.find(&n).unwrap_or_else(|| panic!("{n} is not in flags.json"));

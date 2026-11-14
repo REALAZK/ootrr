@@ -35,6 +35,40 @@
         {"kind": "bool", "name": "HavePlayedEvent.Dm_HrlField_0020", "value": true}
       ],
       "note": "The world clock runs from the start. The game normally holds the clock at 6:00 until Kaepora's first Hyrule Field talk and stops it at 15:00 until Impa's send off, and both flags it reads are set at new game. Kaepora, the Zelda meeting and the send off still play. Experimental and untested in the game."
+    },
+    {
+      "setting": "skip_epona_race",
+      "value": "true",
+      "edits": [
+        {"kind": "exp", "name": "Get_Epona_IsCompleted_Exp", "value": [[0, "IsGet.Item_Melody_EponaSong"]]}
+      ],
+      "note": "Skip Epona's race: the computed flag Get_Epona_IsCompleted_Exp, which the game reads as \"Epona is Link's horse\", is rewritten to read whether Epona's Song has been learned (IsGet.Item_Melody_EponaSong). Once Link has the song the ranch is in its after-race state and Ingo's race is gone; the Epona quest step itself is not changed, so child Malon's song lesson still works. The formula is changed in the flag list, experimental and untested in the game."
+    },
+    {
+      "setting": "skip_mask_quest",
+      "value": "true",
+      "edits": [
+        {"kind": "enum", "name": "Step_SubEvent_MaskSalesman", "value": "Complete"}
+      ],
+      "note": "The Happy Mask Shop quest starts complete, so once the shop opens every mask can be borrowed right away, including the Mask of Truth, without selling the Keaton, Skull, Spooky and Bunny masks first. Masks can no longer be sold for rupees, which gives no check. The new game value is set in the flag list, experimental and untested in the game."
+    },
+    {
+      "setting": "plant_beans",
+      "value": "true",
+      "edits": [
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.10857724324414230743", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.12044463103654268862", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.14429198438059673734", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.17092212646454540992", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.17500344509500247365", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.176409868210268833", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.18350441421271687772", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.5234955674857122897", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.6092667454768667954", "value": true},
+        {"kind": "bool", "name": "IsPlantedMagicBean_SmallFarm.6833516270248855649", "value": true},
+        {"kind": "int", "name": "Get_MagicBeans", "value": 9}
+      ],
+      "note": "Every magic bean patch starts planted, so the adult bean platforms are there from the start and no Magic Bean is needed. The Magic Bean is taken out of the item pool and the bean salesman in Zora's River has one sale left, for 60 rupees, which holds a random item when NPC rewards are shuffled. The new game values are set in the flag list, experimental and untested in the game."
     }
   ],
   "control": [

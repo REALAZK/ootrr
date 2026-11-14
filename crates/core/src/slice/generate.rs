@@ -136,6 +136,7 @@ pub fn allowed(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> bool {
                 && (!p.extra || crate::flow_extra::fits(d, name, i))
                 && (!p.scrubs || crate::scrubs_a::fits(d, name, i))
                 && (!p.scrubs_b || crate::scrubs_b::fits(d, name, i))
+                && (!crate::open_world::skips::is_bean_sale(name) || crate::flow_extra::pouch(i))
                 && !(up && ((d.keeps_event(name) && !d.special(name)) || heart_loc))
         }
         None => false,

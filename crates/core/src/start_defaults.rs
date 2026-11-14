@@ -22,6 +22,8 @@ pub enum Edit {
     Enum(String, String),
     Int(String, i32),
     Grant(String, i32),
+    /// Rewrites a computed flag's formula: (op, referenced flag name) terms, op 0 = read a Bool.
+    Exp(String, Vec<(i32, String)>),
 }
 
 pub fn key(name: &str) -> u32 {
@@ -142,6 +144,37 @@ pub fn set_enum(y: &mut Byml, name: &str, v: &str) -> Res<bool> {
     Ok(old != Some(h))
 }
 
+fn retype(model: &Node, v: i64) -> Node {
+    match model {
+        Node::I32(_) => Node::I32(v as i32),
+        Node::U32(_) => Node::U32(v as u32),
+        Node::I64(_) => Node::I64(v),
+        _ => Node::U64(v as u64),
+    }
+}
+
+/// Replaces the formula of a computed (BoolExp) flag. The node types of the row's first term
+/// are kept for the new terms, so the list keeps its layout. Every referenced flag must exist.
+pub fn set_exp(y: &mut Byml, name: &str, terms: &[(i32, String)]) -> Res<bool> {
+    if terms.is_empty() {
+        return Err(Error::Msg(format!("start defaults: the new formula of {name} is empty")));
+    }
+    for (_, f) in terms {
+        if kind_of(y, key(f)).is_none() {
+            return Err(Error::Msg(format!("start defaults: the formula of {name} names {f}, which the flag list does not have")));
+        }
+    }
+    let r: &mut Node = row(y, "BoolExp", name)?;
+    let old: Node = r.get("Values").cloned().ok_or_else(|| Error::Msg(format!("start defaults: {name} has no formula")))?;
+    let first: Vec<Node> = old.as_arr().and_then(|a| a.first()).and_then(|t| t.as_arr()).map(|t| t.to_vec()).unwrap_or_default();
+    let [op_t, val_t] = first.as_slice() else {
+        return Err(Error::Msg(format!("start defaults: the formula of {name} is not a list of [op, value] pairs")));
+    };
+    let new: Node = Node::Arr(terms.iter().map(|(op, f)| Node::Arr(vec![retype(op_t, *op as i64), retype(val_t, key(f) as i64)])).collect());
+    r.set("Values", new.clone());
+    Ok(old != new)
+}
+
 pub fn grant(y: &mut Byml, actor: &str, n: i32) -> Res<bool> {
     let a: bool = set_bool(y, &got(actor), true)?;
     let b: bool = set_int(y, &stock(actor), n)?;
@@ -154,6 +187,7 @@ pub fn apply_one(y: &mut Byml, e: &Edit) -> Res<bool> {
         Edit::Int(n, v) => set_int(y, n, *v),
         Edit::Enum(n, v) => set_enum(y, n, v),
         Edit::Grant(a, n) => grant(y, a, *n),
+        Edit::Exp(n, t) => set_exp(y, n, t),
     }
 }
 
@@ -321,6 +355,19 @@ mod tests {
         out
     }
 
+    fn find_beans() -> Vec<String> {
+        let b: presets::Book = presets::book().unwrap();
+        presets::find(&b, "plant_beans", "true")
+            .unwrap()
+            .edits
+            .iter()
+            .filter_map(|e| match e {
+                Edit::Bool(n, _) => Some(n.clone()),
+                _ => None,
+            })
+            .collect()
+    }
+
     #[test]
     fn the_real_flag_list_round_trips_and_only_the_named_rows_change() {
         let Some(root) = real() else {
@@ -338,7 +385,10 @@ mod tests {
         let mut y: Byml = orig.clone();
         assert_eq!(apply(&mut y, &edits).unwrap(), edits.len());
         let out: Vec<u8> = y.write().unwrap();
-        assert_eq!(out.len(), raw.len());
+        let flat: Vec<Edit> = edits.iter().filter(|e| !matches!(e, Edit::Exp(..))).cloned().collect();
+        let mut z: Byml = orig.clone();
+        apply(&mut z, &flat).unwrap();
+        assert_eq!(z.write().unwrap().len(), raw.len(), "value edits keep the file size");
         let back: Byml = Byml::parse(&out).unwrap();
         assert_eq!(back.root, y.root);
         assert_eq!(back.write().unwrap(), out);
@@ -353,7 +403,13 @@ mod tests {
             ("Bool".to_string(), key("JabJabOpenedMouth")),
             ("Bool".to_string(), key("HyruleField_ArriveEntrance")),
             ("Bool".to_string(), key("HavePlayedEvent.Dm_HrlField_0020")),
+            ("Enum".to_string(), key("Step_SubEvent_MaskSalesman")),
+            ("BoolExp".to_string(), key("Get_Epona_IsCompleted_Exp")),
+            ("Int".to_string(), key("Get_MagicBeans")),
         ];
+        for e in &find_beans() {
+            want.push(("Bool".to_string(), key(e)));
+        }
         let mut got: Vec<(String, u32)> = changed_rows(&orig, &back);
         want.sort();
         got.sort();
@@ -479,3 +535,4 @@ mod tests {
         assert_eq!(opening_steps(&flow.unwrap()), vec![opening::OPEN_STEP.to_string()]);
     }
 }
+

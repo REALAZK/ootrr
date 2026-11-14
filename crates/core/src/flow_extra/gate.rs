@@ -14,6 +14,9 @@ pub fn open(l: &Loc, p: &Plan) -> bool {
     if crate::flow_extra::trade::is(&l.name) {
         return p.trade;
     }
+    if crate::open_world::skips::is_bean_sale(&l.name) {
+        return p.open.beans;
+    }
     !l.gated || p.extra
 }
 
@@ -22,7 +25,7 @@ pub fn pouch(i: &Item) -> bool {
 }
 
 pub fn bound(d: &Data, item: &str) -> bool {
-    d.flow.locs.iter().any(|l| l.gated && !crate::flow_extra::trade::is(&l.name) && !crate::scrubs_a::is_a(l) && !crate::scrubs_b::is_b(l) && d.vanilla_of(&l.name) == Some(item) && d.flow_ok(&l.name))
+    d.flow.locs.iter().any(|l| l.gated && !crate::flow_extra::trade::is(&l.name) && !crate::scrubs_a::is_a(l) && !crate::scrubs_b::is_b(l) && !crate::open_world::skips::is_bean_sale(&l.name) && d.vanilla_of(&l.name) == Some(item) && d.flow_ok(&l.name))
 }
 
 pub fn fits(d: &Data, name: &str, i: &Item) -> bool {
@@ -51,7 +54,7 @@ mod tests {
     }
 
     fn gated(d: &Data) -> Vec<String> {
-        d.flow.locs.iter().filter(|l| l.gated && !crate::flow_extra::trade::is(&l.name) && !crate::scrubs_a::is_a(l) && !crate::scrubs_b::is_b(l)).map(|l| l.name.clone()).collect()
+        d.flow.locs.iter().filter(|l| l.gated && !crate::flow_extra::trade::is(&l.name) && !crate::scrubs_a::is_a(l) && !crate::scrubs_b::is_b(l) && !crate::open_world::skips::is_bean_sale(&l.name)).map(|l| l.name.clone()).collect()
     }
 
     #[test]

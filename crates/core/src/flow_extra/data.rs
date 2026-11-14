@@ -132,7 +132,7 @@ mod tests {
             assert!(l.gated && !l.supported, "{}", s.name);
             assert!(!s.ops.is_empty() && !s.why.is_empty(), "{}", s.name);
         }
-        for l in d.locs.iter().filter(|l| l.gated && !crate::scrubs_a::is_a(l) && !crate::scrubs_b::is_b(l)) {
+        for l in d.locs.iter().filter(|l| l.gated && !crate::scrubs_a::is_a(l) && !crate::scrubs_b::is_b(l) && !crate::open_world::skips::is_bean_sale(&l.name)) {
             assert!(x.by_name(&l.name).is_some(), "{} is gated without edits", l.name);
         }
     }

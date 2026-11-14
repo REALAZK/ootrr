@@ -454,6 +454,22 @@ pub fn build() -> Schema {
             .opt("jump", "Faster running and longer jumps", "Child Link also leaves the ground 1.5 times as fast when jumping, so jumps go further."),
     );
     s.push(
+        Setting::toggle(81, crate::open_world::EPONA, "world", "Skip Epona's race", false)
+            .tip("Learning Epona's Song counts as having won Epona from Ingo: the game's \"Epona is Link's horse\" flag is rewritten to read whether the song has been learned, so the ranch race against Ingo is skipped and an adult with the song can call Epona. The Epona quest step is left alone, so child Malon's song lesson still works. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(82, crate::open_world::MASKS, "world", "Skip the mask trading quest", false)
+            .tip("The Happy Mask Shop quest starts complete, like the OoTR option Complete Mask Quest: once the shop opens with Zelda's Letter, every mask can be borrowed right away, including the Mask of Truth, without selling the Keaton, Skull, Spooky and Bunny masks first. Selling masks for rupees goes away, which costs no check. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(83, crate::open_world::BEANS, "world", "Magic beans planted", false)
+            .tip("Every magic bean patch starts planted, like the OoTR option Plant Magic Beans, so the adult bean platforms are there from the start. The Magic Bean leaves the item pool, and the bean salesman in Zora's River has one sale left, for 60 rupees, holding a random item when NPC rewards are shuffled. Experimental, untested in the game."),
+    );
+    s.push(
+        Setting::toggle(84, crate::open_world::BRIDGE, "world", "Gerudo Valley bridge repaired", false)
+            .tip("Opens the way to Gerudo Fortress: the broken bridge in Gerudo Valley is repaired from the start, so adult Link can cross without Epona or the Longshot. The carpenters in the Thieves' Hideout are not rescued, so the guards, the rescue and the Gerudo Membership Card stay as they are. Experimental, untested in the game."),
+    );
+    s.push(
         Setting::toggle(73, "shuffle_treasure_reward", "shuffle", "Treasure Chest Game reward", false)
             .tip("Whether the final reward of the Market Treasure Chest Game, a Piece of Heart, holds a random item. Only the first win gives it, later wins give the usual red rupee. The five rooms keep their keys and rupees. Only unique items that do nothing when found twice can be placed there, so no upgrades, ammo, bottles or keys. Experimental, untested in the game."),
     );

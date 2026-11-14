@@ -26,7 +26,7 @@ fn gone_kinds(p: &Plan) -> Vec<&'static str> {
 }
 
 pub fn active(p: &Plan) -> bool {
-    !gone_kinds(p).is_empty() || p.kit.take.iter().any(|t| t.strip != Strip::Keep && t.count > 0)
+    p.open.beans || !gone_kinds(p).is_empty() || p.kit.take.iter().any(|t| t.strip != Strip::Keep && t.count > 0)
 }
 
 fn kind_of<'a>(d: &'a Data, w: &World, it: ItemId) -> &'a str {
@@ -124,6 +124,19 @@ pub fn base(d: &Data, w: &World, p: &Plan, vanilla: &Placement, free: &[LocId]) 
         }
         if n > 0 {
             notes.push(format!("{n} removed dungeon items (Maps, Compasses or Boss Keys whose setting is Removed or Start with) were taken out of the shuffled locations and replaced by {JUNK}."));
+        }
+    }
+    if p.open.beans {
+        let beans: Vec<ItemId> = crate::open_world::skips::BEAN_ITEMS.iter().filter_map(|n| w.item(n)).collect();
+        let mut n: usize = 0;
+        for l in free {
+            if out.get(*l).is_some_and(|i| beans.contains(&i)) {
+                out.put(*l, junk);
+                n += 1;
+            }
+        }
+        if n > 0 {
+            notes.push(format!("The Magic Bean is not needed with planted beans, so it was taken out of the shuffled locations and replaced by {JUNK}."));
         }
     }
     let c: Ctx = Ctx { d, w, p, free: set, junk };

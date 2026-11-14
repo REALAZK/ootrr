@@ -27,6 +27,7 @@
   "ganon_bosskey_rewards": 9,
   "ganon_bosskey_stones": 3,
   "ganon_bosskey_tokens": 100,
+  "gerudo_bridge_open": false,
   "gerudo_fortress": "normal",
   "glitch_botw_blank_a": false,
   "glitch_child_shadow": false,

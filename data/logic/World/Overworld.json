@@ -636,7 +636,7 @@
             "GV Grotto Ledge": "True",
             "GV Fortress Side": "
                 is_adult and
-                (can_ride_epona or Longshot or gerudo_fortress == 'open' or can_finish_GerudoFortress)"
+                (can_ride_epona or Longshot or gerudo_fortress == 'open' or gerudo_bridge_open or can_finish_GerudoFortress)"
         }
     },
     {
@@ -708,7 +708,7 @@
                     (Fairy and (deadly_bonks != 'ohko' or can_blast_or_smash)))",
             "Gerudo Valley": "
                 is_child or can_ride_epona or Longshot or
-                gerudo_fortress == 'open' or can_finish_GerudoFortress",
+                gerudo_fortress == 'open' or gerudo_bridge_open or can_finish_GerudoFortress",
             "GV Carpenter Tent": "is_adult", # Invisible as child so not in logic
             "GV Storms Grotto": "is_adult and can_open_storm_grotto" # Not there as child
         }
