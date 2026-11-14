@@ -2,6 +2,7 @@ use std::fs;
 use std::path::Path as P;
 use std::sync::Arc;
 
+use ootrr_core::cosmetic::{self, Cosmetics, Music};
 use ootrr_core::error::{Error, Res};
 use ootrr_core::modpack::Host;
 use ootrr_core::json::{self, Json};
@@ -89,8 +90,20 @@ pub fn generate(a: &[String]) -> Res<()> {
 pub fn build(a: &[String]) -> Res<()> {
     let mut rest: Vec<String> = Vec::new();
     let mut host: Host = Host::Eden;
+    let mut cos: Cosmetics = Cosmetics::default();
     let mut i: usize = 0;
     while i < a.len() {
+        if a[i] == "--music" {
+            let v: &str = a.get(i + 1).map(|s| s.as_str()).ok_or(Error::Format("missing mode after --music"))?;
+            cos.music = Music::parse(v).ok_or(Error::Format("--music is off, grouped or anywhere"))?;
+            i += 2;
+            continue;
+        }
+        if a[i] == "--cosmetic-seed" {
+            cos.seed = a.get(i + 1).cloned().ok_or(Error::Format("missing text after --cosmetic-seed"))?;
+            i += 2;
+            continue;
+        }
         if a[i] == "--host" {
             let v: &str = a.get(i + 1).map(|s| s.as_str()).ok_or(Error::Format("missing host after --host"))?;
             host = Host::parse(v).ok_or(Error::Format("--host is eden, hookshot, longshot or nx2navi"))?;
@@ -107,6 +120,9 @@ pub fn build(a: &[String]) -> Res<()> {
     let b: Built = slice::build_for(&seed, P::new(romfs), P::new(load), name, host)?;
     let c: &BuildCounts = &b.counts;
     print!("{}", b.report);
+    for n in cosmetic::apply(&b.root, P::new(romfs), &cos, &seed.seed)? {
+        println!("{n}");
+    }
     println!("changed {} of {} placed chests", c.changed, c.placed);
     Ok(())
 }

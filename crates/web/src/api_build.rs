@@ -3,6 +3,7 @@ use std::path::PathBuf as PB;
 use std::sync::Arc;
 
 use ootrr_core::TITLE_ID;
+use ootrr_core::cosmetic::{self, Cosmetics, Music};
 use ootrr_core::json::Json;
 use ootrr_core::modpack::Host;
 use ootrr_core::settings::seed::SeedFile;
@@ -32,6 +33,7 @@ pub struct Plan {
     pub name: String,
     pub target: PB,
     pub host: Host,
+    pub cos: Cosmetics,
 }
 
 fn mods_slot(md: &PB, game: &PB, romfs: &PB) -> bool {
@@ -73,8 +75,17 @@ pub fn plan(b: &Json) -> Hr<Plan> {
             return Err(refuse("Mod folder: it may not be inside the game folder. Hookshot, Longshot and NX2navi use the game's mods folder."));
         }
     }
+    let music: Music = match body::opt_text(b, "music")? {
+        None | Some("") => Music::Off,
+        Some(s) => Music::parse(s).ok_or_else(|| refuse("Music: use off, grouped or anywhere."))?,
+    };
+    let seed_text: String = body::opt_text(b, "cosmetic_seed")?.unwrap_or("").trim().to_string();
+    if seed_text.len() > 64 {
+        return Err(refuse("Cosmetic seed: at most 64 characters."));
+    }
+    let cos: Cosmetics = Cosmetics { music, seed: seed_text };
     let target: PB = if host.flat() { md.join(name) } else { md.join(TITLE_ID).join(name) };
-    Ok(Plan { seed, romfs, load: md, name: name.to_string(), target, host })
+    Ok(Plan { seed, romfs, load: md, name: name.to_string(), target, host, cos })
 }
 
 pub fn run(jobs: &Arc<Jobs>, b: &Json) -> Hr<Json> {
@@ -86,7 +97,23 @@ pub fn run(jobs: &Arc<Jobs>, b: &Json) -> Hr<Json> {
         c.ok(10);
         c.begin("Read the game files and edit the chests");
         match slice::build_for(&p.seed, &p.romfs, &p.load, &p.name, p.host) {
-            Ok(built) => {
+            Ok(mut built) => {
+                if p.cos.any() {
+                    c.begin("Write the cosmetic changes");
+                    match cosmetic::apply(&built.root, &p.romfs, &p.cos, &p.seed.seed) {
+                        Ok(notes) => {
+                            for n in notes {
+                                built.report.push_str(&format!("{n}
+"));
+                            }
+                        }
+                        Err(e) => {
+                            c.mark("failed");
+                            c.finish("failed", &e.to_string());
+                            return;
+                        }
+                    }
+                }
                 c.ok(90);
                 c.begin("Mod files written");
                 c.ok(100);
@@ -221,6 +248,24 @@ mod tests {
             assert_eq!(p.host.id(), host);
         }
         assert!(plan(&req(&s, &g, &m, "x")).is_err());
+        let _ = fs::remove_dir_all(&d);
+    }
+
+    #[test]
+    fn the_music_options_are_parsed_and_checked() {
+        let d: PB = tmp("music");
+        let g: PB = game(&d);
+        let m: PB = d.join("mods");
+        fs::create_dir_all(&m).unwrap();
+        let s: String = seed_text();
+        let base = || req(&s, &g, &m, "x");
+        assert_eq!(plan(&base()).unwrap().cos.music, Music::Off);
+        assert!(!plan(&base()).unwrap().cos.any());
+        let p: Plan = plan(&base().with("music", "grouped".into()).with("cosmetic_seed", " tune ".into())).unwrap();
+        assert_eq!(p.cos.music, Music::Grouped);
+        assert_eq!(p.cos.seed, "tune");
+        assert!(plan(&base().with("music", "loud".into())).is_err());
+        assert!(plan(&base().with("cosmetic_seed", "x".repeat(65).into())).is_err());
         let _ = fs::remove_dir_all(&d);
     }
 }
