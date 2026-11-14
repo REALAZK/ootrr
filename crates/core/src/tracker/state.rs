@@ -129,6 +129,26 @@ impl Track {
         out
     }
 
+    pub fn rewire(&mut self, ts: &[Target], over: &[Option<Rule>]) -> usize {
+        let mut n: usize = 0;
+        for i in 0..self.rules.len() {
+            let r: Rule = match over.get(i) {
+                Some(Some(r)) => r.clone(),
+                _ => rule_of(&ts[i]),
+            };
+            if r == self.rules[i] {
+                continue;
+            }
+            self.rules[i] = r;
+            self.last[i] = Hit::Off;
+            if self.marks[i].by != Some(By::User) {
+                self.marks[i] = Mark::OPEN;
+            }
+            n += 1;
+        }
+        n
+    }
+
     pub fn user(&mut self, i: usize, on: bool, seq: u64) -> bool {
         let Some(m) = self.marks.get(i).copied() else {
             return false;
@@ -210,6 +230,23 @@ mod tests {
         let mut ks: Vec<u64> = keys.to_vec();
         ks.sort();
         peek_with(&raw(&cells, &ks), &Lim::ANY).unwrap()
+    }
+
+    #[test]
+    fn rewiring_swaps_a_rule_and_forgets_its_old_save_mark() {
+        let ts: &[Target] = all().unwrap();
+        let mut t: Track = Track::new(ts);
+        let (i, c): (usize, &Target) = pick("chest");
+        t.apply(&save(&[c.flags[0].as_str()], &[]), 1);
+        let mut over: Vec<Option<Rule>> = vec![None; ts.len()];
+        let mut o: Target = c.clone();
+        o.flags = vec!["Other".to_string()];
+        over[i] = Some(rule_of(&o));
+        assert_eq!(t.rewire(ts, &over), 1);
+        assert_eq!(t.marks[i], Mark::OPEN);
+        assert_eq!(t.rewire(ts, &over), 0);
+        assert_eq!(t.rewire(ts, &[]), 1);
+        assert_eq!(t.apply(&save(&[c.flags[0].as_str()], &[]), 2), vec![i]);
     }
 
     #[test]

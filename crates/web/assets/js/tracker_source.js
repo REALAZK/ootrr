@@ -1,6 +1,6 @@
 import { $, h, fill, notice, toast } from "./dom.js";
 import { pick_folder } from "./picker.js";
-import { t_open, t_job } from "./tracker_api.js";
+import { t_open, t_job, t_seed } from "./tracker_api.js";
 import { ts, main_paths } from "./tracker_store.js";
 
 let reload_all = async () => {};
@@ -67,6 +67,35 @@ function field(label, value, title, hint) {
     if (p) input.value = p;
   });
   return { input, el: h("div", null, h("label", { class: "lbl" }, label), h("div", { class: "pathrow" }, input, browse), hint ? h("p", { class: "hint" }, hint) : null) };
+}
+
+function seed_box(s) {
+  const out = h("div", { "aria-live": "polite" });
+  const sd = (ts.state && ts.state.seed) || {};
+  const pick = h("input", { type: "file", accept: ".ootrr,application/json", "aria-label": "Seed file" });
+  const apply = async (text) => {
+    try {
+      const r = await t_seed(text);
+      fill(out, notice("ok", r.loaded ? `Seed loaded, ${r.rewired} gift rows follow it` : "Seed cleared, gift rows assume the vanilla items"));
+      await reload_all();
+    } catch (e) {
+      fill(out, notice("error", e.message));
+    }
+  };
+  pick.addEventListener("change", async () => {
+    const f = pick.files && pick.files[0];
+    if (f) await apply(await f.text());
+  });
+  const clear = h("button", { type: "button", class: "btn small", onclick: () => apply("") }, "Clear seed");
+  return h(
+    "div",
+    null,
+    h("label", { class: "lbl" }, "Seed file"),
+    pick,
+    h("p", { class: "hint" }, sd.loaded ? `Loaded seed ${sd.seed}, ${sd.rewired} gift rows follow it.` : "Optional. Gift rows such as songs and rewards assume the vanilla items until a seed is loaded."),
+    sd.loaded ? clear : null,
+    out,
+  );
 }
 
 export function render_source() {
@@ -139,6 +168,7 @@ export function render_source() {
     h("label", { class: "lbl" }, "Slot"),
     slot,
     game.el,
+    seed_box(s),
     s.index_error ? notice("error", s.index_error) : null,
     h("div", { class: "row" }, go),
     out,

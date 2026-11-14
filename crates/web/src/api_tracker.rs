@@ -5,6 +5,7 @@ use std::time::Duration;
 
 use ootrr_core::json::Json;
 use ootrr_core::tracker::index::Index;
+use ootrr_core::settings::seed::SeedFile;
 use ootrr_core::tracker::targets::KINDS;
 
 use crate::api_validate::{self, Report};
@@ -114,6 +115,17 @@ pub fn mode(sh: &Shared, b: &Json) -> Hr<Json> {
     }
     sh.tracker.set_opts(o);
     Ok(Json::obj().with("ok", true.into()))
+}
+
+pub fn seed(sh: &Shared, b: &Json) -> Hr<Json> {
+    ensure(sh);
+    let text: Option<&str> = body::opt_text(b, "seed_text")?.filter(|s| !s.is_empty());
+    let sf: Option<SeedFile> = match text {
+        Some(t) => Some(SeedFile::parse(t).map_err(|e| Fail::new(422, &format!("That file is not a seed file this version can read. ({e})")))?),
+        None => None,
+    };
+    let s = sh.tracker.set_seed(sf.as_ref()).map_err(|e| Fail::new(500, &e.to_string()))?;
+    Ok(Json::obj().with("ok", true.into()).with("loaded", s.is_some().into()).with("rewired", Json::Int(s.map(|x| x.rewired as i64).unwrap_or(0))))
 }
 
 pub fn mark(sh: &Shared, b: &Json) -> Hr<Json> {

@@ -102,6 +102,10 @@ fn api(sh: &Shared, r: &Req) -> Hr<Resp> {
             need(r, "GET")?;
             api_items::items(sh)
         }
+        "/api/tracker/seed" => {
+            need(r, "POST")?;
+            api_tracker::seed(sh, &body::json(r)?)?
+        }
         "/api/tracker/mark" => {
             need(r, "POST")?;
             api_tracker::mark(sh, &body::json(r)?)?
