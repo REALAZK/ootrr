@@ -8,6 +8,7 @@ use crate::error::{Fail, Hr};
 
 pub const MAX_KEPT: usize = 32;
 pub const MAX_RUNNING: usize = 4;
+pub const INLINE: bool = cfg!(target_os = "wasi");
 
 #[derive(Debug, Clone)]
 pub struct Step {
@@ -102,7 +103,7 @@ impl Jobs {
             id
         };
         let c: Ctl = Ctl { jobs: Arc::clone(self), id };
-        let r: std::io::Result<thread::JoinHandle<()>> = thread::Builder::new().name(format!("job-{id}")).spawn(move || {
+        let run = move || {
             work(&c);
             c.jobs.edit(id, |j| {
                 if !finished(j.state) {
@@ -110,7 +111,12 @@ impl Jobs {
                     j.message = "the job ended without a result".to_string();
                 }
             });
-        });
+        };
+        if INLINE {
+            run();
+            return Ok(id);
+        }
+        let r: std::io::Result<thread::JoinHandle<()>> = thread::Builder::new().name(format!("job-{id}")).spawn(run);
         if r.is_err() {
             self.edit(id, |j| {
                 j.state = "failed";

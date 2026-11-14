@@ -92,7 +92,7 @@ const USAGE: &str = "usage:
   ootrr calibrate <romfs_root> <load_dir> <mod_name> <area> [--catalog <json>] [--dry]
   ootrr check-msbt <romfs_root> [language ... | all]
   ootrr settings-dump [--compact] [--presets <dir>] [--decode <settings_string>]
-  ootrr serve [--port N] [--lan] [--no-open] [--no-update-check]
+  ootrr serve [--port N] [--lan] [--no-open] [--no-update-check] [--stdio]
   ootrr generate <settings_string_or_preset_or_file> <seed> <out.ootrr> [--spoiler <file>] [--plando Location=Item]... [--plando-file <file>]
   ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|longshot|nx2navi] [--music off|grouped|anywhere] [--sfx off|grouped|anywhere] [--colors off|random|shared] [--cosmetic-seed <text>]
   ootrr colors-preview <romfs_root> <out_dir> <random|shared> <seed_text>
