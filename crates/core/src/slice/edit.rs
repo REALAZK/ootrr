@@ -11,7 +11,7 @@ use crate::error::{Error as E, Res};
 use crate::modpack::{Host, Pack};
 use crate::pickup_persist::Extra;
 use crate::placement::banc_files;
-use crate::progressive::{needs_every_holder, route, stage as stage_upgrades, Size};
+use crate::progressive::{guard_family, guarded, needs_every_holder, route, stage as stage_upgrades, Size};
 use crate::romfs::Romfs;
 use crate::rsizetable::{self, Rst};
 use crate::settings::seed::SeedFile;
@@ -308,6 +308,10 @@ pub fn edit_file_with(file: &str, raw: &[u8], ts: &[Target], keys: bool) -> Res<
                     let size: Size = route(&mut y, t.hash, f).ok_or(E::Format("edited actor vanished"))?;
                     used.push((f.to_string(), size));
                 }
+            } else if t.key.is_none() && guarded(&t.new_actor) && special::of(t.hash).is_none() && t.ev != Some(Ev::Keep) {
+                let fam: String = guard_family(&t.new_actor);
+                let size: Size = route(&mut y, t.hash, &fam).ok_or(E::Format("edited actor vanished"))?;
+                used.push((fam, size));
             }
             let f: Found = find(&y, file, t.hash).into_iter().next().ok_or(E::Format("edited actor vanished"))?;
             hits.push((i, f));
