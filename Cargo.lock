@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "ootrr"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "ootrr-core",
  "ootrr-web",
@@ -12,14 +12,14 @@ dependencies = [
 
 [[package]]
 name = "ootrr-core"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "ruzstd",
 ]
 
 [[package]]
 name = "ootrr-web"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "ootrr-core",
 ]
