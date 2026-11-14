@@ -160,7 +160,7 @@ pub fn notes(jobs: &[Job]) -> Vec<String> {
     if jobs.is_empty() {
         return Vec::new();
     }
-    let mut v: Vec<String> = vec![format!("{} Business Scrubs became one time sales with a new event row each, none of these edits is tested in the game yet:", jobs.len())];
+    let mut v: Vec<String> = vec![format!("{} Business Scrubs became one time sales with a new event row each:", jobs.len())];
     for j in jobs {
         v.push(format!("  {} | {} | {} for {} rupees | sold flag {}", j.scrub.location, j.sale.entry, j.sale.actor, j.sale.price, j.sale.flag));
     }

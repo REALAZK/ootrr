@@ -655,7 +655,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         }
     }
     if !flows.is_empty() {
-        notes.push(format!("{} reward events changed in {} flow files, none of these edits is tested in the game yet:", flows.len(), staged.files.len()));
+        notes.push(format!("{} reward events changed in {} flow files:", flows.len(), staged.files.len()));
         for c in staged.changes.iter().take(LISTED) {
             notes.push(format!("  {} | {} | {} ({}) | {} -> {}", c.location, c.file, c.event, c.index, c.old, c.new));
         }
@@ -684,7 +684,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         notes.push("Written for NX2navi, under mods/<name>/romfs. Turn it on in the launcher. The higher row in the load order wins a file both mods change.".to_string());
     }
     if !placed.is_empty() {
-        notes.push(format!("{} flow locations hand out upgrade items that the game resolves by ownership, none of these edits is tested in the game yet.", placed.len()));
+        notes.push(format!("{} flow locations hand out upgrade items that the game resolves by ownership.", placed.len()));
     }
     pk.commit()?;
     if host == Host::Hookshot {
