@@ -31,7 +31,6 @@ impl Host {
         matches!(self, Host::Hookshot | Host::Longshot | Host::Nx2navi)
     }
 
-    /// The game serves one resource size table, from the enabled mod whose folder sorts last.
     pub fn one_table(self) -> bool {
         matches!(self, Host::Hookshot | Host::Longshot)
     }

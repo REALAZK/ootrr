@@ -31,6 +31,23 @@ export function render() {
     h("option", { value: "nx2navi" }, "NX2navi"),
   );
   host_in.value = state.paths.host || "eden";
+  const music_in = h(
+    "select",
+    { id: "music" },
+    h("option", { value: "off" }, "Off, keep the original music"),
+    h("option", { value: "grouped" }, "Shuffle within each kind of track"),
+    h("option", { value: "anywhere" }, "Shuffle across all tracks"),
+  );
+  music_in.value = state.cosmetic.music;
+  const cos_seed = h("input", { type: "text", id: "cosseed", value: state.cosmetic.seed, spellcheck: "false", autocomplete: "off", maxlength: "64", placeholder: "Leave empty to use the seed text" });
+  music_in.addEventListener("change", () => {
+    state.cosmetic.music = music_in.value;
+    touch();
+  });
+  cos_seed.addEventListener("input", () => {
+    state.cosmetic.seed = cos_seed.value;
+    touch();
+  });
   const name_in = h("input", { type: "text", id: "name", value: state.paths.name, spellcheck: "false", autocomplete: "off", maxlength: "64" });
 
   async function check_game() {
@@ -153,6 +170,16 @@ export function render() {
       h("label", { class: "lbl", for: "name" }, "Mod name"),
       name_in,
       name_out,
+    ),
+    h(
+      "section",
+      { class: "card" },
+      h("h2", null, "Music"),
+      h("p", { class: "hint" }, "Music changes only the mod you build, never the seed, so the same seed can be built with different music. Cutscene music keeps its own tracks. Themes built from stacked layers trade whole layer sets. Area themes that change with the time of day play one track all day. Jingles only trade with other jingles."),
+      h("label", { class: "lbl", for: "music" }, "Music shuffle"),
+      music_in,
+      h("label", { class: "lbl", for: "cosseed" }, "Cosmetic seed"),
+      cos_seed,
     ),
     h("div", { class: "row" }, h("button", { type: "button", class: "btn primary", onclick: () => go("settings") }, "Continue to settings")),
   );

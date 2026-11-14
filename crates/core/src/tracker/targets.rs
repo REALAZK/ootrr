@@ -67,6 +67,7 @@ pub struct Target {
     pub life: Life,
     pub weak: bool,
     pub anchor: Option<u64>,
+    pub twin: Option<u64>,
 }
 
 pub const KINDS: [&str; 18] = [
@@ -137,6 +138,10 @@ fn one(j: &Json) -> Res<Target> {
         Some(s) => Some(s.parse::<u64>().map_err(|_| bad(format!("{id} has a bad anchor")))?),
         None => None,
     };
+    let twin: Option<u64> = match opt_str(j, "twin") {
+        Some(s) => Some(s.parse::<u64>().map_err(|_| bad(format!("{id} has a bad twin")))?),
+        None => None,
+    };
     let kind: String = opt_str(j, "kind").ok_or_else(|| bad(format!("{id} has no kind")))?;
     if !KINDS.contains(&kind.as_str()) {
         return Err(bad(format!("{id} has the unknown kind {kind}")));
@@ -157,6 +162,7 @@ fn one(j: &Json) -> Res<Target> {
         life,
         weak: j.get("weak").and_then(|v| v.as_bool()).unwrap_or(false),
         anchor,
+        twin,
         id,
     })
 }

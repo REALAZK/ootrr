@@ -3,6 +3,7 @@ pub mod bfevfl;
 pub mod boss_heart;
 pub mod byml;
 pub mod calibrate;
+pub mod cosmetic;
 pub mod catalog;
 pub mod catalog_json;
 pub mod chest_slot;

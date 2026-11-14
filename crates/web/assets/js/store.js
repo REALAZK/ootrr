@@ -10,6 +10,7 @@ export const state = {
   seed: "",
   plando: [],
   paths: { game: "", mod: "", name: "My Seed", host: "eden" },
+  cosmetic: { music: "off", seed: "" },
   game_check: null,
   mod_check: null,
   result: null,
@@ -40,7 +41,7 @@ function take(store, key) {
 }
 
 export function save() {
-  put(localStorage, KEY, { vals: state.vals, seed: state.seed, plando: state.plando, paths: state.paths, hide_spoiler: state.hide_spoiler });
+  put(localStorage, KEY, { vals: state.vals, seed: state.seed, plando: state.plando, paths: state.paths, cosmetic: state.cosmetic, hide_spoiler: state.hide_spoiler });
   put(sessionStorage, RKEY, state.result);
 }
 
@@ -66,6 +67,10 @@ export function restore(schema) {
       if (typeof s.paths[k] === "string") state.paths[k] = s.paths[k].slice(0, 1000);
     }
     if (!["eden", "hookshot", "longshot", "nx2navi"].includes(state.paths.host)) state.paths.host = "eden";
+  }
+  if (s && s.cosmetic && typeof s.cosmetic === "object") {
+    if (["off", "grouped", "anywhere"].includes(s.cosmetic.music)) state.cosmetic.music = s.cosmetic.music;
+    if (typeof s.cosmetic.seed === "string") state.cosmetic.seed = s.cosmetic.seed.slice(0, 64);
   }
   const r = take(sessionStorage, RKEY);
   if (r && typeof r.seed_text === "string") state.result = r;

@@ -11,7 +11,7 @@ use crate::error::{Error as E, Res};
 use crate::modpack::{Host, Pack};
 use crate::pickup_persist::Extra;
 use crate::placement::banc_files;
-use crate::progressive::{needs_every_holder, route, stage as stage_upgrades, Size};
+use crate::progressive::{guard_family, guarded, needs_every_holder, route, stage as stage_upgrades, Size};
 use crate::romfs::Romfs;
 use crate::rsizetable::{self, Rst};
 use crate::settings::seed::SeedFile;
@@ -308,6 +308,10 @@ pub fn edit_file_with(file: &str, raw: &[u8], ts: &[Target], keys: bool) -> Res<
                     let size: Size = route(&mut y, t.hash, f).ok_or(E::Format("edited actor vanished"))?;
                     used.push((f.to_string(), size));
                 }
+            } else if t.key.is_none() && guarded(&t.new_actor) && special::of(t.hash).is_none() && t.ev != Some(Ev::Keep) {
+                let fam: String = guard_family(&t.new_actor);
+                let size: Size = route(&mut y, t.hash, &fam).ok_or(E::Format("edited actor vanished"))?;
+                used.push((fam, size));
             }
             let f: Found = find(&y, file, t.hash).into_iter().next().ok_or(E::Format("edited actor vanished"))?;
             hits.push((i, f));
@@ -655,7 +659,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         }
     }
     if !flows.is_empty() {
-        notes.push(format!("{} reward events changed in {} flow files, none of these edits is tested in the game yet:", flows.len(), staged.files.len()));
+        notes.push(format!("{} reward events changed in {} flow files:", flows.len(), staged.files.len()));
         for c in staged.changes.iter().take(LISTED) {
             notes.push(format!("  {} | {} | {} ({}) | {} -> {}", c.location, c.file, c.event, c.index, c.old, c.new));
         }
@@ -673,7 +677,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
                 f.unread.join(", ")
             ));
         }
-        if !f.later.is_empty() {
+        if host == Host::Longshot && !f.later.is_empty() {
             notes.push(format!(
                 "The game uses the size table of the mod whose folder name sorts last, and {} sorts after this one. Rename this mod so it sorts last (for example zz-{mod_name}), or the larger files here may not load.",
                 f.later.join(", ")
@@ -684,7 +688,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         notes.push("Written for NX2navi, under mods/<name>/romfs. Turn it on in the launcher. The higher row in the load order wins a file both mods change.".to_string());
     }
     if !placed.is_empty() {
-        notes.push(format!("{} flow locations hand out upgrade items that the game resolves by ownership, none of these edits is tested in the game yet.", placed.len()));
+        notes.push(format!("{} flow locations hand out upgrade items that the game resolves by ownership.", placed.len()));
     }
     pk.commit()?;
     if host == Host::Hookshot {

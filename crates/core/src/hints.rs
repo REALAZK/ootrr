@@ -13,6 +13,10 @@ use crate::staging::{rewrite, Out};
 pub const FILE: &str = "EventFlowMsg/GossipStone.msbt";
 pub const FLOW: &str = "Event/EventFlow/GossipStone.bfevfl.zs";
 pub const GATES: [&str; 2] = ["Event112", "Event25"];
+pub const TALK_GATE: &str = "Event90";
+pub const TALK_SEEN: &str = "Event89";
+pub const BALLOON_GATE: &str = "Event241";
+pub const BALLOON: &str = "Event240";
 pub const LABEL: &str = "GOSSIP_";
 pub const COMMON: &str = "RumorCommon";
 pub const FIRST: &str = "{0.3:0100}{0.2:5000}{3.0:0f0000}";
@@ -200,8 +204,24 @@ pub fn apply(raw: &[u8], hints: &[Hint]) -> Res<Vec<u8>> {
 pub fn unmask(raw: &[u8]) -> Res<Vec<u8>> {
     let mut b: Bf = Bf::parse(raw)?;
     let mut done: usize = 0;
+    let mut talk: usize = 0;
     for f in b.flows.iter_mut() {
+        let seen: Option<u16> = f.events.iter().position(|e| e.name == TALK_SEEN).map(|i| i as u16);
+        let skip: Option<u16> = f.events.iter().find(|e| e.name == BALLOON).and_then(|e| match &e.kind {
+            Kind::Action { next, .. } => Some(*next),
+            _ => None,
+        });
         for e in f.events.iter_mut() {
+            if e.name == TALK_GATE || e.name == BALLOON_GATE {
+                let to: Option<u16> = if e.name == TALK_GATE { seen } else { skip };
+                if let (Kind::Switch { cases, .. }, Some(to)) = (&mut e.kind, to) {
+                    for c in cases.iter_mut() {
+                        c.ev = to;
+                    }
+                    talk += 1;
+                }
+                continue;
+            }
             if !GATES.contains(&e.name.as_str()) {
                 continue;
             }
@@ -214,7 +234,7 @@ pub fn unmask(raw: &[u8]) -> Res<Vec<u8>> {
             }
         }
     }
-    if done != GATES.len() {
+    if done != GATES.len() || talk != 2 {
         return Err(Error::Format("hints: the mask checks of the gossip stone flow were not found, the game files differ"));
     }
     let out: Vec<u8> = b.write()?;
@@ -287,6 +307,31 @@ mod tests {
         assert!(markup("a {0.4} b").is_err());
         let long: String = "word ".repeat(120);
         assert!(markup(&long).is_err());
+    }
+
+    #[test]
+    fn the_first_talk_skips_the_mask_introduction() {
+        let root: std::path::PathBuf = match std::env::var_os("OOTRR_ROMFS") {
+            Some(p) => std::path::PathBuf::from(p),
+            None => return,
+        };
+        let mut rf: Romfs = Romfs::open(&root).unwrap();
+        let z: Vec<u8> = rf.read(FLOW).unwrap();
+        let raw: Vec<u8> = rf.zs.decompress(&z).unwrap();
+        let out: Vec<u8> = unmask(&raw).unwrap();
+        let b: Bf = Bf::parse(&out).unwrap();
+        let f = &b.flows[0];
+        let at = |n: &str| f.events.iter().position(|e| e.name == n).unwrap() as u16;
+        let cases = |n: &str| match &f.events[at(n) as usize].kind {
+            Kind::Switch { cases, .. } => cases.iter().map(|c| c.ev).collect::<Vec<u16>>(),
+            _ => Vec::new(),
+        };
+        assert_eq!(cases(TALK_GATE), vec![at(TALK_SEEN); 2]);
+        let skip: u16 = match &f.events[at(BALLOON) as usize].kind {
+            Kind::Action { next, .. } => *next,
+            _ => 0,
+        };
+        assert_eq!(cases(BALLOON_GATE), vec![skip]);
     }
 
     #[test]
