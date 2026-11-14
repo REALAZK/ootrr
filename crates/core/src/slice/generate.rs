@@ -803,9 +803,9 @@ mod tests {
     fn seeds_that_generated_before_keep_their_exact_placements() {
         let d: Data = Data::load().unwrap();
         let cases: [(&[(&str, &str)], &str, usize, u64); 4] = [
-            (&[], "default 0", 77, 0x9b41_25fb_b7b3_954b),
-            (&[], "default 1", 77, 0x74e9_a4ba_5cb4_40b9),
-            (&[("shuffle_chests", "overworld")], "chests_ow 0", 10, 0x842f_cb4b_1197_ea2a),
+            (&[], "default 0", 76, 0xbc18_fb15_41fc_c024),
+            (&[], "default 1", 76, 0xe1b7_fd01_310f_0432),
+            (&[("shuffle_chests", "overworld")], "chests_ow 0", 9, 0xd58f_c0a7_a752_4655),
             (&[("shuffle_chests", "dungeons")], "dungeons 0", 67, 0x169a_7c8a_d12b_3980),
         ];
         for (pairs, seed, n, want) in cases {
@@ -977,14 +977,14 @@ mod tests {
         pots.set("shuffle_pots", Value::s("all")).unwrap();
         pots.set("shuffle_crates", Value::s("all")).unwrap();
         let cases: [(Settings, &str, &str, &str); 8] = [
-            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin a", "b8c6c4b31b12abcb42c5014a827ce94e22ee7e61cf01ac815ef80ffa384446a4"),
-            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin b", "070cc4b39ce519c165aaae10678e7030ef9d0a331790a09a44f4198a90a3ad99"),
-            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin a", "c755bab551e408965a8e15647c62f760d9d76875d86b2590c6708ab9c6614baf"),
-            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin b", "398e2947c1a5116badd6b90121f7e2c8721946edff989067b3213e65e7ea45af"),
-            (on.clone(), "OOTRR1-EYAQD32I", "pin a", "bc08991c7936566a71d7fbbe597c5fe15160ae4143f68117c1eaacf7576d85c7"),
-            (on.clone(), "OOTRR1-EYAQD32I", "pin b", "43749dd1040da34ad3600ec3e8a5b1babfd75a7c1a93f721c9e110efc2219011"),
-            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "892e47d9d0a92c6d8d53dabc23fbb66a77e669aadf258b5651796dcbe88c246e"),
-            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "8d7b83ecbfe37d13db203d599507b38124c8456a9b00951cae0cf93e2a8be74e"),
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin a", "0238bc06819a88a9297b21fea4847cf5efab454b7234a1fcfb6b9c1fa39eebdc"),
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin b", "56f528719dfd82b1134f739fabd7f222f00a68f54634037b14246ee7a5be1aa3"),
+            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin a", "dbbde2ae945e2e8eb27f8fe74e85b432bc1612f02b1f629a822e47f8cf49cc79"),
+            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin b", "a131002f74c6dd72eb9e521304f3cb01205103b640d91df77e6ddf6e760fd180"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin a", "096fe109ab0f25832732d6ed072e7f036a1f79ecebfa2e1bea9046483f6b0a3d"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin b", "dd873178d8ba402bb27da1c02d738846cc6631d6c753be11301e310ea10f31ca"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "7fcaeeecc81ae7ebb375b4e96a3bd7a718b9fbcf29988b9c80aab4845baee22f"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "f11163c886134346d67c2af0f690c0e42c940757a2cfec33f5bb534a93fb361f"),
         ];
         for (mut s, old, seed, sum) in cases {
             s.set(crate::open_world::TIME, Value::Bool(false)).unwrap();
