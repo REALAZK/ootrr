@@ -65,7 +65,7 @@ export function restore(schema) {
     for (const k of ["game", "mod", "name", "host"]) {
       if (typeof s.paths[k] === "string") state.paths[k] = s.paths[k].slice(0, 1000);
     }
-    if (!["eden", "hookshot", "nx2navi"].includes(state.paths.host)) state.paths.host = "eden";
+    if (!["eden", "hookshot", "longshot", "nx2navi"].includes(state.paths.host)) state.paths.host = "eden";
   }
   const r = take(sessionStorage, RKEY);
   if (r && typeof r.seed_text === "string") state.result = r;

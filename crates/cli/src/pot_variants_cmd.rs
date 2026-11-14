@@ -61,6 +61,8 @@ mod tests {
         let o: Opts = parse(&a).unwrap();
         assert!(o.dry);
         assert_eq!(o.host, Host::Hookshot);
+        let l: Vec<String> = ["r", "l", "m", "--host", "longshot"].iter().map(|s| s.to_string()).collect();
+        assert_eq!(parse(&l).unwrap().host, Host::Longshot);
         assert!(parse(&["r".to_string(), "l".to_string(), "m".to_string(), "--what".to_string()]).is_err());
     }
 }

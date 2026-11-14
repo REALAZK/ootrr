@@ -54,7 +54,7 @@ pub fn plan(b: &Json) -> Hr<Plan> {
     }
     let host: Host = match body::opt_text(b, "host")? {
         None | Some("") => Host::Eden,
-        Some(s) => Host::parse(s).ok_or_else(|| refuse("Host: use eden, hookshot or nx2navi."))?,
+        Some(s) => Host::parse(s).ok_or_else(|| refuse("Host: use eden, hookshot, longshot or nx2navi."))?,
     };
     let md: PB = pathsafe::abs(body::short(b, "mod_dir")?)?;
     let romfs: PB = rep.romfs.clone().unwrap_or_else(|| game.clone());
@@ -70,7 +70,7 @@ pub fn plan(b: &Json) -> Hr<Plan> {
     }
     if inside(&md, &game) || inside(&md, &romfs) {
         if !host.flat() || !mods_slot(&md, &game, &romfs) {
-            return Err(refuse("Mod folder: it may not be inside the game folder. Hookshot and NX2navi use the game's mods folder."));
+            return Err(refuse("Mod folder: it may not be inside the game folder. Hookshot, Longshot and NX2navi use the game's mods folder."));
         }
     }
     let target: PB = if host.flat() { md.join(name) } else { md.join(TITLE_ID).join(name) };
@@ -204,13 +204,16 @@ mod tests {
     }
 
     #[test]
-    fn hookshot_and_nx2navi_write_inside_the_games_mods_folder() {
+    fn hookshot_longshot_and_nx2navi_write_inside_the_games_mods_folder() {
         let d: PB = tmp("flat");
         let g: PB = game(&d);
         let m: PB = g.join("mods");
-        fs::create_dir_all(&m).unwrap();
         let s: String = seed_text();
-        for host in ["hookshot", "nx2navi"] {
+        assert!(!m.exists());
+        assert!(plan(&req(&s, &g, &m, "randomizer-seed").with("host", "longshot".into())).is_ok());
+        assert!(m.is_dir());
+        assert!(plan(&req(&s, &g, &m, "x").with("host", "wii".into())).is_err());
+        for host in ["hookshot", "longshot", "nx2navi"] {
             let body: Json = req(&s, &g, &m, "randomizer-seed").with("host", host.into());
             let p: Plan = plan(&body).unwrap();
             assert!(p.target.ends_with("randomizer-seed"), "{}", p.target.display());

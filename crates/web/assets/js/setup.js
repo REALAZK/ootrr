@@ -27,6 +27,7 @@ export function render() {
     { id: "host" },
     h("option", { value: "eden" }, "Lichii / Eden"),
     h("option", { value: "hookshot" }, "Hookshot"),
+    h("option", { value: "longshot" }, "Longshot"),
     h("option", { value: "nx2navi" }, "NX2navi"),
   );
   host_in.value = state.paths.host || "eden";
@@ -76,7 +77,7 @@ export function render() {
     }
     const base = state.paths.mod.trim();
     const sep = state.info.sep;
-    const flat = state.paths.host === "hookshot" || state.paths.host === "nx2navi";
+    const flat = ["hookshot", "longshot", "nx2navi"].includes(state.paths.host);
     const mid = flat ? "" : `${state.info.title_id}${sep}`;
     fill(name_out, base ? `The mod will go to ${base}${base.endsWith(sep) ? "" : sep}${mid}${n}` : "");
   }
@@ -132,7 +133,7 @@ export function render() {
       h("h2", null, "Where you play"),
       h("label", { class: "lbl", for: "host" }, "Game"),
       host_in,
-      h("p", { class: "hint" }, "Lichii and Eden use their load folder. Hookshot and NX2navi use the mods folder inside the game folder."),
+      h("p", { class: "hint" }, "Lichii and Eden use their load folder. Hookshot, Longshot and NX2navi use the mods folder inside the game folder."),
     ),
     h(
       "section",
