@@ -94,7 +94,7 @@ fn kit_refs(p: &Pool) -> Res<Vec<(&'static str, String)>> {
     Ok(out)
 }
 
-fn inherited(p: &Pool, first: &str, k: &str) -> Res<Option<Node>> {
+pub(crate) fn inherited(p: &Pool, first: &str, k: &str) -> Res<Option<Node>> {
     let mut seen: Vec<String> = Vec::new();
     let mut cur: Option<String> = Some(first.to_string());
     while let Some(f) = cur {

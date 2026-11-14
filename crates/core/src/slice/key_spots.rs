@@ -15,8 +15,8 @@ pub const TOP_ONLY: [&str; 2] = ["NutBag", "StickBag"];
 pub const REFUSED: [&str; 2] = ["in_game_first", "not_for_placement"];
 pub const AMMO: &str = "--ammo";
 pub const SHIELDS: [(&str, &str); 2] = [("Deku Shield", "Obj_Shield_Deku"), ("Hylian Shield", "Obj_Shield_Hylian")];
-pub const LOST: &str = "Key items in pots and flying pots can be lost: the pot is saved as broken when it breaks, so an item that is not picked up, falls into a pit or is left behind on a room change is gone for good. Crates break the same way.";
-pub const NOTE: &str = "Key items can sit at shuffled pickup spots. Every item whose pickup pack is built can lie on the ground, in a pot, a crate or at a Gold Skulltula, the seed build writes those packs into the mod. Upgrade tiers at these spots always go low to high in the order the player can reach them, and nut and stick capacity there is always the top tier. A spot that exists once per age only takes items that can be found twice. Experimental, untested in the game.";
+pub const LOST: &str = "A pot that holds a key item stays unbroken in the save until the item is picked up. If you break it and leave without the item, or the item falls into a pit or is left behind on a room change, the pot is back with the item the next time you load the area. Crates and flying pots only hold items that can be replaced.";
+pub const NOTE: &str = "Key items can sit at shuffled pickup spots. Every item whose pickup pack is built can lie on the ground, in a pot, a crate or at a Gold Skulltula, the seed build writes those packs into the mod. Upgrade tiers at these spots always go low to high in the order the player can reach them, and nut and stick capacity there is always the top tier. A spot that exists once per age only takes items that can be found twice.";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Spot {
@@ -123,7 +123,7 @@ fn judge(d: &Data, item: &str, at: Spot) -> bool {
     let cs: Vec<String> = contents(d, item);
     !cs.is_empty()
         && cs.iter().all(|c| match pick(c) {
-            Some(p) if at == Spot::Skull => p.kit_spec().is_ok(),
+            Some(p) if at != Spot::Free => p.kit_spec().is_ok(),
             Some(_) => true,
             None => false,
         })
@@ -172,7 +172,7 @@ pub fn class(d: &Data, name: &str) -> Option<&'static str> {
     if let Some(l) = d.pots.get(name) {
         return Some(match l.kind.as_str() {
             "crate" => "crate, given once",
-            _ => "pot, can be lost if not picked up",
+            _ => "pot, returns until its item is picked up",
         });
     }
     if d.cat.by_name(name).is_some_and(crate::slice::pickups::is_world) {
@@ -196,10 +196,14 @@ pub fn spoiler(d: &Data, w: &World, free: &[LocId], got: &Placement, assign: &BM
         if d.vanilla_of(name) == Some(item) {
             continue;
         }
-        let Ok(p) = resolve(d, item, assign.get(name).map(|s| s.as_str())) else {
-            continue;
+        let held: bool = d.pots.has(name) && d.pots.kind_of(name) == Some(crate::pot_slice::data::Kind::Pot);
+        let actor: String = match resolve(d, item, assign.get(name).map(|s| s.as_str())) {
+            Ok(p) if crate::slice::skulls::is_skull(d, name) || held => p.kit(),
+            Ok(p) => p.pack.clone(),
+            Err(_) if held && crate::pot_slice::pickup::shipped_kit(item).is_some() => name_of(crate::pot_slice::pickup::shipped_kit(item).unwrap_or("")),
+            Err(_) if held && crate::pot_slice::pickup::of(item).is_some_and(|a| a == crate::pot_slice::pickup::TOKEN) => crate::pot_slice::pickup::TOKEN.to_string(),
+            Err(_) => continue,
         };
-        let actor: String = if crate::slice::skulls::is_skull(d, name) { p.kit() } else { p.pack.clone() };
         pots |= c.starts_with("pot");
         lines.push(format!("  {name}: {item} as {actor} ({c})"));
     }
@@ -281,7 +285,7 @@ mod tests {
         let d: Data = d();
         for item in ["Boomerang", "Megaton Hammer", "Lens of Truth", "Mirror Shield", "Light Arrows", "Bottle", "Iron Boots", "Hover Boots", "Progressive Hookshot", "Bomb Bag", "Bow"] {
             for at in [Spot::Free, Spot::Pot] {
-                assert!(placeable(&d, item, at), "{item} {at:?}");
+                assert!(placeable(&d, item, at) || (at == Spot::Pot && crate::pot_slice::pickup::holds(item)), "{item} {at:?}");
             }
         }
         assert!(!placeable(&d, "Bow", Spot::Skull));

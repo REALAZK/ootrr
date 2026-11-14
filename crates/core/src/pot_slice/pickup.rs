@@ -26,8 +26,23 @@ pub const PICKUPS: [(&str, &str); 25] = [
     ("Gold Skulltula Token", "Obj_Token_Gold"),
 ];
 
+pub const TOKEN: &str = "Obj_Token_Gold";
+const REFILLS: [&str; 7] = ["Obj_Rupee_", "Obj_Fairy", "Obj_DekuNut", "Obj_DekuStick", "Obj_DekuSeed", "Obj_Bomb", "Obj_ArrowBundle_"];
+
 pub fn of(item: &str) -> Option<&'static str> {
     PICKUPS.iter().find(|(n, _)| *n == item).map(|(_, a)| *a)
+}
+
+pub fn refill(actor: &str) -> bool {
+    actor == "Obj_Heart" || REFILLS.iter().any(|r| actor.starts_with(r))
+}
+
+pub fn holds(item: &str) -> bool {
+    of(item).is_none_or(|a| !refill(a))
+}
+
+pub fn shipped_kit(item: &str) -> Option<&'static str> {
+    of(item).filter(|a| !refill(a) && *a != TOKEN)
 }
 
 #[cfg(test)]
@@ -45,6 +60,16 @@ mod tests {
             assert!(i.dungeon.is_none(), "{n}");
             assert!(!matches!(i.kind.as_str(), "SmallKey" | "BossKey" | "Map" | "Compass" | "SilverRupee"), "{n}");
         }
+    }
+
+    #[test]
+    fn refills_need_no_kit_and_everything_else_does() {
+        assert!(!holds("Rupees (20)") && !holds("Recovery Heart") && !holds("Bombs (5)") && !holds("Arrows (30)") && !holds("Deku Seeds (30)"));
+        assert!(holds("Hookshot") && holds("Fire Arrows") && holds("Goron Tunic") && holds("Heart Container") && holds("Gold Skulltula Token"));
+        assert_eq!(shipped_kit("Fire Arrows"), Some("Obj_Arrow_Fire"));
+        assert_eq!(shipped_kit("Gold Skulltula Token"), None);
+        assert_eq!(shipped_kit("Rupees (5)"), None);
+        assert_eq!(shipped_kit("Hookshot"), None);
     }
 
     #[test]

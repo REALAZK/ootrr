@@ -24,6 +24,7 @@ mod pack_add_cmd;
 mod pack_kit_cmd;
 mod pot_cmd;
 mod pot_scan_cmd;
+mod pot_variants_cmd;
 mod pots_persist_cmd;
 mod progressive_cmd;
 mod qol_cmd;
@@ -96,6 +97,7 @@ const USAGE: &str = "usage:
   ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|nx2navi]
   ootrr slice-scan <romfs_root> <out_json>
   ootrr pot-scan <romfs_root> <out_json>
+  ootrr pot-variants <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--dry]
   ootrr pots-persist <romfs_root> <load_dir> <mod_name>
   ootrr pack-add <romfs_root> <load_dir> <mod_name> <Item_Actor> [--name <Obj_Actor>] [--press] [--heap N] [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--place <ActorHash>]... [--tag <TagName>]... [--ammo] [--magic] [--dry]
   ootrr pack-kit <romfs_root> <load_dir> <mod_name> <Item_Actor|Obj_Actor> [--name <Obj_Actor_GS>] [--heap N] [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--drop <SkulltulaHash>]... [--dry]
@@ -374,6 +376,7 @@ fn main() -> ExitCode {
         Some("build") => slice_cmd::build(&a[1..]),
         Some("slice-scan") => slice_cmd::scan_cmd(&a[1..]),
         Some("pot-scan") => pot_scan_cmd::run(&a[1..]),
+        Some("pot-variants") => pot_variants_cmd::run(&a[1..]),
         Some("pots-persist") => pots_persist_cmd::run(&a[1..]),
         Some("pack-add") => pack_add_cmd::run(&a[1..]),
         Some("pack-kit") => pack_kit_cmd::run(&a[1..]),

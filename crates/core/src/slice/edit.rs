@@ -651,7 +651,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         let n: usize = pot_ts.iter().map(|t| t.name.as_str()).collect::<BS<&str>>().len();
         notes.push(format!("{n} pots, crates or flying pots hold other items and give them once, none of these edits is tested in the game yet:"));
         notes.extend(crate::pot_slice::apply::lines(&pot_ts, LISTED));
-        if pot_ts.iter().any(|t| crate::pot_slice::pickup::of(&t.item).is_none() && t.kind != crate::pot_slice::data::Kind::Crate) {
+        if crate::pot_slice::apply::variants(&pot_ts) {
             notes.push(crate::slice::key_spots::LOST.to_string());
         }
     }

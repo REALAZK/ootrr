@@ -8,7 +8,7 @@ use crate::error::{Error as E, Res};
 use crate::modpack::Host;
 use crate::pickup_pack::rows::{self, ACTOR_INFO, GAME_ACTOR_INFO, POUCH_INFO};
 use crate::pickup_pack::write::{run_with, Done, Opts};
-use crate::pickup_pack::{guard, kit, pack_of, sizes, Layers, Spec};
+use crate::pickup_pack::{guard, kit, pack_of, pot_kit, sizes, Layers, Spec, Style};
 use crate::pickup_persist::{check_swaps_with, Extra};
 use crate::romfs::Romfs;
 use crate::rsizetable::{Rst, TABLE_PATH};
@@ -22,7 +22,14 @@ use crate::slice::tier_order::{fixed_actors, Verdict};
 pub enum Kind {
     Free,
     Pot,
+    Held,
     Skull,
+}
+
+impl Kind {
+    pub fn kit(self) -> bool {
+        self != Kind::Free
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -35,10 +42,11 @@ pub struct Want {
 
 impl Want {
     pub fn spec(&self) -> Res<(Spec, Layers)> {
-        if self.kind == Kind::Skull {
-            return Ok((self.pick.kit_spec()?, Layers::default()));
+        match self.kind {
+            Kind::Held => Ok((Spec { item: self.pick.pack.clone(), name: self.pick.kit(), style: Style::Touch, heap: None }, Layers::default())),
+            k if k.kit() => Ok((self.pick.kit_spec()?, Layers::default())),
+            _ => self.pick.spec(),
         }
-        self.pick.spec()
     }
 }
 
@@ -49,7 +57,10 @@ fn kind_of(d: &Data, loc: &str, item: &str) -> Option<Kind> {
         return (!shipped).then_some(Kind::Skull);
     }
     if d.pots.has(loc) {
-        return crate::pot_slice::pickup::of(item).is_none().then_some(Kind::Pot);
+        if crate::pot_slice::pickup::of(item).is_none() {
+            return Some(Kind::Pot);
+        }
+        return crate::pot_slice::pickup::shipped_kit(item).map(|_| Kind::Held);
     }
     if d.cat.by_name(loc).is_some_and(crate::slice::pickups::is_world) {
         let shipped: bool = crate::slice::pickups::world_actor(item).is_some() || shield(item).is_some();
@@ -67,8 +78,11 @@ pub fn need(d: &Data, seed: &SeedFile, fixed: &BM<String, String>) -> Res<BM<Str
         let Some(k) = kind_of(d, loc, item) else {
             continue;
         };
-        let p: Pick = resolve(d, item, fixed.get(loc).map(|s| s.as_str())).map_err(|e| E::Msg(format!("{loc} holds {item}, which this build cannot place there yet: {e}")))?;
-        let name: String = if k == Kind::Skull { p.kit() } else { p.pack.clone() };
+        let p: Pick = match (k, crate::pot_slice::pickup::shipped_kit(item)) {
+            (Kind::Held, Some(a)) => Pick { content: item.clone(), pack: a.to_string(), args: Vec::new() },
+            _ => resolve(d, item, fixed.get(loc).map(|s| s.as_str())).map_err(|e| E::Msg(format!("{loc} holds {item}, which this build cannot place there yet: {e}")))?,
+        };
+        let name: String = if k.kit() { p.kit() } else { p.pack.clone() };
         let w: &mut Want = out.entry(name.clone()).or_insert_with(|| Want { name, pick: p, kind: k, spots: Vec::new() });
         w.spots.push(loc.clone());
     }
@@ -84,7 +98,7 @@ fn opts(host: Host, base: Option<PB>, dry: bool) -> Opts {
 
 fn run_one(romfs: &P, load: &P, mod_name: &str, w: &Want, o: &Opts) -> Res<Done> {
     let (s, l): (Spec, Layers) = w.spec()?;
-    if w.kind == Kind::Skull {
+    if w.kind.kit() {
         return kit::run(romfs, load, mod_name, &s, o, &[]);
     }
     run_with(romfs, load, mod_name, &s, o, &l)
@@ -123,7 +137,7 @@ pub fn audit(rf: &mut Romfs, base: &P, wants: &BM<String, Want>) -> Res<Vec<Stri
         }
         out.push(format!("  {} | {} | {}", w.name, w.spots.join(", "), match w.kind {
             Kind::Free => "on the ground",
-            Kind::Pot => "pot or crate drop",
+            Kind::Pot | Kind::Held => "pot kit drop",
             Kind::Skull => "skulltula kit drop",
         }));
     }
@@ -139,16 +153,16 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Host) -
     let d: Data = Data::load()?;
     let order: Verdict = fixed_actors(&d, seed)?;
     let wants: BM<String, Want> = need(&d, seed, &order.assign)?;
-    if wants.is_empty() {
+    let held: bool = crate::pot_slice::apply::variants(&crate::pot_slice::targets::targets_with(&d, seed, &order.assign)?);
+    if wants.is_empty() && !held {
         return build_with(seed, romfs, load, mod_name, host, &Extra::default());
     }
     if let Some(b) = order.bad.first() {
         return Err(E::Msg(format!("this seed places key items at pickup spots out of upgrade tier order, generate it again with this build: {b}")));
     }
-    let x: Extra = pool(romfs, host, &wants)?;
+    let x: Extra = if wants.is_empty() { Extra::default() } else { pool(romfs, host, &wants)? };
     let mut rf: Romfs = Romfs::open(romfs)?;
-    let pots: Vec<&str> = wants.values().filter(|w| w.kind == Kind::Pot).map(|w| w.name.as_str()).collect();
-    check_swaps_with(&mut rf, &pots, &x)?;
+    check_swaps_with(&mut rf, &[], &x)?;
     let mut b: Built = build_with(seed, romfs, load, mod_name, host, &x)?;
     let base: PB = b.root.join("romfs");
     for w in wants.values() {
@@ -156,6 +170,14 @@ pub fn build(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Host) -
         if done.root.as_deref() != Some(b.root.as_path()) {
             return Err(E::Msg(format!("the pickup pack {} went to another folder than the seed mod", w.name)));
         }
+    }
+    if held {
+        let done: Done = pot_kit::run(romfs, load, mod_name, &pot_kit::ACTORS, &opts(host, Some(base.clone()), false))?;
+        if done.root.as_deref() != Some(b.root.as_path()) {
+            return Err(E::Msg("the pot variants went to another folder than the seed mod".to_string()));
+        }
+        b.counts.files += pot_kit::ACTORS.len();
+        let _ = writeln!(b.report, "{} pot variants were added to this mod. A pot that holds a key item or a Gold Skulltula Token is saved as broken only when the item is picked up, so it returns with the item until then. Not tested in the game yet.", pot_kit::ACTORS.len());
     }
     let lines: Vec<String> = audit(&mut rf, &base, &wants)?;
     b.counts.files += wants.len();
@@ -186,9 +208,10 @@ mod tests {
         let fixed: BM<String, String> = [(skull.to_string(), "Item_Hookshot".to_string())].into_iter().collect();
         let w: BM<String, Want> = need(&d, &s, &fixed).unwrap();
         let names: Vec<&str> = w.keys().map(|k| k.as_str()).collect();
-        assert_eq!(names, vec!["Obj_Boomerang", "Obj_Hammer", "Obj_Hookshot_GS"]);
+        assert_eq!(names, vec!["Obj_Boomerang", "Obj_Hammer_GS", "Obj_Hookshot_GS"]);
         assert_eq!(w["Obj_Boomerang"].kind, Kind::Free);
-        assert_eq!(w["Obj_Hammer"].kind, Kind::Pot);
+        assert_eq!(w["Obj_Hammer_GS"].kind, Kind::Pot);
+        assert_eq!(w["Obj_Hammer_GS"].spec().unwrap().0.name, "Obj_Hammer_GS");
         assert_eq!(w["Obj_Hookshot_GS"].spec().unwrap().0.name, "Obj_Hookshot_GS");
         assert!(need(&d, &s, &BM::new()).is_err());
         let plain: SeedFile = seed(&[(free, "Rupees (5)"), (pot.as_str(), "Rupees (20)"), ("KF Midos Top Left Chest", "Bow")]);
@@ -196,7 +219,7 @@ mod tests {
         let bow: SeedFile = seed(&[(skull, "Bow")]);
         assert!(need(&d, &bow, &[(skull.to_string(), "Item_Range_Bow".to_string())].into_iter().collect()).is_err());
         let two: SeedFile = seed(&[(free, "Megaton Hammer"), (pot.as_str(), "Megaton Hammer")]);
-        assert_eq!(need(&d, &two, &BM::new()).unwrap()["Obj_Hammer"].spots.len(), 2);
+        assert_eq!(need(&d, &two, &BM::new()).unwrap()["Obj_Hammer"].spots.len() + need(&d, &two, &BM::new()).unwrap()["Obj_Hammer_GS"].spots.len(), 2);
     }
 
     fn real() -> Option<PB> {
@@ -289,7 +312,7 @@ mod tests {
         };
         let d: Data = Data::load().unwrap();
         let s: Settings = wide();
-        let want: [(&str, &str); 5] = [("Boomerang", "free"), ("Mirror Shield", "pot"), ("Megaton Hammer", "crate"), ("Lens of Truth", "skull"), ("Iron Boots", "skull")];
+        let want: [(&str, &str); 9] = [("Boomerang", "free"), ("Mirror Shield", "free"), ("Megaton Hammer", "skull"), ("Lens of Truth", "skull"), ("Iron Boots", "skull"), ("Hover Boots", "pot"), ("Goron Tunic", "pot"), ("Gold Skulltula Token", "pot"), ("Fire Arrows", "pot")];
         let list: Vec<String> = plando_for(&d, &s, &want);
         assert!(list.len() >= 4, "{list:?}");
         let o: GenOpts = GenOpts { spoiler: true, plando: list.iter().map(|x| crate::slice::plando::parse(x).unwrap()).collect(), ..GenOpts::default() };
@@ -307,7 +330,23 @@ mod tests {
         let _ = fs::remove_dir_all(&load);
         let b: Built = crate::slice::edit::build_for(&g.seed_file, &root, &load, "wp4 keys", Host::Hookshot).unwrap();
         assert!(b.report.contains("pickup packs for key items"), "{}", b.report);
+        assert!(b.report.contains("pot variants"), "{}", b.report);
         let romfs: PB = b.root.join("romfs");
+        for a in pot_kit::ACTORS {
+            assert!(romfs.join(pack_of(&kit::name_of(a))).is_file(), "{a}");
+        }
+        let held: usize = list.iter().filter(|x| x.split_once('=').is_some_and(|(l, _)| at_of(&d, l) == Some(At::Pot))).count();
+        assert!(held >= 2, "{list:?}");
+        let mut swapped: usize = 0;
+        let mut rf0: Romfs = Romfs::open(&root).unwrap();
+        for f in crate::placement::banc_files(&rf0).unwrap() {
+            let p: PB = romfs.join(&f);
+            if p.is_file() {
+                let raw: Vec<u8> = rf0.zs.decompress(&fs::read(p).unwrap()).unwrap();
+                swapped += raw.windows(6).filter(|w| w == b"_GS   " || w == b"A_01_G" || w == b"A_02_G" || w == b"A_03_G" || w == b"A_04_G" || w == b"A_05_G" || w == b"A_06_G" || w == b"A_07_G" || w == b"A_08_G").count();
+            }
+        }
+        assert!(swapped >= 1, "no pot in the mod's scenes was swapped to a variant");
         let order: Verdict = fixed_actors(&d, &g.seed_file).unwrap();
         let wants: BM<String, Want> = need(&d, &g.seed_file, &order.assign).unwrap();
         assert!(wants.len() >= list.len().min(4), "{:?}", wants.keys());
@@ -335,7 +374,7 @@ mod tests {
         };
         let d: Data = Data::load().unwrap();
         let s: Settings = wide();
-        let want: [(&str, &str); 3] = [("Progressive Hookshot", "free"), ("Bow", "pot"), ("Bomb Bag", "skull")];
+        let want: [(&str, &str); 3] = [("Progressive Hookshot", "free"), ("Bow", "free"), ("Bomb Bag", "skull")];
         let list: Vec<String> = plando_for(&d, &s, &want);
         assert_eq!(list.len(), 3, "{list:?}");
         let o: GenOpts = GenOpts { spoiler: true, plando: list.iter().map(|x| crate::slice::plando::parse(x).unwrap()).collect(), ..GenOpts::default() };

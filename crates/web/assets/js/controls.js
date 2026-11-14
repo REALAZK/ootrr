@@ -1,5 +1,7 @@
 import { h } from "./dom.js";
-import { max_of, dep_text } from "./rules.js";
+import { max_of, dep_text, effective } from "./rules.js";
+import { post } from "./api.js";
+import { state } from "./store.js";
 
 function head(s) {
   return h("div", { class: "head" }, h("span", { class: "title" }, s.label), h("span", { class: "badge" }, s.tag));
@@ -98,6 +100,75 @@ function multi(s, ctx) {
   };
 }
 
+function exclusions(s, ctx, ta, hint) {
+  const find = h("input", { type: "text", placeholder: "Search checks, then drag or click one in", autocomplete: "off", spellcheck: "false" });
+  const pool = h("ul", { class: "excl-pool" });
+  const chosen = h("ul", { class: "excl-chosen" });
+  const msg = h("div", { class: "hint" });
+  let all = [];
+  let have = [];
+  const commit = (v) => {
+    have = v;
+    ctx.set(s.id, v);
+  };
+  const add = (n) => {
+    if (have.some((x) => x.toLowerCase() === n.toLowerCase())) return;
+    if (have.length >= s.max_items) return void (msg.textContent = `At most ${s.max_items} locations.`);
+    msg.textContent = "";
+    commit([...have, n]);
+  };
+  const draw = () => {
+    const q = find.value.trim().toLowerCase();
+    const rows = all.filter((n) => !have.includes(n) && (!q || n.toLowerCase().includes(q))).slice(0, 60);
+    pool.replaceChildren(
+      ...rows.map((n) => {
+        const li = h("li", { draggable: "true", title: "Drag into the excluded list" }, n);
+        li.ondragstart = (e) => e.dataTransfer.setData("text/plain", n);
+        li.onclick = () => add(n);
+        return li;
+      }),
+    );
+    chosen.replaceChildren(
+      ...have.map((n) => {
+        const b = h("button", { type: "button", class: "btn quiet small", "aria-label": `Remove ${n}` }, "Remove");
+        b.onclick = () => commit(have.filter((x) => x !== n));
+        return h("li", null, h("span", null, n), b);
+      }),
+    );
+  };
+  const zone = h("div", { class: "excl-zone" }, chosen);
+  zone.ondragover = (e) => {
+    e.preventDefault();
+    zone.classList.add("over");
+  };
+  zone.ondragleave = () => zone.classList.remove("over");
+  zone.ondrop = (e) => {
+    e.preventDefault();
+    zone.classList.remove("over");
+    const n = e.dataTransfer.getData("text/plain").trim();
+    if (n) add(n);
+  };
+  find.oninput = draw;
+  find.onfocus = async () => {
+    if (all.length) return;
+    try {
+      const r = await post("/api/plando/options", { settings: effective(state.schema, state.vals) });
+      all = r.locations;
+      draw();
+    } catch (e) {
+      msg.textContent = `The location list could not be loaded. ${e.message}`;
+    }
+  };
+  const det = h("details", null, h("summary", null, "Edit as text"), ta, hint);
+  return {
+    el: h("div", { class: "excl" }, find, pool, h("div", { class: "hint" }, "Excluded checks can only hold items the seed does not need. Too many and the seed is refused."), zone, msg, det),
+    sync(v) {
+      have = v.slice();
+      draw();
+    },
+  };
+}
+
 function list(s, ctx) {
   const ta = h("textarea", {
     id: `c_${s.id}`,
@@ -111,13 +182,15 @@ function list(s, ctx) {
     },
   });
   const hint = h("div", { class: "hint" });
+  const x = s.id === "disabled_locations" ? exclusions(s, ctx, ta, hint) : null;
   return {
-    el: h("div", null, ta, hint),
+    el: x ? x.el : h("div", null, ta, hint),
     tip: s.tip,
     sync(v, on) {
       if (document.activeElement !== ta) ta.value = v.join("\n");
       ta.disabled = !on;
       hint.textContent = `Up to ${s.max_items} entries. Letters, digits, spaces and _ . : ' ( ) / - only.`;
+      if (x) x.sync(v);
     },
   };
 }

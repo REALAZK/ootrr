@@ -22,7 +22,7 @@ pub const HELD: [(&str, bool); 3] = [
     ("Graveyard Dampe Race Freestanding PoH", true),
 ];
 
-pub const NOTE: &str = "Freestanding items are shuffled. Heart pieces, rupees and recovery hearts on the ground swap their actor for another world pickup, and three heart piece chests join the chest pool. Rupees, recovery hearts, heart pieces, the two shields and every item with a built pickup pack can lie on the ground. Experimental and untested in the game.";
+pub const NOTE: &str = "Freestanding items are shuffled. Heart pieces, rupees and recovery hearts on the ground swap their actor for another world pickup, and three heart piece chests join the chest pool. Rupees, recovery hearts, heart pieces, the two shields and every item with a built pickup pack can lie on the ground.";
 
 pub const WORLD_ONLY: [&str; 1] = ["Recovery Heart"];
 
@@ -183,9 +183,7 @@ pub fn select(d: &Data, w: &World, p: &Plan, free: &mut Vec<LocId>, left: &mut B
             continue;
         };
         let dungeon: bool = w.regions[w.locs[x].region].dungeon.is_some();
-        if p.excluded.iter().any(|e| *e == l.name) {
-            count(left, "excluded by the player");
-        } else if !mode_ok(p.world, dungeon) {
+        if !mode_ok(p.world, dungeon) {
             count(left, "freestanding item shuffle does not cover its area");
         } else if held(&l.name) == Some(true) && !d.event_ok(&l.name) {
             count(left, "chest runs a story event that can grant its own item");

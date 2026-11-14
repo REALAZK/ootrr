@@ -88,7 +88,7 @@ fn ganon_key() -> Vec<Setting> {
 
 fn starting_items() -> Setting {
     Setting::multi(36, "starting_items", "starting", "Starting items")
-        .tip("Items you begin the game with. One copy of each is taken out of the item pool and replaced by Rupee (1). Upgrades are ticked by tier and the highest ticked tier counts: Longshot means two progressive Hookshots, Big Quiver means the Bow and one quiver upgrade, Giant's Wallet means two wallet upgrades, Double Magic means two magic upgrades, Ocarina of Time means both ocarinas, Golden Gauntlets means all three strength upgrades. Bags start full. Bombchus need a bomb bag. Zelda's Letter cannot be given. Experimental, untested in the game.")
+        .tip("Items you begin the game with. One copy of each is taken out of the item pool and replaced by Rupee (1). Upgrades are ticked by tier and the highest ticked tier counts: Longshot means two progressive Hookshots, Big Quiver means the Bow and one quiver upgrade, Giant's Wallet means two wallet upgrades, Double Magic means two magic upgrades, Ocarina of Time means both ocarinas, Golden Gauntlets means all three strength upgrades. Bags start full. Bombchus need a bomb bag. Zelda's Letter cannot be given.")
         .opts(&[
             ("ocarina", "Ocarina"),
             ("slingshot", "Slingshot"),
@@ -149,7 +149,7 @@ fn starting_items() -> Setting {
 
 fn starting_songs() -> Setting {
     Setting::multi(37, "starting_songs", "starting", "Starting songs")
-        .tip("Songs you already know when the game starts. Each one is taken out of the item pool when its lesson is shuffled. Playing them still needs an Ocarina. Experimental, untested in the game.")
+        .tip("Songs you already know when the game starts. Each one is taken out of the item pool when its lesson is shuffled. Playing them still needs an Ocarina.")
         .opts(&[
             ("zeldas_lullaby", "Zelda's Lullaby"),
             ("eponas_song", "Epona's Song"),
@@ -198,27 +198,27 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::toggle(5, "open_door_of_time", "world", "Open Door of Time", false)
-            .tip("Start with the Door of Time already open, so the Ocarina and songs are not needed to reach the Master Sword. Returning to childhood still needs the Forest Sage. Experimental, untested in the game."),
+            .tip("Start with the Door of Time already open, so the Ocarina and songs are not needed to reach the Master Sword. Returning to childhood still needs the Forest Sage."),
     );
     s.push(
         Setting::choice(6, "zora_fountain", "world", "Zora's Fountain", "closed")
-            .tip("Whether King Zora blocks the way to Zora's Fountain. Open is experimental, untested in the game.")
+            .tip("Whether King Zora blocks the way to Zora's Fountain.")
             .opt("closed", "Closed", "King Zora must be moved with Ruto's Letter.")
             .opt("adult", "Open as adult", "King Zora is gone once you are an adult.")
             .opt("open", "Open", "King Zora never blocks the way. Ruto's Letter stays in the item pool."),
     );
     s.push(
         Setting::toggle(75, "jabu_open", "world", "Jabu Jabu's Belly open", false)
-            .tip("Jabu Jabu opens his mouth without a fish, so no fish and no bottle are needed to enter Jabu Jabu's Belly. King Zora still has to be moved first unless Zora's Fountain is open. Experimental, untested in the game."),
+            .tip("Jabu Jabu opens his mouth without a fish, so no fish and no bottle are needed to enter Jabu Jabu's Belly. King Zora still has to be moved first unless Zora's Fountain is open."),
     );
     s.push(
         Setting::toggle(76, "time_always_passes", "world", "Time always passes", true)
             .wire_as(Value::Bool(false))
-            .tip("The day and night clock runs from the start instead of waiting for Kaepora in Hyrule Field and Impa's send off, so night can be reached before meeting Zelda. Experimental, untested in the game."),
+            .tip("The day and night clock runs from the start instead of waiting for Kaepora in Hyrule Field and Impa's send off, so night can be reached before meeting Zelda."),
     );
     s.push(
         Setting::toggle(77, "early_beds", "world", "Beds before Zelda", false)
-            .tip("Beds offer Sleep until morning and Sleep until night before the Zelda meeting. Experimental, untested in the game.")
+            .tip("Beds offer Sleep until morning and Sleep until night before the Zelda meeting.")
             .when_on("time_always_passes"),
     );
     s.push(
@@ -258,13 +258,13 @@ pub fn build() -> Schema {
     s.push(
         where_checks(
             Setting::choice(12, "shuffle_freestanding_items", "shuffle", "Freestanding items", "off")
-                .tip("Which rupees, hearts and heart pieces lying on the ground hold random items. Rupees, hearts, heart pieces, the two shields and every key item whose pickup pack is built can be placed there. A spot that exists once per age only takes items that can be found twice. Experimental, untested in the game."),
+                .tip("Which rupees, hearts and heart pieces lying on the ground hold random items. Rupees, hearts, heart pieces, the two shields and every key item whose pickup pack is built can be placed there. A spot that exists once per age only takes items that can be found twice."),
         ),
     );
     s.push(
         Setting::list(13, "disabled_locations", "shuffle", "Excluded locations", 500)
-            .tag(Tag::Niche)
-            .tip("Locations that never hold an important item. Each entry is a location id from the location catalog."),
+            .tag(Tag::Core)
+            .tip("Checks you drag in here never hold an item the seed needs, only filler and other junk. They stay in the shuffle, so they still change. If too many are excluded for the seed to be beatable, no seed is built."),
     );
     s.push(key_places(
         Setting::choice(14, "shuffle_smallkeys", "keys", "Small Keys", "dungeon")
@@ -327,54 +327,54 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::number(35, "starting_hearts", "starting", "Starting hearts", 3, 1, 20)
-            .tip("How many heart containers you begin with. Any value other than 3 is written into the game start module. Experimental, untested in the game."),
+            .tip("How many heart containers you begin with. Any value other than 3 is written into the game start module."),
     );
     s.push(
         Setting::choice(38, "shuffle_rewards", "shuffle", "Story and NPC rewards", "supported")
             .wire_as(Value::s("off"))
-            .tip("Whether the items that NPCs, minigames, Great Fairies and story scenes hand out are shuffled. This is on by default but still experimental, none of these edits are tested in the game yet. The Spiritual Stones and Medallions from the bosses and Rauru stay in place unless Stones and Medallions is also on. Songs have their own setting.")
+            .tip("Whether the items that NPCs, minigames, Great Fairies and story scenes hand out are shuffled. This is on by default. The Spiritual Stones and Medallions from the bosses and Rauru stay in place unless Stones and Medallions is also on. Songs have their own setting.")
             .opt("off", "Vanilla", "These rewards keep their original items.")
-            .opt("supported", "Supported rewards", "The rewards whose event the tool can edit. Experimental, none of these edits are tested in the game yet."),
+            .opt("supported", "Supported rewards", "The rewards whose event the tool can edit."),
     );
     s.push(
         Setting::toggle(51, "shuffle_rewards_extra", "shuffle", "More NPC rewards", false)
-            .tip("Also shuffle the rewards that need bigger event edits: the 20 token Skulltula reward, Biggoron and Medigoron. Experimental, none of these edits are tested in the game yet.")
+            .tip("Also shuffle the rewards that need bigger event edits: the 20 token Skulltula reward, Biggoron and Medigoron.")
             .when("shuffle_rewards", "supported"),
     );
     s.push(
         Setting::toggle(74, "shuffle_dungeon_rewards", "shuffle", "Stones and Medallions", false)
-            .tip("Also shuffle the three Spiritual Stones and six Medallions that the bosses and Rauru hand out. When this is off, every boss and Rauru give their usual Stone or Medallion, and no Stone or Medallion turns up anywhere else. Experimental, none of these edits are tested in the game yet.")
+            .tip("Also shuffle the three Spiritual Stones and six Medallions that the bosses and Rauru hand out. When this is off, every boss and Rauru give their usual Stone or Medallion, and no Stone or Medallion turns up anywhere else.")
             .when("shuffle_rewards", "supported"),
     );
     s.push(
         Setting::toggle(53, "shuffle_trade_checks", "shuffle", "Adult trade quest checks", false)
-            .tip("Each of the ten adult trade quest hand ins also gives one shuffled item the first time. The trade items themselves stay in their vanilla order. Experimental, none of these edits are tested in the game yet.")
+            .tip("Each of the ten adult trade quest hand ins also gives one shuffled item the first time. The trade items themselves stay in their vanilla order.")
             .when("shuffle_rewards", "supported"),
     );
     s.push(
         Setting::toggle(54, "shuffle_scrubs_a", "shuffle", "One time scrub sales", false)
-            .tip("Also shuffle the Business Scrubs that already sell one item once: the Death Mountain Crater heart scrub and the Lost Woods stick and nut bag scrubs. The price stays and the sale text still names the old item. Experimental, none of these edits are tested in the game yet.")
+            .tip("Also shuffle the Business Scrubs that already sell one item once: the Death Mountain Crater heart scrub and the Lost Woods stick and nut bag scrubs. The price stays and the sale text still names the old item.")
             .when("shuffle_rewards", "supported"),
     );
     s.push(
         Setting::toggle(56, "shuffle_scrubs_b", "shuffle", "Menu scrubs as one time sales", false)
-            .tip("Also shuffle the Business Scrubs in the Lost Woods scrub grotto and in Jabu Jabu's Belly. A scrub that holds another item sells it once for 20 or 30 rupees instead of its menu, and its sale text still names a heart piece. Experimental, none of these edits are tested in the game yet.")
+            .tip("Also shuffle the Business Scrubs in the Lost Woods scrub grotto and in Jabu Jabu's Belly. A scrub that holds another item sells it once for 20 or 30 rupees instead of its menu, and its sale text still names a heart piece.")
             .when("shuffle_rewards", "supported"),
     );
     s.push(
         Setting::toggle(39, "shuffle_boss_hearts", "shuffle", "Boss Heart Containers", false)
-            .tip("Whether the Heart Containers that bosses leave behind join the item pool. Each one becomes a chest that holds a random item. Experimental, untested in the game."),
+            .tip("Whether the Heart Containers that bosses leave behind join the item pool. Each one becomes a chest that holds a random item."),
     );
     s.push(
         Setting::choice(40, "shuffle_songs", "shuffle", "Songs", "off")
-            .tip("Whether the songs you learn from NPCs and Sheik are shuffled. Experimental, untested in the game.")
+            .tip("Whether the songs you learn from NPCs and Sheik are shuffled.")
             .opt("off", "Vanilla", "Every song comes from its usual teacher.")
             .opt("own", "Song locations", "The songs are shuffled among the places that teach songs.")
             .opt("anywhere", "Anywhere", "Songs can appear anywhere and song locations can hold any item."),
     );
     s.push(
         Setting::toggle(41, "gossip_hints", "world", "Gossip stone hints", false)
-            .tip("Every gossip stone tells you where an important item lies. The stones need no Mask of Truth text change, only the words are replaced. Experimental, untested in the game."),
+            .tip("Every gossip stone tells you where an important item lies. The stones need no Mask of Truth text change, only the words are replaced."),
     );
     s.push(
         Setting::toggle(42, "faster_chests", "world", "Faster item pickups", false)
@@ -382,11 +382,11 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::toggle(44, "skip_intro", "world", "Skip the opening cutscenes", true)
-            .tip("A new game skips the opening movie and the wake up scene in Link's house, and you get control right away. Experimental, untested in the game."),
+            .tip("A new game skips the opening movie and the wake up scene in Link's house, and you get control right away."),
     );
     s.push(
         Setting::choice(43, "start_reward", "starting", "Start with a reward", "off")
-            .tip("Begin the game already holding one random Spiritual Stone or Medallion. The vanilla copy still exists. Experimental, untested in the game.")
+            .tip("Begin the game already holding one random Spiritual Stone or Medallion. The vanilla copy still exists.")
             .opt("off", "No reward", "You start with no stones or medallions.")
             .opt("stone", "A Spiritual Stone", "One random Spiritual Stone.")
             .opt("medal", "A Medallion", "One random Medallion.")
@@ -394,14 +394,14 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::choice(52, "shuffle_skulltulas", "shuffle", "Gold Skulltulas", "off")
-            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can drop items that the game has a pickup for and key items whose pickup pack is built, as a kit pickup that plays the get window. A killed skulltula stays gone only once its dropped item is picked up, and it comes back if the item is left behind. Experimental, untested in the game.")
+            .tip("Whether Gold Skulltulas drop random items and their tokens join the item pool. A skulltula can drop items that the game has a pickup for and key items whose pickup pack is built, as a kit pickup that plays the get window. A killed skulltula stays gone only once its dropped item is picked up, and it comes back if the item is left behind.")
             .opt("off", "Vanilla", "Every skulltula drops its token.")
             .opt("pinned", "Confident matches", "Only the skulltulas whose remake actor is known for sure are shuffled.")
             .opt("matched", "Confident and pooled", "Also the pools of skulltulas that share the same logic, and the skulltulas that our hash research pairs with their spot."),
     );
     s.push(
         Setting::choice(55, "shuffle_remake_chests", "shuffle", "Remake chests", "off")
-            .tip("Whether the chests that only the remake has, and the dungeon and overworld chests newly paired with their OoTR spot, join the item pool. Their rules come from research. Seven overworld chests whose spot is unproven only take items that are not progression. Experimental, untested in the game.")
+            .tip("Whether the chests that only the remake has, and the dungeon and overworld chests newly paired with their OoTR spot, join the item pool. Their rules come from research. Seven overworld chests whose spot is unproven only take items that are not progression.")
             .opt("off", "Vanilla", "These chests keep their original items.")
             .opt("on", "Shuffled", "These chests hold random items."),
     );
@@ -411,22 +411,22 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::choice(70, crate::qol::SKIP, "world", "Skippable cutscenes", "off")
-            .tip("Removes the lock that stops the player from skipping some cutscenes. Most cutscenes can already be skipped by holding the skip button, only eight are locked. Experimental, untested in the game.")
+            .tip("Removes the lock that stops the player from skipping some cutscenes. Most cutscenes can already be skipped by holding the skip button, only eight are locked.")
             .opt("off", "Vanilla", "The locked cutscenes stay locked.")
             .opt("story", "Opening and credits", "The opening movie and the first credits movie can be skipped. The six title screen demos stay locked.")
             .opt("all", "All locks", "Also unlocks the six title screen demos. Pressing the skip button on the title screen may then skip a demo."),
     );
     s.push(
         Setting::toggle(71, crate::qol::ANJU, "world", "Anju needs one cucco", false)
-            .tip("Anju in Kakariko Village counts the cucco game as won when one cucco is in the pen instead of seven. The Bottle reward is the same. The logic needs one cucco too. Experimental, untested in the game."),
+            .tip("Anju in Kakariko Village counts the cucco game as won when one cucco is in the pen instead of seven. The Bottle reward is the same. The logic needs one cucco too."),
     );
     s.push(
         Setting::toggle(72, crate::qol::POE, "world", "Big poe bottle at the first big poe", false)
-            .tip("The Ghost Shop owner in the Market gives the Bottle for the first big poe, where the game wants five. The golden reward after ten big poes is unchanged. The logic needs one big poe. Experimental, untested in the game."),
+            .tip("The Ghost Shop owner in the Market gives the Bottle for the first big poe, where the game wants five. The golden reward after ten big poes is unchanged. The logic needs one big poe."),
     );
     s.push(
         Setting::toggle(73, "shuffle_treasure_reward", "shuffle", "Treasure Chest Game reward", false)
-            .tip("Whether the final reward of the Market Treasure Chest Game, a Piece of Heart, holds a random item. Only the first win gives it, later wins give the usual red rupee. The five rooms keep their keys and rupees. Only unique items that do nothing when found twice can be placed there, so no upgrades, ammo, bottles or keys. Experimental, untested in the game."),
+            .tip("Whether the final reward of the Market Treasure Chest Game, a Piece of Heart, holds a random item. Only the first win gives it, later wins give the usual red rupee. The five rooms keep their keys and rupees. Only unique items that do nothing when found twice can be placed there, so no upgrades, ammo, bottles or keys."),
     );
     s.push(starting_items());
     s.push(starting_songs());
