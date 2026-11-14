@@ -117,7 +117,7 @@ mod tests {
         assert_eq!(at.len(), 2);
         assert_eq!(at.iter().filter(|&&i| feeds(&a, i, "Logic_Create")).count(), 1);
         assert_eq!(at.iter().filter(|&&i| feeds(&a, i, "Logic_Delete")).count(), 1);
-        let out: Vec<u8> = edit(&raw, &[crate::open_world::LOGIC_JOBS[2].1]).unwrap();
+        let out: Vec<u8> = edit(&raw, &[crate::open_world::LOGIC_JOBS[0].1]).unwrap();
         let b: Ainb = Ainb::parse(&out).unwrap();
         let fish: usize = *at.iter().find(|&&i| feeds(&a, i, "Logic_Delete")).unwrap();
         let area: usize = *at.iter().find(|&&i| feeds(&a, i, "Logic_Create")).unwrap();

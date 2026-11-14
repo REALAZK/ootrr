@@ -23,8 +23,6 @@ pub const MASKS: &str = "skip_mask_quest";
 pub const BEANS: &str = "plant_beans";
 pub const BRIDGE: &str = "gerudo_bridge_open";
 
-pub const DOOR_MODULE: &str = "Logic/Market_Common_f252.logic.module.ainb";
-pub const SWORD_MODULE: &str = "Logic/Market_Child_Prefab_e700.logic.module.ainb";
 pub const FOUNTAIN: &str = "Logic/ZoraFountain_Child_Prefab_41c4.logic.module.ainb";
 pub const WATER_FILE: &str = "Event/EventFlow/Get_StoneOfWater.bfevfl.zs";
 pub const WATER_FLOW: &str = "Get_StoneOfWater";
@@ -36,22 +34,19 @@ pub const BED_FLOW: &str = "LinkSleepInBed";
 pub const WATER: &str = "Get_StoneOfWater";
 pub const MOVED_EXP: &str = "Get_StoneOfWater_IsAfter_Step06_Exp";
 pub const BACK_STEPS: [&str; 9] = ["Ready", "Step01", "Step02", "Step03", "Step03_Impa", "Step04", "Step05", "Step05_01", "Step06"];
-pub const SONG_EXP: &str = "DoorOfTime_IsAfter_Step05_Exp";
 pub const MEET_ZELDA: &str = "HavePlayedEvent.HyruleCastle_Goto_HyruleCastle_MeetZelda";
 pub const BED_SWITCHES: [&str; 3] = ["Event92", "Event187", "Event168"];
 
 pub const ZORA_PREFIX: &str = "OOTRROpenZora";
-pub const DOOR_PREFIX: &str = "OOTRROpenDoor";
 
 pub type Job = ((&'static str, &'static str), (&'static str, &'static str), Option<&'static str>);
 
-pub const LOGIC_JOBS: [(&str, Job); 3] = [
-    (DOOR_MODULE, (("DoorOfTime", "Step06"), ("SageOfFire", "Ready"), None)),
-    (SWORD_MODULE, (("DoorOfTime", "Step06"), ("AllSage", "Ready"), None)),
+/// The Door of Time is not here: open_door_of_time is the story-state door of
+/// crate::door_open (Plan::door), which also handles the pedestal and Sheik.
+pub const LOGIC_JOBS: [(&str, Job); 1] = [
     (FOUNTAIN, ((WATER, "Step08"), (WATER, "Step06"), Some("Logic_Create"))),
 ];
 
-pub const DOOR_NOTE: &str = "The Door of Time stands open from the start and the Master Sword can be pulled on the first visit. The door logic module now reads the Fire Sage quest and the first pull reads the Sage quest instead of the Door of Time quest, and the Door of Time quest is only marked complete after the Song of Time opened the door, so the Ocarina of Time and the Song of Time can still be found after an early pull. Returning to childhood still needs the Forest Sage, as in the unmodified game. Experimental and untested in the game.";
 pub const ZORA_NOTE: &str = "King Zora starts moved aside, so Zora's Fountain needs no Ruto's Letter. Ruto's Letter stays in the item pool. Any event that would move the Zora quest back to before King Zora moved (the diving game, getting or reading the letter, the arrival scenes) now leaves the quest where it is. Experimental and untested in the game.";
 pub const JABU_NOTE: &str = "Jabu Jabu opens his mouth without a fish once King Zora has moved. Experimental and untested in the game.";
 pub const BEDS_NOTE: &str = "Beds offer Sleep until morning and Sleep until night before the Zelda meeting. Experimental and untested in the game.";
@@ -60,7 +55,6 @@ pub const BEDS_NOTE: &str = "Beds offer Sleep until morning and Sleep until nigh
 pub struct Opts {
     pub zora: bool,
     pub jabu: bool,
-    pub door: bool,
     pub time: bool,
     pub beds: bool,
     pub epona: bool,
@@ -71,18 +65,15 @@ pub struct Opts {
 
 impl Opts {
     pub fn any(&self) -> bool {
-        self.zora || self.jabu || self.door || self.time || self.beds || self.epona || self.masks || self.beans || self.bridge
+        self.zora || self.jabu || self.time || self.beds || self.epona || self.masks || self.beans || self.bridge
     }
 
     pub fn edits_files(&self) -> bool {
-        self.zora || self.jabu || self.door || self.beds || self.beans || self.bridge
+        self.zora || self.jabu || self.beds || self.beans || self.bridge
     }
 
     pub fn logic(&self) -> Vec<(&'static str, &'static str)> {
         let mut out: Vec<(&'static str, &'static str)> = Vec::new();
-        if self.door {
-            out.push((DOOR, "open"));
-        }
         if self.zora {
             out.push((ZORA, "open"));
         }
@@ -129,9 +120,6 @@ impl Opts {
 
     pub fn notes(&self) -> Res<Vec<String>> {
         let mut out: Vec<String> = Vec::new();
-        if self.door {
-            out.push(DOOR_NOTE.to_string());
-        }
         if self.zora {
             out.push(ZORA_NOTE.to_string());
         }
@@ -171,14 +159,13 @@ pub fn read(s: &Settings, bad: &mut Vec<String>) -> Opts {
         })
     };
     let jabu: bool = flag(JABU);
-    let door: bool = flag(DOOR);
     let time: bool = flag(TIME);
     let beds: bool = time && flag(BEDS);
     let epona: bool = flag(EPONA);
     let masks: bool = flag(MASKS);
     let beans: bool = flag(BEANS);
     let bridge: bool = flag(BRIDGE);
-    Opts { zora, jabu, door, time, beds, epona, masks, beans, bridge }
+    Opts { zora, jabu, time, beds, epona, masks, beans, bridge }
 }
 
 fn flow_edit(raw: &[u8], f: impl FnOnce(&mut Bf) -> Res<()>) -> Res<Vec<u8>> {
@@ -198,19 +185,6 @@ fn logic_out(rf: &Romfs, have: Have, file: &str) -> Res<Out> {
 
 pub fn stage(rf: &mut Romfs, o: &Opts, have: Have) -> Res<Vec<Out>> {
     let mut outs: Vec<Out> = Vec::new();
-    if o.door {
-        outs.push(logic_out(rf, have, DOOR_MODULE)?);
-        outs.push(logic_out(rf, have, SWORD_MODULE)?);
-        outs.push(edit_zs(rf, have, crate::door_fix::FLOW_FILE, |raw| {
-            flow_edit(raw, |b| {
-                let n: Vec<String> = guard::guard_steps(b, crate::door_fix::FLOW, "DoorOfTime", &["Complete"], SONG_EXP, Run::WhenTrue, DOOR_PREFIX)?;
-                if n.len() != 1 {
-                    return Err(Error::Msg(format!("open world: expected one Complete request in DoorOfTime, found {}", n.len())));
-                }
-                Ok(())
-            })
-        })?);
-    }
     if o.zora {
         outs.push(edit_zs(rf, have, WATER_FILE, |raw| flow_edit(raw, |b| guard::guard_steps(b, WATER_FLOW, WATER, &BACK_STEPS, MOVED_EXP, Run::WhenFalse, ZORA_PREFIX).map(|_| ())))?);
         outs.push(edit_zs(rf, have, ARRIVE_FILE, |raw| flow_edit(raw, |b| guard::guard_steps(b, ARRIVE_FLOW, WATER, &BACK_STEPS, MOVED_EXP, Run::WhenFalse, ZORA_PREFIX).map(|_| ())))?);
@@ -272,12 +246,12 @@ mod tests {
     fn each_setting_becomes_its_logic_value_its_new_game_defaults_and_a_note() {
         let (o, bad) = opts(&[(ZORA, Value::s("open")), (JABU, Value::Bool(true)), (DOOR, Value::Bool(true)), (BEDS, Value::Bool(true))]);
         assert!(bad.is_empty());
-        assert_eq!(o, Opts { zora: true, jabu: true, door: true, time: true, beds: true, ..Opts::default() });
-        assert_eq!(o.logic(), vec![(DOOR, "open"), (ZORA, "open"), (JABU, "1")]);
+        assert_eq!(o, Opts { zora: true, jabu: true, time: true, beds: true, ..Opts::default() });
+        assert_eq!(o.logic(), vec![(ZORA, "open"), (JABU, "1")]);
         assert_eq!(o.defaults(), vec![(ZORA, "open"), (JABU, "true"), (TIME, "true")]);
         let n: Vec<String> = o.notes().unwrap();
-        assert_eq!(n.len(), 7);
-        for t in ["Door of Time stands open", "King Zora starts moved", "Jabu Jabu opens", "Beds offer"] {
+        assert_eq!(n.len(), 6);
+        for t in ["King Zora starts moved", "Jabu Jabu opens", "Beds offer"] {
             assert!(n.iter().any(|x| x.contains(t)), "{t}");
         }
         let (b, _) = opts(&[(BEDS, Value::Bool(true)), (TIME, Value::Bool(false))]);
@@ -321,10 +295,10 @@ mod tests {
             return;
         };
         let mut rf: Romfs = Romfs::open(&root).unwrap();
-        let all: Opts = Opts { zora: true, jabu: true, door: true, time: true, beds: true, ..Opts::default() };
+        let all: Opts = Opts { zora: true, jabu: true, time: true, beds: true, ..Opts::default() };
         let outs: Vec<Out> = stage(&mut rf, &all, &|_: &str| None).unwrap();
         let paths: Vec<&str> = outs.iter().map(|o| o.path.as_str()).collect();
-        assert_eq!(paths, vec![DOOR_MODULE, SWORD_MODULE, crate::door_fix::FLOW_FILE, WATER_FILE, ARRIVE_FILE, FOUNTAIN, BED_FILE]);
+        assert_eq!(paths, vec![WATER_FILE, ARRIVE_FILE, FOUNTAIN, BED_FILE]);
         let mut flows: Vec<(String, Bf)> = Vec::new();
         for o in outs.iter().filter(|o| o.path.ends_with(".zs")) {
             flows.push((o.path.clone(), Bf::parse(&rf.zs.decompress(&o.z).unwrap()).unwrap()));
@@ -339,9 +313,6 @@ mod tests {
         assert_eq!(steps(flow_of(&orig, WATER_FLOW), WATER), steps(w, WATER));
         let arrive: Bf = bf(ARRIVE_FILE);
         assert_eq!(guarded(flow_of(&arrive, ARRIVE_FLOW), ZORA_PREFIX).len(), 2);
-        let door: Bf = bf(crate::door_fix::FLOW_FILE);
-        let d: Vec<(String, Vec<(u32, String)>)> = guarded(flow_of(&door, crate::door_fix::FLOW), DOOR_PREFIX);
-        assert_eq!(d, vec![(SONG_EXP.to_string(), vec![(0, "Event93".to_string())])]);
         let bed: Bf = bf(BED_FILE);
         let f: &Flow = flow_of(&bed, BED_FLOW);
         for n in BED_SWITCHES {
@@ -519,7 +490,7 @@ mod tests {
         };
         let d: crate::slice::data::Data = crate::slice::data::Data::load().unwrap();
         let mut s: Settings = Settings::default();
-        for (k, v) in [(ZORA, Value::s("open")), (JABU, Value::Bool(true)), (DOOR, Value::Bool(true)), (BEDS, Value::Bool(true)), ("open_kakariko", Value::s("open")), ("shuffle_pots", Value::s("all"))] {
+        for (k, v) in [(ZORA, Value::s("open")), (JABU, Value::Bool(true)), (DOOR, Value::Bool(true)), (BEDS, Value::Bool(true)), ("open_forest", Value::s("open")), ("open_kakariko", Value::s("open")), ("shuffle_pots", Value::s("all"))] {
             s.set(k, v).unwrap();
         }
         let g = crate::slice::generate::generate_data(&d, &s, "open built", &crate::slice::GenOpts::default()).unwrap();
@@ -529,7 +500,7 @@ mod tests {
         let mut rf: Romfs = Romfs::open(&root).unwrap();
         let van: crate::rsizetable::Rst = crate::rsizetable::load(&mut rf).unwrap();
         let modt: crate::rsizetable::Rst = crate::rsizetable::Rst::parse(&rf.zs.decompress(&fs::read(out.join(crate::rsizetable::TABLE_PATH)).unwrap()).unwrap()).unwrap();
-        let files: [&str; 9] = [DOOR_MODULE, SWORD_MODULE, FOUNTAIN, crate::door_fix::FLOW_FILE, WATER_FILE, ARRIVE_FILE, BED_FILE, crate::chest_slot::LIST, crate::intro_skip::FILE];
+        let files: [&str; 9] = [crate::door_open::MODULE, crate::door_open::SWORD_MODULE, FOUNTAIN, crate::door_fix::FLOW_FILE, WATER_FILE, ARRIVE_FILE, BED_FILE, crate::chest_slot::LIST, crate::intro_skip::FILE];
         let mut grown: usize = 0;
         for f in files {
             let disk: Vec<u8> = fs::read(f.split('/').fold(out.clone(), |a, x| a.join(x))).unwrap_or_else(|_| panic!("{f} missing"));
@@ -605,20 +576,4 @@ mod tests {
         }
     }
 
-    #[test]
-    fn the_door_guard_lands_on_top_of_the_door_fix() {
-        let Some(root) = real() else {
-            return;
-        };
-        let mut rf: Romfs = Romfs::open(&root).unwrap();
-        let fixed: Vec<Out> = crate::door_fix::stage(&mut rf).unwrap();
-        let z: Vec<u8> = fixed[0].z.clone();
-        let have = |p: &str| -> Option<Vec<u8>> { if p == crate::door_fix::FLOW_FILE { Some(z.clone()) } else { None } };
-        let outs: Vec<Out> = stage(&mut rf, &Opts { door: true, ..Opts::default() }, &have).unwrap();
-        let b: Bf = Bf::parse(&rf.zs.decompress(&outs[2].z).unwrap()).unwrap();
-        let f: &Flow = flow_of(&b, crate::door_fix::FLOW);
-        assert!(f.events.iter().any(|e| e.name.starts_with(crate::door_fix::PREFIX)));
-        assert_eq!(guarded(f, DOOR_PREFIX).len(), 1);
-        assert!(stage(&mut rf, &Opts { door: true, ..Opts::default() }, &|p: &str| if p == crate::door_fix::FLOW_FILE { Some(outs[2].z.clone()) } else { None }).is_err());
-    }
 }

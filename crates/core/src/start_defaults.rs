@@ -493,6 +493,7 @@ mod tests {
         let d: crate::slice::data::Data = crate::slice::data::Data::load().unwrap();
         let base: crate::settings::Settings = crate::settings::Settings::default();
         let mut s: crate::settings::Settings = base.clone();
+        s.set("open_forest", crate::settings::Value::s("closed_deku")).unwrap();
         s.set("open_kakariko", crate::settings::Value::s("open")).unwrap();
         let p: crate::slice::support::Plan = crate::slice::support::plan(&s).unwrap();
         let w: crate::world::World = crate::slice::logic::world_with(&d, &p.logic()).unwrap();
@@ -518,7 +519,7 @@ mod tests {
         };
         let raw: Byml = Romfs::open(&root).unwrap().read_byml(LIST).unwrap();
         let v: fn(&str) -> crate::settings::Value = crate::settings::Value::s;
-        let (list, flow, back, report): (Byml, Option<crate::bfevfl::Bf>, crate::settings::Settings, String) = built(&root, &[("open_kakariko", v("open")), ("shuffle_boss_hearts", crate::settings::Value::Bool(true)), ("shuffle_pots", v("all"))], "defaults kak");
+        let (list, flow, back, report): (Byml, Option<crate::bfevfl::Bf>, crate::settings::Settings, String) = built(&root, &[("open_forest", v("closed_deku")), ("open_kakariko", v("open")), ("shuffle_boss_hearts", crate::settings::Value::Bool(true)), ("shuffle_pots", v("all"))], "defaults kak");
         assert_eq!(back.text("open_kakariko").unwrap(), "open");
         assert_eq!(def(&list, "Bool", "Npc_Hylia_Soldier_003_GateOpen"), Node::Bool(true));
         let rows: Vec<(String, u32)> = changed_rows(&raw, &list);

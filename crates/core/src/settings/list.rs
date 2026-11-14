@@ -184,21 +184,23 @@ pub fn build() -> Schema {
     );
     s.push(
         Setting::choice(3, "open_forest", "world", "Kokiri Forest", "closed")
-            .tip("Whether the way out of the forest and into the Deku Tree is blocked.")
+            .tip("Whether the way out of the forest and into the Deku Tree is blocked. An open Kakariko gate needs the forest exit open, since its story state takes Mido away while the exit wall would stay.")
             .opt("open", "Open", "Nothing blocks the forest or the Deku Tree.")
             .opt("closed_deku", "Closed Deku", "The forest exit is open but the Deku Tree is closed.")
             .opt("closed", "Closed", "The forest and the Deku Tree stay closed until the story opens them."),
     );
     s.push(
         Setting::choice(4, "open_kakariko", "world", "Kakariko Gate", "zelda")
-            .tip("Whether the Kakariko Village gate to Death Mountain needs Zelda's Letter.")
-            .opt("open", "Open", "The gate is open from the start.")
+            .dep("open_forest", super::model::Cond::IsNot(super::model::Value::s("closed")))
+            .disabled_as(super::model::Value::s("zelda"))
+            .tip("Whether the gate to Kakariko Village needs Zelda's Letter. Open also skips the castle visit: a new game starts after Zelda and Impa, with their two items already given. Needs the forest exit open; with a closed forest the gate falls back to Zelda's Letter.")
+            .opt("open", "Open", "The gate is open from the start and the castle visit is skipped. Zelda's Letter and the Song from Impa, or whatever is placed there, are given when a new game starts.")
             .opt("zelda", "Zelda's Letter", "The gate opens when you show the letter.")
             .opt("closed", "Closed", "The gate stays closed until the story opens it."),
     );
     s.push(
         Setting::toggle(5, "open_door_of_time", "world", "Open Door of Time", false)
-            .tip("Start with the Door of Time already open, so the Ocarina and songs are not needed to reach the Master Sword. Returning to childhood still needs the Forest Sage. Experimental, untested in the game."),
+            .tip("Start with the Door of Time already open, so the Ocarina and the Song of Time are not needed to reach the Master Sword. The Door of Time quest is left alone, so Zelda's escape and the Song of Time stay checks, and the adult pedestal works before the Forest Sage. Experimental, untested in the game."),
     );
     s.push(
         Setting::choice(6, "zora_fountain", "world", "Zora's Fountain", "closed")

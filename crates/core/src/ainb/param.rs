@@ -112,4 +112,18 @@ impl Param {
         }
         Ok(())
     }
+
+    pub fn remove_plug(&mut self, k: usize, pos: usize) -> Res<Plug> {
+        let n: usize = self.pl[k][0] as usize;
+        let b: usize = self.pl[k][1] as usize;
+        if pos >= n || b + pos >= self.plugs.len() {
+            return Err(Error::Format("ainb: no plug there to remove"));
+        }
+        let p: Plug = self.plugs.remove(b + pos);
+        self.pl[k][0] -= 1;
+        for j in k + 1..GROUPS {
+            self.pl[j][1] -= 1;
+        }
+        Ok(p)
+    }
 }

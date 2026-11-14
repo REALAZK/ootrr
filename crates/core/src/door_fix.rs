@@ -16,9 +16,14 @@ pub const OPENED: &str = "Market_Child_TimeTempleDoor_Opened";
 pub const SONG: &str = "Dm_MelodyGet_Time";
 pub const ESCAPE: &str = "HyruleField_DoorOfTime_Escape";
 pub const PREFIX: &str = "OOTRRDoorFix";
+/// The request that completes the quest once the Master Sword is drawn.
+pub const COMPLETE: &str = "Event93";
+/// True once the quest has reached the open door, the only state the vanilla game draws in.
+pub const DONE_EXP: &str = "DoorOfTime_IsAfter_Step06_Exp";
 const HOLDER: &str = "GameDataActor";
 const PLAYED: &str = "EventQueryHavePlayedEvent";
 const BOOL: &str = "EventQueryIsGameDataBool";
+const BOOL_EXP: &str = "EventQueryIsGameDataBoolExp";
 const CHALLENGE: &str = "ChallengeName";
 const STEP: &str = "StepName";
 
@@ -187,7 +192,31 @@ pub fn patch_flow(b: &mut Bf) -> Res<Report> {
     f.events.push(ask(format!("{PREFIX}2"), (ga, qp), vec![item("EventName", ESCAPE)], a4, s3i));
     f.events.push(t5);
     f.events.push(t4);
-    Ok(Report { redirected: red, added: 5 })
+    let mut r: Report = Report { redirected: red, added: 5 };
+    if f.events.iter().any(|e| e.name == COMPLETE) {
+        guard_complete(f, &mut r)?;
+    }
+    Ok(r)
+}
+
+/// Drawing the Master Sword completes the quest. With the door forced open that can happen at
+/// Step02, and a completed quest hides Zelda's escape and the Ocarina of Time, which only
+/// appear at Step03 and Step04. The request is now made only once the quest reached Step06.
+fn guard_complete(f: &mut Flow, r: &mut Report) -> Res<()> {
+    let c: usize = find(f, COMPLETE)?;
+    if text(&f.events[c].kind, STEP) != Some("Complete") || text(&f.events[c].kind, CHALLENGE) != Some("DoorOfTime") {
+        return Err(Error::Format("door fix: the Complete event is not the DoorOfTime Complete request"));
+    }
+    let (ga, qe): (u16, u16) = query_slot(f, BOOL_EXP)?;
+    let g: u16 = idx(f.events.len())?;
+    let red: Vec<String> = retarget(f, idx(c)?, g);
+    if red.is_empty() {
+        return Err(Error::Format("door fix: nothing leads to the Complete request"));
+    }
+    f.events.push(ask(format!("{PREFIX}5"), (ga, qe), vec![item("GameDataName", DONE_EXP)], idx(c)?, NONE));
+    r.redirected.extend(red);
+    r.added += 1;
+    Ok(())
 }
 
 pub fn stage(rf: &mut Romfs) -> Res<Vec<Out>> {
@@ -274,6 +303,8 @@ mod tests {
             step("Event6", "DoorOfTime", "Step2_0", 10),
             step("Event77", "DoorOfTime", "Step03", 10),
             step(STEP06, "DoorOfTime", "Step06", NONE),
+            Event { name: "Event102".to_string(), kind: Kind::Sub { next: 12, params: None, flow: String::new(), entry: "Recovery".to_string() } },
+            step(COMPLETE, "DoorOfTime", "Complete", NONE),
         ];
         let f: Flow = Flow {
             name: FLOW.to_string(),
@@ -287,6 +318,7 @@ mod tests {
             entries: vec![
                 Entry { name: "SendOff".to_string(), subs: Vec::new(), vars: Vec::new(), main: 0, pad: 0 },
                 Entry { name: "Check".to_string(), subs: Vec::new(), vars: Vec::new(), main: 2, pad: 0 },
+                Entry { name: "Rauru".to_string(), subs: Vec::new(), vars: Vec::new(), main: 11, pad: 0 },
             ],
         };
         Bf { ver: [0, 4, 0, 0], bom: 0xFEFF, shift: 3, pad: 0, name: FLOW.to_string(), flows: vec![f], tls: Vec::new() }
@@ -324,6 +356,27 @@ mod tests {
     }
 
     #[test]
+    fn the_quest_completes_only_once_the_door_was_reached() {
+        let mut b: Bf = sample();
+        let r: Report = patch_flow(&mut b).unwrap();
+        assert_eq!(r.added, 6);
+        assert!(r.redirected.iter().any(|n| n == "Event102"));
+        let f: &Flow = &b.flows[0];
+        let Kind::Sub { next, .. } = ev(f, "Event102").kind else { panic!() };
+        let g: &Event = &f.events[next as usize];
+        assert_eq!(g.name, format!("{PREFIX}5"));
+        let Kind::Switch { cases, params, actor, query } = &g.kind else { panic!() };
+        assert_eq!(f.events[cases[0].ev as usize].name, COMPLETE);
+        assert_eq!(cases[1].ev, NONE);
+        assert_eq!(params.as_ref().unwrap().get("GameDataName"), Some(&Val::Str(DONE_EXP.to_string())));
+        assert_eq!(f.actors[*actor as usize].queries[*query as usize], BOOL_EXP);
+        let mut plain: Bf = sample();
+        plain.flows[0].events.truncate(11);
+        plain.flows[0].entries.truncate(2);
+        assert_eq!(patch_flow(&mut plain).unwrap().added, 5);
+    }
+
+    #[test]
     fn the_send_off_now_runs_the_stone_count() {
         let mut b: Bf = sample();
         patch_flow(&mut b).unwrap();
@@ -337,8 +390,8 @@ mod tests {
         let mut b: Bf = sample();
         let r: Report = patch_flow(&mut b).unwrap();
         let f: &Flow = &b.flows[0];
-        assert_eq!(r.added, 5);
-        assert_eq!(r.redirected, vec!["Event39".to_string()]);
+        assert_eq!(r.added, 6);
+        assert_eq!(r.redirected, vec!["Event39".to_string(), "Event102".to_string()]);
         assert_eq!(cases(f, "Event39"), vec![(0, format!("{PREFIX}0")), (1, "Event147".to_string())]);
         let l0: Vec<(u32, String)> = cases(f, &format!("{PREFIX}0"));
         assert_eq!(l0, vec![(0, STEP06.to_string()), (1, format!("{PREFIX}1"))]);
@@ -394,7 +447,7 @@ mod tests {
         let now: BS<usize> = reach(f);
         assert!(old.is_subset(&now));
         assert_eq!(now.len(), f.events.len());
-        assert_eq!(now.len(), old.len() + 5);
+        assert_eq!(now.len(), old.len() + 6);
     }
 
     #[test]
@@ -406,11 +459,13 @@ mod tests {
         assert_eq!(x.actors, y.actors);
         assert_eq!(x.entries, y.entries);
         for i in 0..x.events.len() {
-            if x.events[i].name == SEND_OFF || x.events[i].name == "Event39" {
+            if x.events[i].name == SEND_OFF || x.events[i].name == "Event39" || x.events[i].name == "Event102" {
                 continue;
             }
             assert_eq!(x.events[i], y.events[i]);
         }
+        let Kind::Sub { next, .. } = &y.events[11].kind else { panic!() };
+        assert_eq!(y.events[*next as usize].name, format!("{PREFIX}5"));
         let Kind::Switch { cases, .. } = &y.events[3].kind else { panic!() };
         assert_eq!(cases[1].ev, 6);
     }
