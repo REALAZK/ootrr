@@ -46,10 +46,10 @@ pub const LOGIC_JOBS: [(&str, Job); 3] = [
     (FOUNTAIN, ((WATER, "Step08"), (WATER, "Step06"), Some("Logic_Create"))),
 ];
 
-pub const DOOR_NOTE: &str = "The Door of Time stands open from the start and the Master Sword can be pulled on the first visit. The door logic module now reads the Fire Sage quest and the first pull reads the Sage quest instead of the Door of Time quest, and the Door of Time quest is only marked complete after the Song of Time opened the door, so the Ocarina of Time and the Song of Time can still be found after an early pull. Returning to childhood still needs the Forest Sage, as in the unmodified game. Experimental and untested in the game.";
-pub const ZORA_NOTE: &str = "King Zora starts moved aside, so Zora's Fountain needs no Ruto's Letter. Ruto's Letter stays in the item pool. Any event that would move the Zora quest back to before King Zora moved (the diving game, getting or reading the letter, the arrival scenes) now leaves the quest where it is. Experimental and untested in the game.";
-pub const JABU_NOTE: &str = "Jabu Jabu opens his mouth without a fish once King Zora has moved. Experimental and untested in the game.";
-pub const BEDS_NOTE: &str = "Beds offer Sleep until morning and Sleep until night before the Zelda meeting. Experimental and untested in the game.";
+pub const DOOR_NOTE: &str = "The Door of Time stands open from the start and the Master Sword can be pulled on the first visit. The door logic module now reads the Fire Sage quest and the first pull reads the Sage quest instead of the Door of Time quest, and the Door of Time quest is only marked complete after the Song of Time opened the door, so the Ocarina of Time and the Song of Time can still be found after an early pull. Returning to childhood still needs the Forest Sage, as in the unmodified game.";
+pub const ZORA_NOTE: &str = "King Zora starts moved aside, so Zora's Fountain needs no Ruto's Letter. Ruto's Letter stays in the item pool. Any event that would move the Zora quest back to before King Zora moved (the diving game, getting or reading the letter, the arrival scenes) now leaves the quest where it is.";
+pub const JABU_NOTE: &str = "Jabu Jabu opens his mouth without a fish once King Zora has moved.";
+pub const BEDS_NOTE: &str = "Beds offer Sleep until morning and Sleep until night before the Zelda meeting.";
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Opts {

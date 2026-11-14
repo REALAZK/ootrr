@@ -13,8 +13,8 @@ pub const KEY: &str = "IsDisableSkip";
 pub const COMPONENT: &str = "SkipSetting";
 const TARGET: &str = "DisableSkip.engine__event__SkipSetting.bgyml";
 
-pub const NOTE_STORY: &str = "The opening movie and the first credits movie can be skipped by the player. The other cutscenes were already skippable and the title screen demos stay locked. Experimental and untested in the game.";
-pub const NOTE_ALL: &str = "Every cutscene lock is removed, including the six title screen demos. Experimental and untested in the game.";
+pub const NOTE_STORY: &str = "The opening movie and the first credits movie can be skipped by the player. The other cutscenes were already skippable and the title screen demos stay locked.";
+pub const NOTE_ALL: &str = "Every cutscene lock is removed, including the six title screen demos.";
 
 pub fn flip(raw: &[u8]) -> Res<Vec<u8>> {
     let mut y: Byml = Byml::parse(raw)?;

@@ -6,7 +6,7 @@ use crate::slice::data::{Data, Item};
 pub const SETTING: &str = "shuffle_scrubs_b";
 pub const CAT: &str = "scrub_menu";
 
-pub const NOTE: &str = "LW Deku Scrub Grotto Rear and Jabu Jabus Belly Deku Scrub become one time sales of the placed item. Each gets a new event row, its menu is gone once it holds another item, and the sale text still names the heart piece. Experimental and untested in the game.";
+pub const NOTE: &str = "LW Deku Scrub Grotto Rear and Jabu Jabus Belly Deku Scrub become one time sales of the placed item. Each gets a new event row, its menu is gone once it holds another item, and the sale text still names the heart piece.";
 
 pub fn is_b(l: &Loc) -> bool {
     l.gated && l.cat == CAT

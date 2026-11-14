@@ -5,7 +5,7 @@ use crate::slice::data::{Data, Item};
 
 pub const SETTING: &str = "shuffle_scrubs_a";
 
-pub const NOTE: &str = "DMC Deku Scrub, LW Deku Scrub Near Bridge and LW Deku Scrub Grotto Front are shuffled. Their one time sale hands out the placed item, the price stays and the sale text still names the vanilla item. Experimental and untested in the game.";
+pub const NOTE: &str = "DMC Deku Scrub, LW Deku Scrub Near Bridge and LW Deku Scrub Grotto Front are shuffled. Their one time sale hands out the placed item, the price stays and the sale text still names the vanilla item.";
 
 const HOME: [&str; 1] = ["Obj_Heart_Piece"];
 

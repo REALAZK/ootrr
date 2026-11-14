@@ -14,7 +14,7 @@ pub const NEW: i32 = 0;
 pub const SITES: usize = 7;
 pub const FINALE: i32 = 900;
 
-pub const NOTE: &str = "The Ghost Shop owner gives the Bottle for the first big poe instead of the fifth. The point texts still talk about 500 points and the golden reward still needs ten big poes. Experimental and untested in the game.";
+pub const NOTE: &str = "The Ghost Shop owner gives the Bottle for the first big poe instead of the fifth. The point texts still talk about 500 points and the golden reward still needs ten big poes.";
 
 fn compare(f: &Flow, e: &Event, at: i32) -> bool {
     let Kind::Switch { actor, query, params: Some(c), .. } = &e.kind else {

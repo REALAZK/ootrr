@@ -310,7 +310,6 @@ mod tests {
         assert_eq!(d.kind, Kind::Toggle);
         assert_eq!(d.group, "shuffle");
         assert_eq!(d.deps, vec![model::Dep { on: "shuffle_rewards".into(), cond: Cond::Is(Value::s("supported")) }]);
-        assert!(d.tip.contains("Experimental"));
         assert!(!schema().get("shuffle_rewards").unwrap().tip.contains("never shuffled yet"));
     }
 
@@ -392,7 +391,6 @@ mod tests {
         assert!(!late.flag("early_beds").unwrap());
         for (n, id) in [(75, "jabu_open"), (76, "time_always_passes"), (77, "early_beds")] {
             assert_eq!(schema().get(id).unwrap().num, n);
-            assert!(schema().get(id).unwrap().tip.contains("Experimental"));
         }
     }
 }

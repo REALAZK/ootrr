@@ -378,19 +378,19 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         ));
     }
     for (on, text) in [
-        (hearts, "Boss Heart Containers are shuffled. Each becomes a chest, experimental and untested in the game."),
-        (songs != Songs::Off, "Songs are shuffled. The song lessons are edited, experimental and untested in the game."),
+        (hearts, "Boss Heart Containers are shuffled. Each becomes a chest."),
+        (songs != Songs::Off, "Songs are shuffled. The song lessons are edited."),
         (world != Mode::Off, pu::NOTE),
         (fast, "Chest and item pickup scenes are sped up."),
-        (intro, "The new game intro is skipped. The opening movie and the wake up scene are bypassed, experimental and untested in the game."),
-        (start != Reward::Off, "You start the game with one random Stone or Medallion. Experimental and untested in the game."),
+        (intro, "The new game intro is skipped. The opening movie and the wake up scene are bypassed."),
+        (start != Reward::Off, "You start the game with one random Stone or Medallion."),
         (!pouch.is_empty(), "The ticked Kokiri Sword, Deku Shield or Slingshot is added to the pouch when a new game starts."),
-        (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
-        (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
-        (forest == Forest::Open, "The Deku Tree quest starts at the step Mido normally sets when he steps aside (Meet_DekuTree Step03), so Mido stands aside and the Kokiri Shop shows its later stock. Experimental and untested in the game."),
-        (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
-        (extra, "Kak 20 Gold Skulltula Reward, DMT Biggoron and GC Medigoron are shuffled with structural event edits. Experimental and untested in the game."),
-        (trade, "The ten adult trade quest hand ins each give one extra shuffled item the first time. The trade chain itself stays vanilla. Experimental and untested in the game."),
+        (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which."),
+        (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts."),
+        (forest == Forest::Open, "The Deku Tree quest starts at the step Mido normally sets when he steps aside (Meet_DekuTree Step03), so Mido stands aside and the Kokiri Shop shows its later stock."),
+        (hints, "Gossip stones give hints. Their text is replaced in every language."),
+        (extra, "Kak 20 Gold Skulltula Reward, DMT Biggoron and GC Medigoron are shuffled with structural event edits."),
+        (trade, "The ten adult trade quest hand ins each give one extra shuffled item the first time. The trade chain itself stays vanilla."),
     ] {
         if on {
             notes.push(text.to_string());
