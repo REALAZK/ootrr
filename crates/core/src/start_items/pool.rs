@@ -10,6 +10,7 @@ use crate::start_items::table::Strip;
 use crate::world::{LocId, Placement, World};
 
 pub const JUNK: &str = "Rupee (1)";
+pub const LETTER: &str = "Zeldas Letter";
 
 fn gone_kinds(p: &Plan) -> Vec<&'static str> {
     let mut out: Vec<&'static str> = Vec::new();
@@ -26,7 +27,7 @@ fn gone_kinds(p: &Plan) -> Vec<&'static str> {
 }
 
 pub fn active(p: &Plan) -> bool {
-    !gone_kinds(p).is_empty() || p.kit.take.iter().any(|t| t.strip != Strip::Keep && t.count > 0)
+    p.kakariko || !gone_kinds(p).is_empty() || p.kit.take.iter().any(|t| t.strip != Strip::Keep && t.count > 0)
 }
 
 fn kind_of<'a>(d: &'a Data, w: &World, it: ItemId) -> &'a str {
@@ -126,6 +127,20 @@ pub fn base(d: &Data, w: &World, p: &Plan, vanilla: &Placement, free: &[LocId]) 
             notes.push(format!("{n} removed dungeon items (Maps, Compasses or Boss Keys whose setting is Removed or Start with) were taken out of the shuffled locations and replaced by {JUNK}."));
         }
     }
+    if p.kakariko
+        && let Some(letter) = w.item(LETTER)
+    {
+        let mut n: usize = 0;
+        for l in free {
+            if out.get(*l) == Some(letter) {
+                out.put(*l, junk);
+                n += 1;
+            }
+        }
+        if n > 0 {
+            notes.push(format!("{LETTER} is not in the pool because the Kakariko gate starts open, and the spot that held it is a normal check now. {n} copy was replaced by {JUNK}."));
+        }
+    }
     let c: Ctx = Ctx { d, w, p, free: set, junk };
     for t in p.kit.take.iter().filter(|t| t.strip != Strip::Keep && t.count > 0) {
         strip_one(&c, t, &mut out, &mut notes)?;
@@ -172,6 +187,34 @@ mod tests {
         let (b, n): (Placement, Vec<String>) = base(&d, &w, &p, &v, &pk.free).unwrap();
         assert_eq!(b.item, v.item);
         assert!(n.is_empty());
+    }
+
+    #[test]
+    fn an_open_kakariko_gate_takes_the_letter_out_of_the_pool() {
+        let (d, w, p, v, pk) = setup(&with(&[("open_kakariko", Value::s("open"))]));
+        assert!(active(&p));
+        let spot: LocId = w.loc("HC Zeldas Letter").unwrap();
+        assert!(pk.free.contains(&spot));
+        assert_eq!(count(&w, &v, &w.real, LETTER), 1);
+        let (b, n): (Placement, Vec<String>) = base(&d, &w, &p, &v, &pk.free).unwrap();
+        assert_eq!(count(&w, &b, &w.real, LETTER), 0);
+        assert_eq!(b.get(spot), w.item(JUNK));
+        assert_eq!(n.len(), 1);
+        let (d, w, p, v, pk) = setup(&Settings::default());
+        let (b, n): (Placement, Vec<String>) = base(&d, &w, &p, &v, &pk.free).unwrap();
+        assert_eq!(count(&w, &b, &w.real, LETTER), 1);
+        assert!(n.is_empty());
+    }
+
+    #[test]
+    fn open_kakariko_seeds_never_place_the_letter_and_stay_beatable() {
+        let d: Data = Data::load().unwrap();
+        let s: Settings = with(&[("open_kakariko", Value::s("open"))]);
+        for n in 0..4 {
+            let g = beatable(&d, &s, &format!("letter {n}"));
+            assert!(!g.seed_file.placements.values().any(|v| v == LETTER), "letter {n}");
+            assert_ne!(g.seed_file.placements.get("HC Zeldas Letter").map(|x| x.as_str()), Some(LETTER));
+        }
     }
 
     #[test]
