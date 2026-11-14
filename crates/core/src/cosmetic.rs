@@ -3,9 +3,11 @@ use std::fs;
 use std::path::{Path as P, PathBuf as PB};
 
 use crate::byml::{Byml, Node};
+use crate::colors::{self, Colors};
 use crate::error::{Error as E, Res};
 use crate::rng::Rng;
 use crate::romfs::Romfs;
+use crate::sfx::{self, Sfx};
 use crate::rsizetable::{self, Rst};
 use crate::zs;
 
@@ -52,18 +54,20 @@ impl Music {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Cosmetics {
     pub music: Music,
+    pub sfx: Sfx,
+    pub colors: Colors,
     pub seed: String,
 }
 
 impl Default for Cosmetics {
     fn default() -> Cosmetics {
-        Cosmetics { music: Music::Off, seed: String::new() }
+        Cosmetics { music: Music::Off, sfx: Sfx::Off, colors: Colors::Off, seed: String::new() }
     }
 }
 
 impl Cosmetics {
     pub fn any(&self) -> bool {
-        self.music != Music::Off
+        self.music != Music::Off || self.sfx != Sfx::Off || self.colors != Colors::Off
     }
 }
 
@@ -274,6 +278,14 @@ pub fn shuffle_music(y: &mut Byml, m: Music, seed: &str, have: &dyn Fn(&str) -> 
 }
 
 pub fn apply(mod_root: &P, romfs: &P, c: &Cosmetics, seed: &str) -> Res<Vec<String>> {
+    let mut notes: Vec<String> = apply_music(mod_root, romfs, c, seed)?;
+    let text: &str = if c.seed.trim().is_empty() { seed } else { c.seed.trim() };
+    notes.extend(sfx::apply(mod_root, romfs, c.sfx, text)?);
+    notes.extend(colors::apply(mod_root, romfs, c.colors, text)?);
+    Ok(notes)
+}
+
+fn apply_music(mod_root: &P, romfs: &P, c: &Cosmetics, seed: &str) -> Res<Vec<String>> {
     let mut notes: Vec<String> = Vec::new();
     if c.music == Music::Off {
         return Ok(notes);
@@ -434,7 +446,7 @@ mod tests {
         };
         let out: PB = std::env::temp_dir().join(format!("ootrr_music_{}", std::process::id()));
         let _ = fs::remove_dir_all(&out);
-        let c: Cosmetics = Cosmetics { music: Music::Grouped, seed: String::new() };
+        let c: Cosmetics = Cosmetics { music: Music::Grouped, sfx: Sfx::Off, colors: Colors::Off, seed: String::new() };
         let notes: Vec<String> = apply(&out, &root, &c, "cos seed").unwrap();
         assert!(notes[0].contains("music tracks moved"), "{notes:?}");
         let mut rf: Romfs = Romfs::open(&root).unwrap();

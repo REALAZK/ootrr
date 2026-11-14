@@ -94,7 +94,8 @@ const USAGE: &str = "usage:
   ootrr settings-dump [--compact] [--presets <dir>] [--decode <settings_string>]
   ootrr serve [--port N] [--lan] [--no-open] [--no-update-check]
   ootrr generate <settings_string_or_preset_or_file> <seed> <out.ootrr> [--spoiler <file>] [--plando Location=Item]... [--plando-file <file>]
-  ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|longshot|nx2navi] [--music off|grouped|anywhere] [--cosmetic-seed <text>]
+  ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|longshot|nx2navi] [--music off|grouped|anywhere] [--sfx off|grouped|anywhere] [--colors off|random|shared] [--cosmetic-seed <text>]
+  ootrr colors-preview <romfs_root> <out_dir> <random|shared> <seed_text>
   ootrr slice-scan <romfs_root> <out_json>
   ootrr pot-scan <romfs_root> <out_json>
   ootrr pot-variants <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|longshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--dry]
@@ -374,6 +375,7 @@ fn main() -> ExitCode {
         }
         Some("generate") => slice_cmd::generate(&a[1..]),
         Some("build") => slice_cmd::build(&a[1..]),
+        Some("colors-preview") => slice_cmd::preview(&a[1..]),
         Some("slice-scan") => slice_cmd::scan_cmd(&a[1..]),
         Some("pot-scan") => pot_scan_cmd::run(&a[1..]),
         Some("pot-variants") => pot_variants_cmd::run(&a[1..]),

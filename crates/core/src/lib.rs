@@ -1,10 +1,13 @@
 pub mod ainb;
+pub mod bfres;
 pub mod bfevfl;
 pub mod boss_heart;
 pub mod byml;
 pub mod calibrate;
 pub mod cosmetic;
+pub mod sfx;
 pub mod catalog;
+pub mod colors;
 pub mod catalog_json;
 pub mod chest_slot;
 pub mod door_fix;
