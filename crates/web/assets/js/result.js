@@ -77,7 +77,7 @@ export function render() {
     btn.disabled = true;
     fill(out, h("p", { class: "loading" }, "Starting"));
     try {
-      const r = await post("/api/build", { seed_text: res.seed_text, game_dir: p.game.trim(), mod_dir: p.mod.trim(), mod_name: p.name, host: p.host || "eden", music: state.cosmetic.music, cosmetic_seed: state.cosmetic.seed });
+      const r = await post("/api/build", { seed_text: res.seed_text, game_dir: p.game.trim(), mod_dir: p.mod.trim(), mod_name: p.name, host: p.host || "eden", music: state.cosmetic.music, sfx: state.cosmetic.sfx, colors: state.cosmetic.colors, cosmetic_seed: state.cosmetic.seed });
       await poll(r.job_id);
     } catch (e) {
       fill(out, notice("error", e.message));

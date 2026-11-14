@@ -1,3 +1,5 @@
+pub mod recolor;
+
 pub const BAD: [u8; 4] = [255, 0, 255, 255];
 pub const MAX_TEXELS: usize = 144;
 

@@ -39,6 +39,30 @@ export function render() {
     h("option", { value: "anywhere" }, "Shuffle across all tracks"),
   );
   music_in.value = state.cosmetic.music;
+  const sfx_in = h(
+    "select",
+    { id: "sfx" },
+    h("option", { value: "off" }, "Off, keep the original sounds"),
+    h("option", { value: "grouped" }, "Shuffle within each kind of sound"),
+    h("option", { value: "anywhere" }, "Shuffle across all sounds"),
+  );
+  sfx_in.value = state.cosmetic.sfx;
+  sfx_in.addEventListener("change", () => {
+    state.cosmetic.sfx = sfx_in.value;
+    touch();
+  });
+  const colors_in = h(
+    "select",
+    { id: "colors" },
+    h("option", { value: "off" }, "Off, keep the original colours"),
+    h("option", { value: "random" }, "A random colour for each item"),
+    h("option", { value: "shared" }, "One random hue turn for everything"),
+  );
+  colors_in.value = state.cosmetic.colors;
+  colors_in.addEventListener("change", () => {
+    state.cosmetic.colors = colors_in.value;
+    touch();
+  });
   const cos_seed = h("input", { type: "text", id: "cosseed", value: state.cosmetic.seed, spellcheck: "false", autocomplete: "off", maxlength: "64", placeholder: "Leave empty to use the seed text" });
   music_in.addEventListener("change", () => {
     state.cosmetic.music = music_in.value;
@@ -178,6 +202,11 @@ export function render() {
       h("p", { class: "hint" }, "Music changes only the mod you build, never the seed, so the same seed can be built with different music. Cutscene music keeps its own tracks. Themes built from stacked layers trade whole layer sets. Area themes that change with the time of day play one track all day. Jingles only trade with other jingles."),
       h("label", { class: "lbl", for: "music" }, "Music shuffle"),
       music_in,
+      h("label", { class: "lbl", for: "sfx" }, "Sound effect shuffle"),
+      sfx_in,
+      h("label", { class: "lbl", for: "colors" }, "Colour shuffle"),
+      colors_in,
+      h("p", { class: "hint" }, "Colours cover the three tunics, the swords, the shields, Navi, hair, the boomerang gem, the gauntlet jewels and recovery hearts. Particle glows, trails and the menu keep their own colours."),
       h("label", { class: "lbl", for: "cosseed" }, "Cosmetic seed"),
       cos_seed,
     ),

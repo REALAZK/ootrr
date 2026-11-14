@@ -2,7 +2,9 @@ use std::fs;
 use std::path::Path as P;
 use std::sync::Arc;
 
+use ootrr_core::colors::{self, Colors};
 use ootrr_core::cosmetic::{self, Cosmetics, Music};
+use ootrr_core::sfx::Sfx;
 use ootrr_core::error::{Error, Res};
 use ootrr_core::modpack::Host;
 use ootrr_core::json::{self, Json};
@@ -99,6 +101,18 @@ pub fn build(a: &[String]) -> Res<()> {
             i += 2;
             continue;
         }
+        if a[i] == "--sfx" {
+            let v: &str = a.get(i + 1).map(|s| s.as_str()).ok_or(Error::Format("missing mode after --sfx"))?;
+            cos.sfx = Sfx::parse(v).ok_or(Error::Format("--sfx is off, grouped or anywhere"))?;
+            i += 2;
+            continue;
+        }
+        if a[i] == "--colors" {
+            let v: &str = a.get(i + 1).map(|s| s.as_str()).ok_or(Error::Format("missing mode after --colors"))?;
+            cos.colors = Colors::parse(v).ok_or(Error::Format("--colors is off, random or shared"))?;
+            i += 2;
+            continue;
+        }
         if a[i] == "--cosmetic-seed" {
             cos.seed = a.get(i + 1).cloned().ok_or(Error::Format("missing text after --cosmetic-seed"))?;
             i += 2;
@@ -124,6 +138,16 @@ pub fn build(a: &[String]) -> Res<()> {
         println!("{n}");
     }
     println!("changed {} of {} placed chests", c.changed, c.placed);
+    Ok(())
+}
+
+pub fn preview(a: &[String]) -> Res<()> {
+    let romfs: &str = arg(a, 0, "missing romfs_root")?;
+    let out: &str = arg(a, 1, "missing out_dir")?;
+    let mode: Colors = Colors::parse(arg(a, 2, "missing mode")?).ok_or(Error::Format("the mode is random or shared"))?;
+    for l in colors::preview(P::new(romfs), P::new(out), mode, arg(a, 3, "missing seed text")?)? {
+        println!("{l}");
+    }
     Ok(())
 }
 

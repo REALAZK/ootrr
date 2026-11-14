@@ -3,7 +3,9 @@ use std::path::PathBuf as PB;
 use std::sync::Arc;
 
 use ootrr_core::TITLE_ID;
+use ootrr_core::colors::Colors;
 use ootrr_core::cosmetic::{self, Cosmetics, Music};
+use ootrr_core::sfx::Sfx;
 use ootrr_core::json::Json;
 use ootrr_core::modpack::Host;
 use ootrr_core::settings::seed::SeedFile;
@@ -79,11 +81,19 @@ pub fn plan(b: &Json) -> Hr<Plan> {
         None | Some("") => Music::Off,
         Some(s) => Music::parse(s).ok_or_else(|| refuse("Music: use off, grouped or anywhere."))?,
     };
+    let sfx: Sfx = match body::opt_text(b, "sfx")? {
+        None | Some("") => Sfx::Off,
+        Some(s) => Sfx::parse(s).ok_or_else(|| refuse("Sound effects: use off, grouped or anywhere."))?,
+    };
+    let colors: Colors = match body::opt_text(b, "colors")? {
+        None | Some("") => Colors::Off,
+        Some(s) => Colors::parse(s).ok_or_else(|| refuse("Colours: use off, random or shared."))?,
+    };
     let seed_text: String = body::opt_text(b, "cosmetic_seed")?.unwrap_or("").trim().to_string();
     if seed_text.len() > 64 {
         return Err(refuse("Cosmetic seed: at most 64 characters."));
     }
-    let cos: Cosmetics = Cosmetics { music, seed: seed_text };
+    let cos: Cosmetics = Cosmetics { music, sfx, colors, seed: seed_text };
     let target: PB = if host.flat() { md.join(name) } else { md.join(TITLE_ID).join(name) };
     Ok(Plan { seed, romfs, load: md, name: name.to_string(), target, host, cos })
 }
@@ -265,6 +275,11 @@ mod tests {
         assert_eq!(p.cos.music, Music::Grouped);
         assert_eq!(p.cos.seed, "tune");
         assert!(plan(&base().with("music", "loud".into())).is_err());
+        let c: Plan = plan(&base().with("colors", "shared".into())).unwrap();
+        assert_eq!(c.cos.colors, Colors::Shared);
+        assert!(c.cos.any());
+        assert_eq!(plan(&base()).unwrap().cos.colors, Colors::Off);
+        assert!(plan(&base().with("colors", "neon".into())).is_err());
         assert!(plan(&base().with("cosmetic_seed", "x".repeat(65).into())).is_err());
         let _ = fs::remove_dir_all(&d);
     }
