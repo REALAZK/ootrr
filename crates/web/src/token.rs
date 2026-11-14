@@ -18,7 +18,7 @@ fn mixed(i: u64) -> u64 {
     let mut h: DefaultHasher = RandomState::new().build_hasher();
     h.write_u64(i);
     h.write_u128(t);
-    h.write_u32(process::id());
+    h.write_u32(if cfg!(target_os = "wasi") { 0 } else { process::id() });
     h.finish()
 }
 

@@ -1,0 +1,59 @@
+name: pages
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup toolchain install stable --profile minimal --target wasm32-wasip1
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - name: Build
+        run: |
+          export RUSTFLAGS="--remap-path-prefix=$HOME=user --remap-path-prefix=$GITHUB_WORKSPACE=ootrr"
+          cargo build --release --locked -p ootrr --target wasm32-wasip1
+          cargo build --release --locked -p ootrr
+      - name: Test
+        run: cargo test --release --locked -p ootrr-web -p ootrr
+      - name: Audit
+        run: python3 -I tools/audit.py target/wasm32-wasip1/release/ootrr.wasm
+      - name: Parity with the native build
+        run: node site/test/parity.mjs --exe target/release/ootrr --wasm target/wasm32-wasip1/release/ootrr.wasm
+      - name: Site
+        run: node site/make.mjs
+      - uses: actions/upload-pages-artifact@v5
+        if: github.event_name != 'pull_request'
+        with:
+          path: site/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5
