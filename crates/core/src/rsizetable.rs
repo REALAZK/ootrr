@@ -239,33 +239,61 @@ pub fn load(rf: &mut Romfs) -> Res<Rst> {
     Rst::parse(&rf.read_zs(TABLE_PATH)?)
 }
 
-pub fn fold_mods(table: &mut Rst, mods: &P, skip: &str) -> Res<(usize, Vec<String>)> {
-    let rd: std::fs::ReadDir = match std::fs::read_dir(mods) {
-        Ok(r) => r,
-        Err(_) => return Ok((0, Vec::new())),
+pub struct Fold {
+    pub grew: usize,
+    /// Mods whose size table is there but could not be read.
+    pub unread: Vec<String>,
+    /// Mods with a size table whose name sorts after the skipped mod, so the game serves their table instead.
+    pub later: Vec<String>,
+}
+
+/// The enabled mods under `dir`, as Hookshot and Longshot find them: a folder holding romfs or exefs is a mod, other
+/// folders are searched up to four levels down, and a name starting with `_`, `-` or `.` is off.
+fn enabled_mods(dir: &P, name: &str, depth: usize, out: &mut Vec<(String, PB)>) {
+    if depth > 0 && (dir.join("romfs").is_dir() || dir.join("exefs").is_dir()) {
+        out.push((name.to_string(), dir.to_path_buf()));
+        return;
+    }
+    if depth >= 4 {
+        return;
+    }
+    let Ok(rd) = std::fs::read_dir(dir) else {
+        return;
     };
-    let mut n: usize = 0;
-    let mut unread: Vec<String> = Vec::new();
     for e in rd.flatten() {
-        let name: String = e.file_name().to_string_lossy().into_owned();
-        if name == skip || name.starts_with(['_', '-', '.']) || !e.file_type().map(|t| t.is_dir()).unwrap_or(false) {
+        let n: String = e.file_name().to_string_lossy().into_owned();
+        if n.starts_with(['_', '-', '.']) || !e.file_type().map(|t| t.is_dir()).unwrap_or(false) {
             continue;
         }
-        let p: PB = e.path().join("romfs").join(TABLE_PATH);
-        let raw: Vec<u8> = match std::fs::read(&p) {
+        let sub: String = if name.is_empty() { n } else { format!("{name}/{n}") };
+        enabled_mods(&e.path(), &sub, depth + 1, out);
+    }
+}
+
+pub fn fold_mods(table: &mut Rst, mods: &P, skip: &str) -> Res<Fold> {
+    let mut found: Vec<(String, PB)> = Vec::new();
+    enabled_mods(mods, "", 0, &mut found);
+    let own: String = skip.to_ascii_lowercase();
+    let mut f: Fold = Fold { grew: 0, unread: Vec::new(), later: Vec::new() };
+    for (name, dir) in found {
+        if name == skip {
+            continue;
+        }
+        let raw: Vec<u8> = match std::fs::read(dir.join("romfs").join(TABLE_PATH)) {
             Ok(b) if !b.is_empty() => b,
             _ => continue,
         };
-        let other: Rst = match Zs::new().decompress(&raw).and_then(|b| Rst::parse(&b)) {
-            Ok(t) => t,
-            Err(_) => {
-                unread.push(name);
-                continue;
-            }
-        };
-        n += table.absorb(&other);
+        if name.to_ascii_lowercase() > own {
+            f.later.push(name.clone());
+        }
+        match Zs::new().decompress(&raw).and_then(|b| Rst::parse(&b)) {
+            Ok(t) => f.grew += table.absorb(&t),
+            Err(_) => f.unread.push(name),
+        }
     }
-    Ok((n, unread))
+    f.unread.sort();
+    f.later.sort();
+    Ok(f)
 }
 
 fn pick(v: &[String], n: usize) -> Vec<&String> {
@@ -449,6 +477,42 @@ mod tests {
         let (sorted, _): (bool, bool) = a.sorted();
         assert!(sorted);
         assert_eq!(a.absorb(&b), 0);
+    }
+
+    #[test]
+    fn fold_reads_nested_enabled_mods_and_names_a_table_that_would_win() {
+        let d: PB = std::env::temp_dir().join(format!("ootrr_fold_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&d);
+        let put = |dir: &str, t: &Rst| {
+            let p: PB = d.join(dir).join("romfs").join(TABLE_PATH);
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            std::fs::write(&p, t.to_zs().unwrap()).unwrap();
+        };
+        let mut a: Rst = table();
+        a.set_size("from_a.bin", 11).unwrap();
+        put("00-coop", &a);
+        let mut b: Rst = table();
+        b.set_size("from_b.bin", 12).unwrap();
+        put("contents/0400486024DEC000/hd-textures", &b);
+        let mut z: Rst = table();
+        z.set_size("from_z.bin", 14).unwrap();
+        put("zz-late", &z);
+        let mut off: Rst = table();
+        off.set_size("from_off.bin", 13).unwrap();
+        put("_old", &off);
+        put("ootrr-seed", &off);
+        std::fs::create_dir_all(d.join("broken").join("romfs").join("System").join("Resource")).unwrap();
+        std::fs::write(d.join("broken").join("romfs").join(TABLE_PATH), b"not zstd").unwrap();
+        let mut t: Rst = table();
+        let f: Fold = fold_mods(&mut t, &d, "ootrr-seed").unwrap();
+        assert_eq!(t.get("from_a.bin"), Some(11));
+        assert_eq!(t.get("from_b.bin"), Some(12));
+        assert_eq!(t.get("from_z.bin"), Some(14));
+        assert_eq!(t.get("from_off.bin"), None);
+        assert_eq!(f.grew, 3);
+        assert_eq!(f.unread, vec!["broken".to_string()]);
+        assert_eq!(f.later, vec!["zz-late".to_string()]);
+        let _ = std::fs::remove_dir_all(&d);
     }
 
     #[test]

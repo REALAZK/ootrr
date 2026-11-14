@@ -93,7 +93,7 @@ pub fn build(a: &[String]) -> Res<()> {
     while i < a.len() {
         if a[i] == "--host" {
             let v: &str = a.get(i + 1).map(|s| s.as_str()).ok_or(Error::Format("missing host after --host"))?;
-            host = Host::parse(v).ok_or(Error::Format("--host is eden, hookshot or nx2navi"))?;
+            host = Host::parse(v).ok_or(Error::Format("--host is eden, hookshot, longshot or nx2navi"))?;
             i += 2;
             continue;
         }

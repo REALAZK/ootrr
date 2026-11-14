@@ -94,13 +94,13 @@ const USAGE: &str = "usage:
   ootrr settings-dump [--compact] [--presets <dir>] [--decode <settings_string>]
   ootrr serve [--port N] [--lan] [--no-open] [--no-update-check]
   ootrr generate <settings_string_or_preset_or_file> <seed> <out.ootrr> [--spoiler <file>] [--plando Location=Item]... [--plando-file <file>]
-  ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|nx2navi]
+  ootrr build <seed.ootrr> <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|longshot|nx2navi]
   ootrr slice-scan <romfs_root> <out_json>
   ootrr pot-scan <romfs_root> <out_json>
-  ootrr pot-variants <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--dry]
+  ootrr pot-variants <romfs_root> <load_dir> <mod_name> [--host eden|hookshot|longshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--dry]
   ootrr pots-persist <romfs_root> <load_dir> <mod_name>
-  ootrr pack-add <romfs_root> <load_dir> <mod_name> <Item_Actor> [--name <Obj_Actor>] [--press] [--heap N] [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--place <ActorHash>]... [--tag <TagName>]... [--ammo] [--magic] [--dry]
-  ootrr pack-kit <romfs_root> <load_dir> <mod_name> <Item_Actor|Obj_Actor> [--name <Obj_Actor_GS>] [--heap N] [--host eden|hookshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--drop <SkulltulaHash>]... [--dry]
+  ootrr pack-add <romfs_root> <load_dir> <mod_name> <Item_Actor> [--name <Obj_Actor>] [--press] [--heap N] [--host eden|hookshot|longshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--place <ActorHash>]... [--tag <TagName>]... [--ammo] [--magic] [--dry]
+  ootrr pack-kit <romfs_root> <load_dir> <mod_name> <Item_Actor|Obj_Actor> [--name <Obj_Actor_GS>] [--heap N] [--host eden|hookshot|longshot|nx2navi] [--base <mod_romfs_dir>] [--rst-from <rsizetable.zs>] [--drop <SkulltulaHash>]... [--dry]
   ootrr flags-build <romfs_root> <out_json>
   ootrr flags-lookup <flags_json> <name_or_hash> ...
   ootrr flags-check <romfs_root> <flags_json>

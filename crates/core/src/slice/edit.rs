@@ -610,14 +610,13 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         }
     }
     extra += crate::slice::skull_kit::write(&mut rf, &pk, &mut rst, &skull_drops, kit_pool)?;
-    if host == Host::Hookshot && rst.is_none() {
+    if host.one_table() && rst.is_none() {
         rst = Some(rsizetable::load(&mut rf)?);
     }
-    let mut unread: Vec<String> = Vec::new();
+    let mut fold: Option<rsizetable::Fold> = None;
     if let Some(t) = &mut rst {
-        if host == Host::Hookshot {
-            let (_n, missed): (usize, Vec<String>) = rsizetable::fold_mods(t, load, mod_name)?;
-            unread = missed;
+        if host.one_table() {
+            fold = Some(rsizetable::fold_mods(t, load, mod_name)?);
         }
         pk.write_romfs(rsizetable::TABLE_PATH, &t.to_zs()?)?;
     }
@@ -663,10 +662,21 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     }
     if host == Host::Hookshot {
         notes.push("Written for Hookshot, under mods/<name>/romfs. Name the mod randomizer-<seed> so co-op reads coop-seed.txt. This mod keeps the larger size-table entry from every other mod that is on.".to_string());
-        if !unread.is_empty() {
+    }
+    if host == Host::Longshot {
+        notes.push("Written for Longshot, under mods/<name>/romfs beside longshot.exe. This mod keeps the larger size-table entry from every other mod that is on, and Longshot adds the button prompts' entries when the game starts.".to_string());
+    }
+    if let Some(f) = &fold {
+        if !f.unread.is_empty() {
             notes.push(format!(
                 "Could not read the size table in: {}. Those entries were not copied, so turn this mod off or fix that table before you play.",
-                unread.join(", ")
+                f.unread.join(", ")
+            ));
+        }
+        if !f.later.is_empty() {
+            notes.push(format!(
+                "The game uses the size table of the mod whose folder name sorts last, and {} sorts after this one. Rename this mod so it sorts last (for example zz-{mod_name}), or the larger files here may not load.",
+                f.later.join(", ")
             ));
         }
     }
@@ -688,6 +698,43 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
 mod tests {
     use super::*;
     use crate::byml::Node;
+
+    fn real() -> Option<PB> {
+        let p: PB = std::env::var("OOTRR_ROMFS").map(PB::from).unwrap_or_else(|_| PB::from("C:/o/nup dump/updates/131072/romfs"));
+        if p.join("Pack").join("ZsDic.pack.zs").is_file() {
+            Some(p)
+        } else {
+            eprintln!("skipped, no RomFS dump at {} (set OOTRR_ROMFS)", p.display());
+            None
+        }
+    }
+
+    #[test]
+    fn a_longshot_build_folds_the_other_mods_tables_and_writes_no_coop_file() {
+        let Some(root) = real() else {
+            return;
+        };
+        let d: Data = Data::load().unwrap();
+        let g = crate::slice::generate::generate_data(&d, &crate::settings::Settings::default(), "longshot build", &crate::slice::generate::GenOpts::default()).unwrap();
+        let load: PB = PB::from(env!("CARGO_MANIFEST_DIR")).join("../../target/longshot_mods");
+        let _ = std::fs::remove_dir_all(&load);
+        let mut rf: Romfs = Romfs::open(&root).unwrap();
+        let mut other: Rst = rsizetable::load(&mut rf).unwrap();
+        other.set_size("OotrrTest/only_in_other.bin", 4321).unwrap();
+        for m in ["00-other", "zz-late"] {
+            let p: PB = load.join(m).join("romfs").join(rsizetable::TABLE_PATH);
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            std::fs::write(&p, other.to_zs().unwrap()).unwrap();
+        }
+        let b: Built = build_for(&g.seed_file, &root, &load, "ootrr-longshot", Host::Longshot).unwrap();
+        assert_eq!(b.root, load.join("ootrr-longshot"));
+        assert!(!b.root.join("coop-seed.txt").exists());
+        let ours: Rst = Rst::parse(&rf.zs.decompress(&std::fs::read(b.root.join("romfs").join(rsizetable::TABLE_PATH)).unwrap()).unwrap()).unwrap();
+        assert_eq!(ours.get("OotrrTest/only_in_other.bin"), Some(4321));
+        assert!(b.report.contains("Written for Longshot"), "{}", b.report);
+        assert!(b.report.contains("zz-late sorts after this one"), "{}", b.report);
+        let _ = std::fs::remove_dir_all(&load);
+    }
 
     fn actor(hash: u64, drop: &str) -> Node {
         Node::Map(vec![

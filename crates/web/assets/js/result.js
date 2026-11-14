@@ -23,17 +23,26 @@ function instructions() {
   return h(
     "section",
     { class: "card" },
-    h("h2", null, "Using the mod in your emulator"),
-    h(
-      "ol",
-      null,
-      h("li", null, state.paths.host === "hookshot" || state.paths.host === "nx2navi"
-        ? "Build the mod. It is written as mods/<name>/romfs in the folder you chose. For Hookshot, name it randomizer-<seed> so co-op can match the seed."
-        : `Build the mod. It is written to the mod folder you chose, inside a folder named ${state.info.title_id} and then your mod name.`),
-      h("li", null, "Make sure that mod folder is the one your emulator loads mods from."),
-      h("li", null, "In the emulator, open the game's properties and tick your mod in the add-ons list."),
-      h("li", null, "Start the game from a fresh save."),
-    ),
+    h("h2", null, state.paths.host === "longshot" ? "Using the mod in Longshot" : "Using the mod in your emulator"),
+    state.paths.host === "longshot"
+      ? h(
+          "ol",
+          null,
+          h("li", null, "Build the mod. It is written as mods/<name>/romfs in the folder you chose."),
+          h("li", null, "Make sure that folder is the mods folder in your Longshot game folder, beside bin\\longshot.exe."),
+          h("li", null, "Turn other mods off by putting _ or - in front of their folder names. Of the mods that ship a size table, the game uses the one whose name sorts last."),
+          h("li", null, "Start Longshot and begin a fresh save. longshot_log.txt lists each mod it loaded."),
+        )
+      : h(
+          "ol",
+          null,
+          h("li", null, state.paths.host === "hookshot" || state.paths.host === "nx2navi"
+            ? "Build the mod. It is written as mods/<name>/romfs in the folder you chose. For Hookshot, name it randomizer-<seed> so co-op can match the seed."
+            : `Build the mod. It is written to the mod folder you chose, inside a folder named ${state.info.title_id} and then your mod name.`),
+          h("li", null, "Make sure that mod folder is the one your emulator loads mods from."),
+          h("li", null, "In the emulator, open the game's properties and tick your mod in the add-ons list."),
+          h("li", null, "Start the game from a fresh save."),
+        ),
     h("p", { class: "muted small" }, `Layout on disk: mod folder${sep}${state.info.title_id}${sep}name${sep}romfs`),
   );
 }

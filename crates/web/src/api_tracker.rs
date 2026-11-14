@@ -163,7 +163,29 @@ fn hosts() -> Json {
             .with("path", Json::Null)
             .with("hint", "Pick your Hookshot folder. The tracker finds user\\save\\<user> and its slot folders inside it.".into()),
     );
+    out.push(
+        Json::obj()
+            .with("host", "longshot".into())
+            .with("label", "Longshot".into())
+            .with("path", longshot_saves().map(|p| Json::from(pathsafe::text(&p))).unwrap_or(Json::Null))
+            .with("hint", "Pick your Longshot game folder (the one with bin\\longshot.exe). On Linux the saves are in ~/.local/share/longshot/save.".into()),
+    );
     Json::Arr(out)
+}
+
+/// Longshot's save folder where its builder puts it: `<game folder>\user\save` on Windows, the XDG data folder elsewhere.
+fn longshot_saves() -> Option<PB> {
+    let base: Option<PB> = if cfg!(windows) {
+        env::var("USERPROFILE").ok().map(|h| PB::from(h).join("Games").join("Longshot").join("user"))
+    } else {
+        env::var("XDG_DATA_HOME")
+            .ok()
+            .filter(|x| !x.is_empty())
+            .map(PB::from)
+            .or_else(|| env::var("HOME").ok().map(|h| PB::from(h).join(".local").join("share")))
+            .map(|d| d.join("longshot"))
+    };
+    base.and_then(|b| pathsafe::abs(&b.join("save").to_string_lossy()).ok()).filter(|p| p.is_dir())
 }
 
 pub fn index(sh: &Shared) -> Json {
