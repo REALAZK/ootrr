@@ -158,3 +158,22 @@ pub fn run(a: &[String]) -> Res<()> {
     println!("elapsed: {:.1}s", t0.elapsed().as_secs_f32());
     Ok(())
 }
+
+pub fn dump(a: &[String]) -> Res<()> {
+    let root: &str = a.first().ok_or(Error::Format("missing romfs_root"))?;
+    let lang: &str = a.get(1).map_or("USen", |s| s.as_str());
+    let filter: &str = a.get(2).map_or("", |s| s.as_str());
+    let mut rf: Romfs = Romfs::open(P::new(root))?;
+    let es: Vec<sarc::Entry> = sarc::parse(&rf.read_zs(&format!("Mals/{lang}.Product.110.sarc.zs"))?)?;
+    for e in &es {
+        if !e.name.contains(filter) || e.data.get(..8) != Some(b"MsgStdBn".as_slice()) {
+            continue;
+        }
+        let m: Msbt = msbt::parse(&e.data)?;
+        for (n, _) in m.names() {
+            let s: String = msbt::to_markup(&m.text(n)?).replace('\n', "\\n");
+            println!("{}\t{n}\t{s}", e.name);
+        }
+    }
+    Ok(())
+}

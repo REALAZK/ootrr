@@ -532,8 +532,8 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     if p.songs == Songs::Anywhere {
         more.extend(crate::song_models::stage(&mut rf)?);
     }
-    if p.hints || roam {
-        more.extend(hints::stage(&mut rf, &d, seed, p.hints, &keys)?);
+    if p.hints || roam || p.npc.any() {
+        more.extend(hints::stage(&mut rf, &d, seed, p.hints, &keys, &p.npc)?);
     }
     crate::dungeon_grant::stage_text(&mut rf, &mut more, &marks.used)?;
     if roam {

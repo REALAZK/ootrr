@@ -25,5 +25,19 @@ pub fn show(a: &[String]) -> Res<()> {
         let _ = markup(&sentence(h))?;
         println!("{l}: {}", sentence(h));
     }
+    if a.iter().any(|x| x == "--npc") {
+        use ootrr_core::npc_hints::{self, Edit, Opts, KINDS};
+        let o: Opts = Opts { on: KINDS.iter().map(|k| k.0).collect() };
+        let ts: Vec<Edit> = npc_hints::edits(&d, &s, &o);
+        let out: Vec<u8> = npc_hints::apply(&raw, &ts)?;
+        let es: Vec<sarc::Entry> = sarc::parse(&out)?;
+        for t in &ts {
+            let e: &sarc::Entry = sarc::get(&es, t.file).ok_or(Error::Format("a hinted file is missing"))?;
+            let m: msbt::Msbt = msbt::parse(&e.data)?;
+            println!("
+[{}] {} {}
+{}", npc_hints::id_of(t.kind), t.file, t.label, msbt::to_markup(&m.text(&t.label)?));
+        }
+    }
     Ok(())
 }

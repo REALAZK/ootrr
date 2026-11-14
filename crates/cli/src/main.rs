@@ -90,6 +90,7 @@ const USAGE: &str = "usage:
   ootrr check-catalog <romfs_root> <catalog_json>
   ootrr calibrate <romfs_root> <load_dir> <mod_name> <area> [--catalog <json>] [--dry]
   ootrr check-msbt <romfs_root> [language ... | all]
+  ootrr msbt-dump <romfs_root> [language] [file_filter]
   ootrr settings-dump [--compact] [--presets <dir>] [--decode <settings_string>]
   ootrr serve [--port N] [--lan] [--no-open] [--no-update-check]
   ootrr generate <settings_string_or_preset_or_file> <seed> <out.ootrr> [--spoiler <file>] [--plando Location=Item]... [--plando-file <file>]
@@ -113,7 +114,7 @@ const USAGE: &str = "usage:
   ootrr treasure-testmod <romfs_root> <load_dir> <mod_name> <item_actor> [keep-view]
   ootrr find-drop <romfs_root> <item_name_or_star>
   ootrr set-drop <romfs_root> <load_dir> <mod_name> <actor_hash> <item_name> [no-event]
-  ootrr hints-show <seed.ootrr> <romfs_root>
+  ootrr hints-show <seed.ootrr> <romfs_root> [--npc]
   ootrr check-game <romfs_root>
   ootrr pot-set <romfs_root> <load_dir> <mod_name> [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] <ActorHash>=<Item_Actor>...
   ootrr boss-heart <romfs_root> <load_dir> <mod_name> [--rst-from <rsizetable.zs>] [--banc-from <mod_romfs_dir>] [--chest <actor>] [--slot] <Location>=<Item_Actor>...
@@ -363,6 +364,7 @@ fn main() -> ExitCode {
         Some("check-catalog") => check_catalog::run(&a[1..]),
         Some("calibrate") => calibrate_cmd::run(&a[1..]),
         Some("check-msbt") => check_msbt::run(&a[1..]),
+        Some("msbt-dump") => check_msbt::dump(&a[1..]),
         Some("settings-dump") => settings_cmd::run(&a[1..]),
         Some("serve") => serve_cmd::run(&a[1..]),
         None => serve_cmd::run(&[]),

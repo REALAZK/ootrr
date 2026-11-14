@@ -377,6 +377,21 @@ pub fn build() -> Schema {
             .tip("Every gossip stone tells you where an important item lies. The stones need no Mask of Truth text change, only the words are replaced. Experimental, untested in the game."),
     );
     s.push(
+        Setting::multi(80, crate::npc_hints::SETTING, "world", "Character hints")
+            .tip("Characters who know something tell you, in their own words, like the OoTR option of the same name. Altar: the Temple of Time altar says where each medallion rests. Dampé's diary: says where a Progressive Hookshot is. House of Skulltula: the cursed rich man names each token reward. Frogs: the Zora's River frogs name the prize of their ocarina game and of the rainy song. Great Fairies: each fairy names what she grants next to her price. Sheik: while waiting in the Temple of Time, Sheik says where the Light Arrows are. Malon: says where the Weird Egg went, only while the Kakariko gate starts closed. Mido: lets slip where the Kokiri Sword is. Saria: when you meet her in the Sacred Forest Meadow, she says where the Magic Meter is. Only the words change, in every language, with the hint itself in English. Experimental, untested in the game.")
+            .opts(&[
+                ("altar", "Temple of Time altar"),
+                ("dampe_diary", "Dampé's diary"),
+                ("skulltulas", "House of Skulltula"),
+                ("frogs", "Zora's River frogs"),
+                ("great_fairies", "Great Fairies"),
+                ("sheik", "Sheik"),
+                ("malon", "Malon"),
+                ("mido", "Mido"),
+                ("saria", "Saria"),
+            ]),
+    );
+    s.push(
         Setting::toggle(42, "faster_chests", "world", "Faster item pickups", false)
             .tip("Shortens the waiting time in chest openings and item pickup scenes. The text and the item are the same, only the pauses are shorter."),
     );

@@ -83,6 +83,7 @@ pub struct Plan {
     pub treasure: bool,
     pub kit: crate::start_items::Kit,
     pub open: crate::open_world::Opts,
+    pub npc: crate::npc_hints::Opts,
 }
 
 const GEAR: &[(&str, &str, &str)] = &[
@@ -360,6 +361,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     let remake: bool = crate::slice::remake_chests::mode(s, &mut bad);
     let chus: bool = crate::slice::bombchus::mode(s, &mut bad);
     let qol: crate::qol::Opts = crate::qol::read(s, &mut bad);
+    let npc: crate::npc_hints::Opts = crate::npc_hints::read(s, kakariko, &mut bad);
     let treasure: bool = crate::slice::treasure::mode(s, &mut bad);
     let open: crate::open_world::Opts = crate::open_world::read(s, &mut bad);
     let excluded: Vec<String> = s.items("disabled_locations").map(|v| v.to_vec()).unwrap_or_default();
@@ -423,12 +425,13 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         notes.push(crate::slice::bombchus::NOTE.to_string());
     }
     notes.extend(qol.notes());
+    notes.extend(crate::npc_hints::note(&npc));
     notes.extend(kit.notes.iter().cloned());
     if treasure {
         notes.push(crate::slice::treasure::NOTE.to_string());
     }
     notes.extend(open.notes()?);
-    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure, kit, open })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, scrubs, scrubs_b, hearts, world, songs, hints, fast, intro, start, forest, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure, kit, open, npc })
 }
 
 #[cfg(test)]

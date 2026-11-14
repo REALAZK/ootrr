@@ -230,9 +230,10 @@ pub fn languages(rf: &Romfs) -> Res<Vec<String>> {
     Ok(v)
 }
 
-pub fn stage(rf: &mut Romfs, d: &Data, seed: &SeedFile, on: bool, keys: &[&'static str]) -> Res<Vec<Out>> {
+pub fn stage(rf: &mut Romfs, d: &Data, seed: &SeedFile, on: bool, keys: &[&'static str], npc: &crate::npc_hints::Opts) -> Res<Vec<Out>> {
     let hints: Vec<Hint> = if on { pick(d, seed, 40) } else { Vec::new() };
-    if hints.is_empty() && keys.is_empty() {
+    let told: Vec<crate::npc_hints::Edit> = crate::npc_hints::edits(d, seed, npc);
+    if hints.is_empty() && keys.is_empty() && told.is_empty() {
         return Ok(Vec::new());
     }
     let mut outs: Vec<Out> = Vec::new();
@@ -249,6 +250,9 @@ pub fn stage(rf: &mut Romfs, d: &Data, seed: &SeedFile, on: bool, keys: &[&'stat
             }
             if !keys.is_empty() {
                 b = crate::dungeon_text::apply(&b, keys, &counted, english)?;
+            }
+            if !told.is_empty() {
+                b = crate::npc_hints::apply(&b, &told)?;
             }
             Ok(b)
         })?);
