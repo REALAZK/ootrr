@@ -10,7 +10,7 @@ export const state = {
   seed: "",
   plando: [],
   paths: { game: "", mod: "", name: "My Seed", host: "eden" },
-  cosmetic: { music: "off", seed: "" },
+  cosmetic: { music: "off", sfx: "off", colors: "off", seed: "" },
   game_check: null,
   mod_check: null,
   result: null,
@@ -70,6 +70,8 @@ export function restore(schema) {
   }
   if (s && s.cosmetic && typeof s.cosmetic === "object") {
     if (["off", "grouped", "anywhere"].includes(s.cosmetic.music)) state.cosmetic.music = s.cosmetic.music;
+    if (["off", "grouped", "anywhere"].includes(s.cosmetic.sfx)) state.cosmetic.sfx = s.cosmetic.sfx;
+    if (["off", "random", "shared"].includes(s.cosmetic.colors)) state.cosmetic.colors = s.cosmetic.colors;
     if (typeof s.cosmetic.seed === "string") state.cosmetic.seed = s.cosmetic.seed.slice(0, 64);
   }
   const r = take(sessionStorage, RKEY);
