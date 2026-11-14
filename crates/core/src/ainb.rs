@@ -1,5 +1,6 @@
 mod audit;
 pub mod build;
+pub mod graft;
 mod grow;
 mod node;
 mod param;
@@ -18,6 +19,7 @@ use tab::{INSZ, OUTSZ, PSZ};
 
 pub use param::{Param, Plug};
 pub use audit::audit;
+pub use graft::{graft, hand_hash, root};
 pub use pool::Pool;
 pub use view::Input;
 

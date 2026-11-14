@@ -47,9 +47,9 @@ pub const LOGIC_JOBS: [(&str, Job); 1] = [
     (FOUNTAIN, ((WATER, "Step08"), (WATER, "Step06"), Some("Logic_Create"))),
 ];
 
-pub const ZORA_NOTE: &str = "King Zora starts moved aside, so Zora's Fountain needs no Ruto's Letter. Ruto's Letter stays in the item pool. Any event that would move the Zora quest back to before King Zora moved (the diving game, getting or reading the letter, the arrival scenes) now leaves the quest where it is. Experimental and untested in the game.";
-pub const JABU_NOTE: &str = "Jabu Jabu opens his mouth without a fish once King Zora has moved. Experimental and untested in the game.";
-pub const BEDS_NOTE: &str = "Beds offer Sleep until morning and Sleep until night before the Zelda meeting. Experimental and untested in the game.";
+pub const ZORA_NOTE: &str = "King Zora starts moved aside, so Zora's Fountain needs no Ruto's Letter. Ruto's Letter stays in the item pool. Any event that would move the Zora quest back to before King Zora moved (the diving game, getting or reading the letter, the arrival scenes) now leaves the quest where it is.";
+pub const JABU_NOTE: &str = "Jabu Jabu opens his mouth without a fish once King Zora has moved.";
+pub const BEDS_NOTE: &str = "Beds offer Sleep until morning and Sleep until night before the Zelda meeting.";
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Opts {

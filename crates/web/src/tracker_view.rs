@@ -195,6 +195,17 @@ pub fn index_json(g: &Inner) -> Json {
         .with("locations", Json::Arr(locs))
 }
 
+fn seed_json(g: &Inner) -> Json {
+    match &g.seeded {
+        Some(s) => Json::obj()
+            .with("loaded", true.into())
+            .with("seed", s.seed.as_str().into())
+            .with("checksum", s.checksum.as_str().into())
+            .with("rewired", Json::Int(s.rewired as i64)),
+        None => Json::obj().with("loaded", false.into()),
+    }
+}
+
 pub fn state_json(g: &Inner, seq: u64) -> Json {
     let mut locs: Vec<(String, Json)> = Vec::new();
     for i in 0..ts().len() {
@@ -209,7 +220,7 @@ pub fn state_json(g: &Inner, seq: u64) -> Json {
         .with("mode", g.opts.mode.name().into())
         .with("dream", g.opts.dream.into())
         .with("kinds", kinds_json(g))
-        .with("seed", Json::obj().with("loaded", false.into()))
+        .with("seed", seed_json(g))
         .with("total", total(g))
         .with("places", places(g))
         .with("locations", Json::Obj(locs))

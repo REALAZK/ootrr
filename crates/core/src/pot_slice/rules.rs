@@ -8,7 +8,9 @@ use crate::world::{LocId, Placement, World};
 pub fn at(d: &Data, name: &str, item: &str) -> Option<bool> {
     if d.pots.has(name) {
         let known: bool = pickup::of(item).is_some() || crate::slice::key_spots::placeable(d, item, crate::slice::key_spots::Spot::Pot);
-        return Some(known && crate::slice::copies::fits(d, name, item));
+        let can: bool = d.pots.kind_of(name) == Some(crate::pot_slice::data::Kind::Pot);
+        let safe: bool = can || !pickup::holds(item) || d.vanilla_of(name) == Some(item);
+        return Some(known && safe && crate::slice::copies::fits(d, name, item));
     }
     None
 }
@@ -63,9 +65,10 @@ mod tests {
         assert_eq!(probe(&d, &w, "Rupees (20)", pot), Some(true));
         assert_eq!(probe(&d, &w, "Fire Arrows", pot), Some(false));
         assert_eq!(probe(&d, &w, "Fire Arrows", "Dodongos Cavern Right Side Pot 1"), Some(true));
-        let one: bool = crate::slice::copies::copies(&d, pot) < 2;
-        assert_eq!(probe(&d, &w, "Progressive Hookshot", pot), Some(one));
-        assert_eq!(probe(&d, &w, "Megaton Hammer", "Dodongos Cavern Right Side Pot 1"), Some(crate::slice::copies::copies(&d, "Dodongos Cavern Right Side Pot 1") < 2));
+        assert_eq!(probe(&d, &w, "Megaton Hammer", "Dodongos Cavern Right Side Pot 1"), Some(true));
+        assert_eq!(probe(&d, &w, "Gold Skulltula Token", "Dodongos Cavern Right Side Pot 1"), Some(true));
+        assert_eq!(probe(&d, &w, "Heart Container", "Dodongos Cavern Right Side Pot 1"), Some(true));
+        assert_eq!(probe(&d, &w, "Recovery Heart", pot), Some(true));
         assert_eq!(probe(&d, &w, "Progressive Strength Upgrade", pot), Some(false));
         assert_eq!(probe(&d, &w, "Piece of Heart", pot), Some(false));
         assert_eq!(probe(&d, &w, "Ocarina", pot), Some(false));
@@ -109,6 +112,8 @@ mod tests {
                         here += 1;
                         let ok: bool = pickup::of(item).is_some() || crate::slice::key_spots::placeable(&d, item, crate::slice::key_spots::Spot::Pot);
                         assert!(ok, "{loc} holds {item}");
+                        let pot: bool = d.pots.kind_of(loc) == Some(crate::pot_slice::data::Kind::Pot);
+                        assert!(pot || !pickup::holds(item) || d.vanilla_of(loc) == Some(item.as_str()), "{loc} holds {item}, which a crate or flying pot could lose");
                         if d.vanilla_of(loc) != Some(item.as_str()) {
                             moved += 1;
                         }

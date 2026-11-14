@@ -12,6 +12,7 @@ pub struct Pack {
 pub enum Host {
     Eden,
     Hookshot,
+    Longshot,
     Nx2navi,
 }
 
@@ -20,19 +21,25 @@ impl Host {
         match s {
             "eden" | "lichii" => Some(Host::Eden),
             "hookshot" => Some(Host::Hookshot),
+            "longshot" => Some(Host::Longshot),
             "nx2navi" => Some(Host::Nx2navi),
             _ => None,
         }
     }
 
     pub fn flat(self) -> bool {
-        matches!(self, Host::Hookshot | Host::Nx2navi)
+        matches!(self, Host::Hookshot | Host::Longshot | Host::Nx2navi)
+    }
+
+    pub fn one_table(self) -> bool {
+        matches!(self, Host::Hookshot | Host::Longshot)
     }
 
     pub fn id(self) -> &'static str {
         match self {
             Host::Eden => "eden",
             Host::Hookshot => "hookshot",
+            Host::Longshot => "longshot",
             Host::Nx2navi => "nx2navi",
         }
     }
@@ -219,6 +226,14 @@ mod tests {
         assert!(!flat.root.to_string_lossy().contains("0400486024DEC000"));
         let same: Pack = Pack::create_for(&load, "0400486024dec000", "Navi Mod", Host::Nx2navi).unwrap();
         assert!(same.root.ends_with("Navi Mod"));
+        let long: Pack = Pack::create_for(&load, "0400486024dec000", "zz-ootrr-seed", Host::Longshot).unwrap();
+        assert!(long.root.join("romfs").is_dir());
+        assert_eq!(long.root, load.join("zz-ootrr-seed"));
+        for h in [Host::Eden, Host::Hookshot, Host::Longshot, Host::Nx2navi] {
+            assert_eq!(Host::parse(h.id()), Some(h));
+        }
+        assert!(Host::Longshot.one_table() && Host::Hookshot.one_table());
+        assert!(!Host::Nx2navi.one_table() && !Host::Eden.one_table());
         let _ = fs::remove_dir_all(&load);
     }
 

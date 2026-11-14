@@ -5,13 +5,19 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use ootrr_core::error::{Error, Res};
 use ootrr_core::json::{self, Json};
+use ootrr_core::tracker::grid;
 use ootrr_core::tracker::index::{self, Index};
 use ootrr_core::tracker::peek::{Peek, Place};
+use ootrr_core::tracker::rules::Rule;
+use ootrr_core::tracker::seed;
 use ootrr_core::tracker::state::{By, S, Track};
+use ootrr_core::items::load;
+use ootrr_core::settings::seed::SeedFile;
 use ootrr_core::tracker::targets::{self, KINDS, OFF_BY_DEFAULT, Target};
 
 use crate::datadir;
 use crate::events::{Ev, Events, MAX_WAIT};
+use crate::icon_store::{self, Icons};
 use crate::pathsafe;
 use crate::watch::{self, Out, Watcher};
 
@@ -68,7 +74,16 @@ pub struct Source {
     pub reads: u64,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct Seeded {
+    pub seed: String,
+    pub checksum: String,
+    pub rewired: usize,
+}
+
 pub struct Inner {
+    pub seeded: Option<Seeded>,
+    pub peek: Option<Peek>,
     pub index: Arc<Index>,
     pub game_dir: Option<PB>,
     pub job: Option<u64>,
@@ -78,6 +93,7 @@ pub struct Inner {
     pub src: Source,
     pub place: Option<Place>,
     pub loaded: bool,
+    pub items: Option<Vec<grid::St>>,
 }
 
 pub struct Tracker {
@@ -87,6 +103,7 @@ pub struct Tracker {
     watch: Mutex<Option<watch::Handle>>,
     boot: Mutex<()>,
     pub poll: Duration,
+    pub icons: Icons,
 }
 
 pub fn now_secs() -> u64 {
@@ -117,6 +134,8 @@ impl Tracker {
         let ix: Index = index::empty().unwrap_or(Index { game: String::new(), table: 0, maps: Vec::new(), locs: Vec::new(), shapes: Vec::new() });
         Tracker {
             inner: Mutex::new(Inner {
+                seeded: None,
+                peek: None,
                 index: Arc::new(ix),
                 game_dir: None,
                 job: None,
@@ -126,12 +145,14 @@ impl Tracker {
                 src: Source::default(),
                 place: None,
                 loaded: false,
+                items: None,
             }),
             events: Events::new(),
             data: data.map(|d| datadir::cache_root(&d)),
             watch: Mutex::new(None),
             boot: Mutex::new(()),
             poll: MAX_WAIT,
+            icons: Icons::new(icon_store::disk_on()),
         }
     }
 
@@ -255,6 +276,8 @@ impl Tracker {
         g.src.keys = p.keys.len();
         g.src.error = None;
         g.place = Some(p.place.clone());
+        g.items = Some(grid::read(p));
+        g.peek = Some(p.clone());
         let mut evs: Vec<Ev> = changed
             .iter()
             .map(|i| {
@@ -268,6 +291,26 @@ impl Tracker {
         }
         drop(g);
         self.events.push(&evs);
+    }
+
+    pub fn set_seed(&self, sf: Option<&SeedFile>) -> Res<Option<Seeded>> {
+        let ts: &[Target] = targets::all()?;
+        let over: Vec<Option<Rule>> = match sf {
+            Some(f) => seed::rules(ts, &f.placements, &load::load()?),
+            None => Vec::new(),
+        };
+        let mut g: MutexGuard<'_, Inner> = self.lock();
+        g.track.rewire(ts, &over);
+        g.seeded = sf.map(|f| Seeded { seed: f.seed.clone(), checksum: f.checksum(), rewired: seed::rewired(&over) });
+        let base: u64 = self.events.seq() + 1;
+        if let Some(p) = g.peek.clone() {
+            g.track.apply(&p, base);
+        }
+        self.save_marks(&g);
+        let out: Option<Seeded> = g.seeded.clone();
+        drop(g);
+        self.events.push(&[Ev::Reset]);
+        Ok(out)
     }
 
     pub fn fail(&self, slot: &str, msg: &str) {
@@ -367,6 +410,35 @@ mod tests {
         t.publish("slot_00", &a, None, vec!["slot_00".into()]);
         let later = t.events.wait(s0, Duration::from_millis(1));
         assert!(later.items.iter().any(|x| x.1 == Ev::Loc { i: ci, fresh: true }));
+    }
+
+    #[test]
+    fn a_seed_rewires_the_gift_rows_and_leaving_it_restores_them() {
+        use ootrr_core::settings::Settings;
+        use std::collections::BTreeMap;
+        let t: Tracker = Tracker::new(None);
+        let ts: &[Target] = targets::all().unwrap();
+        let impa: usize = ts.iter().position(|x| x.ootr.as_deref() == Some("Song from Impa")).unwrap();
+        let sheik: usize = ts.iter().position(|x| x.ootr.as_deref() == Some("Sheik in Forest")).unwrap();
+        let fl: u32 = murmur3_32(b"HavePlayedGetEvent.Item_Melody_ForestMinuet", 0);
+        let a: Peek = peek_with(&save_bytes(&[(fl, 1)], &[]), &Lim::ANY).unwrap();
+        t.publish("slot_00", &a, None, vec!["slot_00".into()]);
+        assert_eq!(t.lock().track.marks[sheik].s, S::Found);
+        let mut p: BTreeMap<String, String> = BTreeMap::new();
+        p.insert("Song from Impa".into(), "Minuet of Forest".into());
+        p.insert("Sheik in Forest".into(), "Zeldas Lullaby".into());
+        let sf: SeedFile = SeedFile::new("abc", &Settings::default(), "oot-remake:test", p).unwrap();
+        let s: Seeded = t.set_seed(Some(&sf)).unwrap().unwrap();
+        assert_eq!(s.rewired, 2);
+        {
+            let g = t.lock();
+            assert_eq!(g.track.marks[impa].s, S::Found);
+            assert_eq!(g.track.marks[sheik].s, S::Open);
+        }
+        assert_eq!(t.set_seed(None).unwrap(), None);
+        let g = t.lock();
+        assert_eq!(g.track.marks[impa].s, S::Open);
+        assert_eq!(g.track.marks[sheik].s, S::Found);
     }
 
     #[test]

@@ -207,7 +207,7 @@ pub const KAKARIKO_ITEMS: [&str; 1] = ["Pouch_Amiibo"];
 /// The checks the skipped story would have handed out. Their items are given at the start.
 pub const KAKARIKO_LOCATIONS: [&str; 2] = ["HC Zeldas Letter", "Song from Impa"];
 /// Malon is at the ranch once the castle quest is complete, so her egg cannot be collected.
-/// The check stays in the world but never holds anything that matters.
+/// slice::pick keeps the check out of the shuffle (it holds its vanilla item, unreachable).
 pub const KAKARIKO_EXCLUDED: [&str; 1] = ["HC Malon Egg"];
 
 /// Adds the "IsGet" flag of every given item that has one. A pouch add without the get event

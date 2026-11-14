@@ -47,8 +47,6 @@ pub fn add(d: &Data, w: &World, p: &Plan, free: &mut Vec<LocId>, left: &mut BM<S
         let dungeon: bool = id.is_some_and(|i| w.regions[w.locs[i].region].dungeon.is_some());
         let why: Option<&str> = if st != State::Eligible {
             Some(why(st))
-        } else if p.excluded.iter().any(|e| *e == l.name) {
-            Some("excluded by the player")
         } else if id.is_none() {
             Some("location is not in the logic world")
         } else {

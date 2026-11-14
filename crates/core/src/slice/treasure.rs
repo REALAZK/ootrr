@@ -17,7 +17,7 @@ pub const VIEW: &str = "DropViewActor";
 
 pub const VANILLA: &str = "Obj_Heart_Piece";
 
-pub const NOTE: &str = "The Treasure Chest Game reward is shuffled. The first win gives the shuffled item and every later win gives the vanilla red rupee. Only unique items whose second copy changes nothing can be placed there. Experimental, untested in the game.";
+pub const NOTE: &str = "The Treasure Chest Game reward is shuffled. The first win gives the shuffled item and every later win gives the vanilla red rupee. Only unique items whose second copy changes nothing can be placed there.";
 
 pub const ITEMS: [&str; 17] = [
     "Boomerang",

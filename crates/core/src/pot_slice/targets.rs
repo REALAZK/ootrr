@@ -2,6 +2,7 @@ use std::collections::BTreeMap as BM;
 
 use crate::error::{Error as E, Res};
 use crate::pot_slice::data::Kind;
+use crate::pickup_pack::kit::name_of;
 use crate::pot_slice::pickup;
 use crate::settings::seed::SeedFile;
 use crate::slice::data::{Data, State};
@@ -15,6 +16,7 @@ pub struct Give {
     pub was: String,
     pub item: String,
     pub actor: String,
+    pub kit: bool,
 }
 
 pub fn is_loc(d: &Data, name: &str) -> bool {
@@ -29,12 +31,15 @@ pub fn targets(d: &Data, seed: &SeedFile) -> Res<Vec<Give>> {
     targets_with(d, seed, &BM::new())
 }
 
-pub fn actor_of(d: &Data, loc: &str, item: &str, fixed: &BM<String, String>) -> Res<String> {
+pub fn actor_of(d: &Data, loc: &str, item: &str, fixed: &BM<String, String>) -> Res<(String, bool)> {
+    if let Some(a) = pickup::shipped_kit(item) {
+        return Ok((name_of(a), true));
+    }
     if let Some(a) = pickup::of(item) {
-        return Ok(a.to_string());
+        return Ok((a.to_string(), pickup::holds(item)));
     }
     crate::slice::key_spots::resolve(d, item, fixed.get(loc).map(|s| s.as_str()))
-        .map(|p| p.pack)
+        .map(|p| (p.kit(), true))
         .map_err(|e| E::Msg(format!("{item} has no world pickup and cannot be placed at {loc}: {e}")))
 }
 
@@ -48,9 +53,12 @@ pub fn targets_with(d: &Data, seed: &SeedFile, fixed: &BM<String, String>) -> Re
         if d.pots.state_of(loc) != Some(State::Eligible) {
             return Err(E::Msg(format!("{loc} cannot be placed, its match or its saved row is not safe")));
         }
-        let actor: String = actor_of(d, loc, item, fixed)?;
+        let (actor, kit): (String, bool) = actor_of(d, loc, item, fixed)?;
+        if kit && k != Kind::Pot {
+            return Err(E::Msg(format!("{loc} is a crate or a flying pot, it has no variant that keeps {item} until it is picked up")));
+        }
         for r in &l.refs {
-            out.push(Give { name: loc.clone(), kind: k, hash: r.hash, files: r.files.clone(), was: l.item.clone(), item: item.clone(), actor: actor.clone() });
+            out.push(Give { name: loc.clone(), kind: k, hash: r.hash, files: r.files.clone(), was: l.item.clone(), item: item.clone(), actor: actor.clone(), kit });
         }
     }
     Ok(out)
@@ -83,6 +91,7 @@ pub fn balance(d: &Data, seed: &SeedFile, item: &str, acts: &mut Vec<String>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pot_slice::data::Kind;
     use crate::settings::Settings;
     use std::collections::BTreeMap as BM;
 
@@ -110,7 +119,12 @@ mod tests {
     fn unsafe_placements_are_refused() {
         let d: Data = Data::load().unwrap();
         let n: String = eligible(&d)[0].clone();
-        assert!(targets(&d, &seed(&[(&n, "Hookshot")])).is_err());
+        let once: String = eligible(&d).into_iter().find(|n| crate::slice::copies::copies(&d, n) < 2 && d.pots.kind_of(n) == Some(Kind::Pot)).unwrap();
+        let t: Vec<Give> = targets(&d, &seed(&[(&once, "Megaton Hammer")])).unwrap();
+        assert!(t.iter().all(|g| g.kit && g.actor == "Obj_Hammer_GS"));
+        assert!(targets(&d, &seed(&[(&once, "Fire Arrows")])).unwrap().iter().all(|g| g.kit && g.actor == "Obj_Arrow_Fire_GS"));
+        assert!(targets(&d, &seed(&[(&once, "Gold Skulltula Token")])).unwrap().iter().all(|g| g.kit && g.actor == "Obj_Token_Gold"));
+        assert!(targets(&d, &seed(&[(&once, "Rupees (20)")])).unwrap().iter().all(|g| !g.kit));
         let bad: Option<String> = d.pots.state.iter().find(|(_, s)| **s != State::Eligible).map(|(n, _)| n.clone());
         assert!(targets(&d, &seed(&[(&bad.unwrap(), "Rupees (20)")])).is_err());
     }

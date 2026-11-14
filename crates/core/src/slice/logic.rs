@@ -217,6 +217,21 @@ mod tests {
     }
 
     #[test]
+    fn the_mask_shop_needs_no_letter_once_the_gate_starts_open() {
+        let d: Data = Data::load().unwrap();
+        let mut s: crate::settings::Settings = crate::settings::Settings::default();
+        let shut: World = world_with(&d, &crate::slice::support::plan(&s).unwrap().logic()).unwrap();
+        s.set("open_forest", crate::settings::Value::s("closed_deku")).unwrap();
+        s.set("open_kakariko", crate::settings::Value::s("open")).unwrap();
+        let open: World = world_with(&d, &crate::slice::support::plan(&s).unwrap().logic()).unwrap();
+        let door: &str = "Market Mask Shop -> Market Mask Shop Storefront";
+        let a: Search = explore(&shut, &vanilla_without(&shut, &d, &["Zeldas Letter"]), &[]);
+        let b: Search = explore(&open, &vanilla_without(&open, &d, &["Zeldas Letter"]), &[]);
+        assert!(!exit_open(&a, &shut, door, Age::Child));
+        assert!(exit_open(&b, &open, door, Age::Child));
+    }
+
+    #[test]
     fn the_wallet_and_hookshot_gates_bind() {
         let d: Data = Data::load().unwrap();
         let w: World = world(&d).unwrap();

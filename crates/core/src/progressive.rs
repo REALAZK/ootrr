@@ -34,6 +34,9 @@ pub const ANALYZED_TABLE: &str = "RSDB/GameAnalyzedEventInfo.Product.111.rstbl.b
 const QUERY: &str = "EventQueryCheckIsGet";
 const HOLDER: &str = "GameDataActor";
 const ROOT_ENTRY: &str = "Success_";
+const GUARD: &str = "BombGuard_";
+const GUARDED: &[&str] = &["Item_BombBundle_Small", "Item_Bomb"];
+const NO_BAG: &str = "TBox_Rupee_Green";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Size {
@@ -179,6 +182,42 @@ pub fn wrap(f: &mut Flow, family: &str) -> Res<()> {
     let root: Kind = chain(f, a, q, family, o, &subs)?;
     let main: u16 = push(f, root)?;
     f.entries.push(Entry { name, subs, vars: Vec::new(), main, pad });
+    Ok(())
+}
+
+pub fn guarded(actor: &str) -> bool {
+    GUARDED.contains(&actor)
+}
+
+pub fn guard_family(actor: &str) -> String {
+    format!("{GUARD}{actor}")
+}
+
+fn guard_of(family: &str) -> Option<&str> {
+    family.strip_prefix(GUARD)
+}
+
+pub fn guard(f: &mut Flow, actor: &str) -> Res<()> {
+    let name: String = entry_name(&guard_family(actor));
+    if f.entries.iter().any(|e| e.name == name) {
+        return Ok(());
+    }
+    let pad: u16 = f
+        .entries
+        .iter()
+        .find(|e| e.name == ROOT_ENTRY)
+        .map(|e| e.pad)
+        .ok_or(Error::Format("progressive: the chest flow has no Success_ entry"))?;
+    let (a, q) = ensure_query(f)?;
+    let keep: u16 = give(f, actor)?;
+    let none: u16 = give(f, NO_BAG)?;
+    let mut at: u16 = none;
+    for owner in owners("BombBag")? {
+        let c: Cont = Cont { items: vec![("ActorName".to_string(), Val::Str(owner.to_string()))] };
+        let cases: Vec<Case> = vec![Case { val: 0, ev: keep }, Case { val: 1, ev: at }];
+        at = push(f, Kind::Switch { actor: a, query: q, cases, params: Some(c) })?;
+    }
+    f.entries.push(Entry { name, subs: vec![keep, none], vars: Vec::new(), main: at, pad });
     Ok(())
 }
 
@@ -387,7 +426,10 @@ pub fn stage(rf: &mut Romfs, used: &BS<(String, Size)>, scale: Option<(f32, i32)
             let mut bf: Bf = Bf::parse(raw)?;
             let flow: &mut Flow = bf.flows.first_mut().ok_or(Error::Format("progressive: the flow file has no flow"))?;
             for fam in &fams {
-                wrap(flow, fam)?;
+                match guard_of(fam) {
+                    Some(actor) => guard(flow, actor)?,
+                    None => wrap(flow, fam)?,
+                }
             }
             if !keys.is_empty() {
                 crate::dungeon_credit::credit_keys(flow, keys, *s == Size::Big)?;
@@ -653,6 +695,39 @@ mod tests {
             let main: u16 = f.entries[1].main;
             assert_eq!(walk(&f, main, owned), want, "{fam} {owned:?}");
         }
+    }
+
+    #[test]
+    fn the_bomb_guard_gives_bombs_only_to_a_bag_owner() {
+        let cases: [(&[&str], &str); 5] = [
+            (&[], NO_BAG),
+            (&["Item_BombBag_Small"], "Item_BombBundle_Small"),
+            (&["Item_BombBag_Medium"], "Item_BombBundle_Small"),
+            (&["Item_BombBag_Large"], "Item_BombBundle_Small"),
+            (&["Item_Hookshot", "Item_Bombchu"], NO_BAG),
+        ];
+        for (owned, want) in cases {
+            let mut f: Flow = flow();
+            guard(&mut f, "Item_BombBundle_Small").unwrap();
+            assert_eq!(f.entries[1].name, "Success_Prog_BombGuard_Item_BombBundle_Small");
+            let main: u16 = f.entries[1].main;
+            assert_eq!(walk(&f, main, owned), want, "{owned:?}");
+        }
+    }
+
+    #[test]
+    fn guarding_twice_changes_nothing_and_each_actor_gets_its_own_entry() {
+        let mut f: Flow = flow();
+        guard(&mut f, "Item_Bomb").unwrap();
+        let before: Flow = f.clone();
+        guard(&mut f, "Item_Bomb").unwrap();
+        assert_eq!(f, before);
+        guard(&mut f, "Item_BombBundle_Small").unwrap();
+        assert_eq!(f.entries.len(), 3);
+        assert!(guarded("Item_Bomb") && guarded("Item_BombBundle_Small"));
+        assert!(!guarded("Item_BombchuBundle_Small") && !guarded("Item_BombBag_Small"));
+        assert_eq!(guard_of(&guard_family("Item_Bomb")), Some("Item_Bomb"));
+        assert_eq!(guard_of("Hookshot"), None);
     }
 
     #[test]

@@ -4,7 +4,7 @@ use crate::error::{Fail, Hr};
 use crate::req::Req;
 use crate::resp::Resp;
 use crate::state::Shared;
-use crate::{update, api_build, api_fs, api_generate, api_info, api_open, api_seed, api_settings, api_tracker, api_validate, assets, body};
+use crate::{update, api_build, api_fs, api_generate, api_info, api_items, api_open, api_seed, api_settings, api_tracker, api_validate, assets, body};
 
 fn need(r: &Req, m: &str) -> Hr<()> {
     if r.method == m {
@@ -24,6 +24,10 @@ fn job(sh: &Shared, r: &Req, id: &str) -> Hr<Resp> {
 fn api(sh: &Shared, r: &Req) -> Hr<Resp> {
     if let Some(id) = r.path.strip_prefix("/api/jobs/") {
         return job(sh, r, id);
+    }
+    if r.path == "/api/tracker/icon" {
+        need(r, "GET")?;
+        return api_items::icon(sh, r);
     }
     let j: Json = match r.path.as_str() {
         "/api/info" => {
@@ -93,6 +97,14 @@ fn api(sh: &Shared, r: &Req) -> Hr<Resp> {
         "/api/tracker/mode" => {
             need(r, "POST")?;
             api_tracker::mode(sh, &body::json(r)?)?
+        }
+        "/api/tracker/items" => {
+            need(r, "GET")?;
+            api_items::items(sh)
+        }
+        "/api/tracker/seed" => {
+            need(r, "POST")?;
+            api_tracker::seed(sh, &body::json(r)?)?
         }
         "/api/tracker/mark" => {
             need(r, "POST")?;
@@ -242,6 +254,8 @@ mod tests {
         for (m, path, b) in [
             ("GET", "/api/tracker/state", ""),
             ("GET", "/api/tracker/index", ""),
+            ("GET", "/api/tracker/items", ""),
+            ("GET", "/api/tracker/icon", ""),
             ("GET", "/api/tracker/events?after=0", ""),
             ("POST", "/api/tracker/mode", "{\"mode\":\"all\"}"),
             ("POST", "/api/tracker/mark", "{\"id\":\"x\",\"on\":true}"),

@@ -57,7 +57,7 @@ impl Kit {
     }
 }
 
-pub const NOTE: &str = "The chosen starting items are written into the new game defaults (GameDataList) and the game start module, and one copy of each is taken out of the item pool and replaced by Rupee (1). Experimental and untested in the game.";
+pub const NOTE: &str = "The chosen starting items are written into the new game defaults (GameDataList) and the game start module, and one copy of each is taken out of the item pool and replaced by Rupee (1).";
 
 fn grant(out: &mut Vec<Set>, actor: &str, n: i32) {
     out.push(Set::Bool(format!("IsGet.{actor}"), true));
@@ -179,7 +179,7 @@ pub fn read(s: &Settings, bad: &mut Vec<String>) -> Kit {
         k.notes.push(NOTE.to_string());
     }
     if let Some(n) = k.hearts {
-        k.notes.push(format!("You start with {n} hearts. The start module sets the heart containers and the current life, experimental and untested in the game."));
+        k.notes.push(format!("You start with {n} hearts. The start module sets the heart containers and the current life."));
     }
     k
 }

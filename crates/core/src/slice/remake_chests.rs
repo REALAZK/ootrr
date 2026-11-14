@@ -2,7 +2,7 @@ use crate::settings::Settings;
 
 pub const SETTING: &str = "shuffle_remake_chests";
 
-pub const NOTE: &str = "Remake only chests and the newly paired dungeon and overworld chests are shuffled. Their rules come from research and are untested in the game.";
+pub const NOTE: &str = "Remake only chests and the newly paired dungeon and overworld chests are shuffled.";
 
 pub const NEW: [&str; 10] = [
     "Dodongos Cavern Lobby Bombable Chest",

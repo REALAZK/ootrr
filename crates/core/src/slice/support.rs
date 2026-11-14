@@ -403,21 +403,21 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         ));
     }
     for (on, text) in [
-        (hearts, "Boss Heart Containers are shuffled. Each becomes a chest, experimental and untested in the game."),
-        (songs != Songs::Off, "Songs are shuffled. The song lessons are edited, experimental and untested in the game."),
+        (hearts, "Boss Heart Containers are shuffled. Each becomes a chest."),
+        (songs != Songs::Off, "Songs are shuffled. The song lessons are edited."),
         (world != Mode::Off, pu::NOTE),
         (fast, "Chest and item pickup scenes are sped up."),
-        (intro, "The new game intro is skipped. The opening movie and the wake up scene are bypassed, and the harmless first-visit scenes of the areas are marked as played, experimental and untested in the game."),
-        (start != Reward::Off, "You start the game with one random Stone or Medallion. Experimental and untested in the game."),
+        (intro, "The new game intro is skipped. The opening movie and the wake up scene are bypassed, and the harmless first-visit scenes of the areas are marked as played."),
+        (start != Reward::Off, "You start the game with one random Stone or Medallion."),
         (!pouch.is_empty(), "The ticked Kokiri Sword, Deku Shield or Slingshot is added to the pouch when a new game starts."),
-        (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which. Experimental and untested in the game."),
-        (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts, experimental and untested in the game."),
-        (kakariko, "The Kakariko gate starts open and the castle visit is skipped. A new game sets the castle quest complete, the Door of Time quest past Impa's send off, the Fire Stone quest past the gate and the gate guard's flag, and gives the items of Zelda's Letter and the Song from Impa. Experimental and untested in the game."),
-        (door, "The Door of Time starts open. The Temple of Time logic is edited so the door is always open and the Master Sword can be drawn without the Door of Time quest, and the door's opened flag is set when a new game starts, so the Ocarina and the Song of Time are not needed to reach the Master Sword. The quest itself is left alone, so Zelda's escape and the Song of Time stay checks, and the adult pedestal works before the Forest Sage so you can return to childhood at any time. Experimental and untested in the game."),
-        (forest == Forest::Open, "The Deku Tree quest starts at the step Mido normally sets when he steps aside (Meet_DekuTree Step03), so Mido stands aside and the Kokiri Shop shows its later stock. Experimental and untested in the game."),
-        (hints, "Gossip stones give hints. Their text is replaced in every language, experimental and untested in the game."),
-        (extra, "Kak 20 Gold Skulltula Reward, DMT Biggoron and GC Medigoron are shuffled with structural event edits. Experimental and untested in the game."),
-        (trade, "The ten adult trade quest hand ins each give one extra shuffled item the first time. The trade chain itself stays vanilla. Experimental and untested in the game."),
+        (small.roams(), "Small keys can be found in other dungeons or outside them. A chest key is counted for the dungeon it belongs to and the chest says which."),
+        (forest != Forest::Closed, "Kokiri Forest starts open. The blocker walls are switched off when a new game starts."),
+        (kakariko, "The Kakariko gate starts open and the castle visit is skipped. A new game sets the castle quest complete, the Door of Time quest past Impa's send off, the Fire Stone quest past the gate and the gate guard's flag, and gives the items of Zelda's Letter and the Song from Impa."),
+        (door, "The Door of Time starts open. The Temple of Time logic is edited so the door is always open and the Master Sword can be drawn without the Door of Time quest, and the door's opened flag is set when a new game starts, so the Ocarina and the Song of Time are not needed to reach the Master Sword. The quest itself is left alone, so Zelda's escape and the Song of Time stay checks, and the adult pedestal works before the Forest Sage so you can return to childhood at any time."),
+        (forest == Forest::Open, "The Deku Tree quest starts at the step Mido normally sets when he steps aside (Meet_DekuTree Step03), so Mido stands aside and the Kokiri Shop shows its later stock."),
+        (hints, "Gossip stones give hints. Their text is replaced in every language."),
+        (extra, "Kak 20 Gold Skulltula Reward, DMT Biggoron and GC Medigoron are shuffled with structural event edits."),
+        (trade, "The ten adult trade quest hand ins each give one extra shuffled item the first time. The trade chain itself stays vanilla."),
     ] {
         if on {
             notes.push(text.to_string());

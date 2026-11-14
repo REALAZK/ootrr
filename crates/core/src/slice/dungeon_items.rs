@@ -38,10 +38,10 @@ pub const GROUPS: [(&str, &[&str]); 6] = [
     ("castle", &["HyruleField", "Market", "HyruleCastle", "GanonCastle", "InsideGanonCastle"]),
 ];
 
-pub const ROAM_BOSS: &str = "Boss Keys can be found outside their own dungeon. The chest sets the boss key of the dungeon it belongs to and says which. Experimental and untested in the game.";
-pub const START_BOSS: &str = "Boss Keys are removed and you start with every boss door key. The Boss Keys in shuffled locations are replaced by Rupee (1), experimental and untested in the game.";
-pub const ROAM_MAP: &str = "Maps and Compasses can be found outside their own dungeon. The chest sets the map or compass of the dungeon it belongs to and says which. Experimental and untested in the game.";
-pub const START_MAP: &str = "You start with every Map and Compass. The Maps and Compasses in shuffled locations are replaced by Rupee (1), experimental and untested in the game.";
+pub const ROAM_BOSS: &str = "Boss Keys can be found outside their own dungeon. The chest sets the boss key of the dungeon it belongs to and says which.";
+pub const START_BOSS: &str = "Boss Keys are removed and you start with every boss door key. The Boss Keys in shuffled locations are replaced by Rupee (1).";
+pub const ROAM_MAP: &str = "Maps and Compasses can be found outside their own dungeon. The chest sets the map or compass of the dungeon it belongs to and says which.";
+pub const START_MAP: &str = "You start with every Map and Compass. The Maps and Compasses in shuffled locations are replaced by Rupee (1).";
 
 pub fn keep_value(v: &str) -> Keep {
     match v {

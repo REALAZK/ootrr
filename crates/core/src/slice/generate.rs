@@ -94,6 +94,9 @@ fn by_place(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> Option<bool>
 }
 
 pub fn allowed(d: &Data, w: &World, p: &Plan, it: ItemId, l: LocId) -> bool {
+    if !p.excluded.is_empty() && w.items.adv[it] && p.excluded.iter().any(|e| *e == w.locs[l].name) {
+        return false;
+    }
     if d.item(&w.items.names[it]).is_some_and(|i| !crate::flow_extra::trade::keeps(d, &w.locs[l].name, i)) {
         return false;
     }
@@ -215,6 +218,26 @@ fn report(s: &str, p: &Plan, pk: &Pick, c: &Counts, moved: &[String]) -> String 
     out
 }
 
+pub fn check_excluded(w: &World, p: &Plan, free: &[LocId], base: &Placement) -> Res<Vec<String>> {
+    let here: Vec<&LocId> = free.iter().filter(|l| p.excluded.contains(&w.locs[**l].name)).collect();
+    let mut notes: Vec<String> = Vec::new();
+    if here.len() < p.excluded.len() {
+        let gone: Vec<&str> = p.excluded.iter().filter(|e| !here.iter().any(|l| w.locs[**l].name == **e)).map(|e| e.as_str()).collect();
+        notes.push(format!("Excluded but not shuffled with these settings, so they keep their vanilla item: {}.", gone.join(", ")));
+    }
+    let junk: usize = free.iter().filter_map(|l| base.get(*l)).filter(|i| !w.items.adv[*i]).count();
+    if here.len() > junk {
+        return Err(E::Msg(format!(
+            "too many locations are excluded: {} excluded locations can only hold items that are not needed for progression, and these settings shuffle only {junk} of those. Exclude fewer locations or shuffle more items",
+            here.len()
+        )));
+    }
+    if !here.is_empty() {
+        notes.push(format!("{} excluded locations hold only items that are not needed for progression.", here.len()));
+    }
+    Ok(notes)
+}
+
 pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Generated> {
     if d.scan.rows.is_empty() {
         return Err(E::Format("the chest list in data/slice.json is empty, run slice-scan first"));
@@ -228,14 +251,6 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
         named.push(w.locs[l].name.clone());
     }
     p.excluded = named;
-    if p.kakariko {
-        for e in crate::start_state::KAKARIKO_EXCLUDED {
-            let name: String = w.locs[loc_of(&w, e)?].name.clone();
-            if !p.excluded.contains(&name) {
-                p.excluded.push(name);
-            }
-        }
-    }
     crate::slice::starts::add(d, &p, &mut w, seed)?;
     let vanilla: Placement = vanilla_place(&w, d)?;
     let pk: Pick = pick(d, &w, &p);
@@ -244,9 +259,12 @@ pub fn generate_data(d: &Data, s: &Settings, seed: &str, o: &GenOpts) -> Res<Gen
     }
     let (base, gone): (Placement, Vec<String>) = crate::start_items::pool::base(d, &w, &p, &vanilla, &pk.free)?;
     p.notes.extend(gone);
+    let ex: Vec<String> = check_excluded(&w, &p, &pk.free, &base)?;
+    p.notes.extend(ex);
     let ok = |it: ItemId, l: LocId| allowed(d, &w, &p, it, l);
     for l in &pk.free {
         if let Some(i) = vanilla.get(*l)
+            && !p.excluded.contains(&w.locs[*l].name)
             && !ok(i, *l)
             && !d.item(&w.items.names[i]).is_some_and(|x| crate::slice::dungeon_items::exempt(&p, &x.kind))
         {
@@ -556,14 +574,50 @@ mod tests {
         assert!(!k.seed_file.placements.contains_key("Gerudo Training Ground Hidden Ceiling Chest"));
     }
 
+    fn eligible_names(d: &Data) -> Vec<String> {
+        d.scan.rows.iter().filter(|r| r.state == crate::slice::data::State::Eligible).map(|r| r.name.clone()).collect()
+    }
+
     #[test]
-    fn excluded_locations_stay_out_of_the_seed() {
+    fn excluded_locations_hold_only_items_the_seed_does_not_need() {
         let d: Data = Data::load().unwrap();
-        let mut s: Settings = Settings::default();
-        s.set("disabled_locations", Value::set(&["ZD Chest"])).unwrap();
-        let g: Generated = generate_data(&d, &s, "x", &GenOpts::default()).unwrap();
-        assert!(!g.seed_file.placements.contains_key("ZD Chest"));
-        assert!(g.report.contains("excluded by the player"));
+        let names: Vec<String> = eligible_names(&d).into_iter().filter(|n| d.vanilla_of(n).and_then(|v| d.item(v)).is_some_and(|i| i.adv)).take(12).collect();
+        assert!(names.len() >= 8);
+        let list: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+        let mut s: Settings = all_chests();
+        s.set("disabled_locations", Value::set(&list)).unwrap();
+        for n in 0..3 {
+            let g: Generated = generate_data(&d, &s, &format!("ex {n}"), &GenOpts::default()).unwrap();
+            let mut moved: usize = 0;
+            for nm in &names {
+                if let Some(item) = g.seed_file.placements.get(nm) {
+                    moved += 1;
+                    assert!(!d.item(item).is_some_and(|i| i.adv), "{nm} holds {item}");
+                }
+            }
+            assert!(moved >= 4, "{moved}");
+            assert!(g.report.contains("excluded locations hold only items that are not needed"));
+        }
+    }
+
+    #[test]
+    fn too_many_excluded_locations_stop_the_seed_with_a_reason() {
+        let d: Data = Data::load().unwrap();
+        let names: Vec<String> = eligible_names(&d);
+        let list: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+        let mut s: Settings = all_chests();
+        s.set("disabled_locations", Value::set(&list)).unwrap();
+        let e: String = generate_data(&d, &s, "many", &GenOpts::default()).err().unwrap().to_string();
+        assert!(e.contains("too many locations are excluded") && e.contains("Exclude fewer"), "{e}");
+    }
+
+    #[test]
+    fn an_excluded_location_that_is_not_shuffled_keeps_its_item_and_says_so() {
+        let d: Data = Data::load().unwrap();
+        let mut s: Settings = with(&[("shuffle_chests", "off")]);
+        s.set("disabled_locations", Value::set(&["KF Midos Top Left Chest"])).unwrap();
+        let g: Generated = generate_data(&d, &s, "off", &GenOpts::default()).unwrap();
+        assert!(g.report.contains("Excluded but not shuffled"), "{}", g.report);
     }
 
     #[test]
@@ -792,7 +846,7 @@ mod tests {
         let mut s: Settings = all_chests();
         s.set("disabled_locations", Value::set(&["kf midos top left chest"])).unwrap();
         let g: Generated = generate_data(&d, &s, "dis", &GenOpts::default()).unwrap();
-        assert!(!g.seed_file.placements.contains_key("KF Midos Top Left Chest"));
+        assert!(g.seed_file.placements.get("KF Midos Top Left Chest").is_none_or(|i| !d.item(i).is_some_and(|x| x.adv)));
         s.set("disabled_locations", Value::set(&["Midos Top Left"])).unwrap();
         let e: String = generate_data(&d, &s, "dis", &GenOpts::default()).err().unwrap().to_string();
         assert!(e.contains("disabled locations: no location is named") && e.contains("KF Midos Top Left Chest"), "{e}");
@@ -813,9 +867,9 @@ mod tests {
     fn seeds_that_generated_before_keep_their_exact_placements() {
         let d: Data = Data::load().unwrap();
         let cases: [(&[(&str, &str)], &str, usize, u64); 4] = [
-            (&[], "default 0", 77, 0x9b41_25fb_b7b3_954b),
-            (&[], "default 1", 77, 0x74e9_a4ba_5cb4_40b9),
-            (&[("shuffle_chests", "overworld")], "chests_ow 0", 10, 0x842f_cb4b_1197_ea2a),
+            (&[], "default 0", 76, 0xbc18_fb15_41fc_c024),
+            (&[], "default 1", 76, 0xe1b7_fd01_310f_0432),
+            (&[("shuffle_chests", "overworld")], "chests_ow 0", 9, 0xd58f_c0a7_a752_4655),
             (&[("shuffle_chests", "dungeons")], "dungeons 0", 67, 0x169a_7c8a_d12b_3980),
         ];
         for (pairs, seed, n, want) in cases {
@@ -987,14 +1041,14 @@ mod tests {
         pots.set("shuffle_pots", Value::s("all")).unwrap();
         pots.set("shuffle_crates", Value::s("all")).unwrap();
         let cases: [(Settings, &str, &str, &str); 8] = [
-            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin a", "b8c6c4b31b12abcb42c5014a827ce94e22ee7e61cf01ac815ef80ffa384446a4"),
-            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin b", "070cc4b39ce519c165aaae10678e7030ef9d0a331790a09a44f4198a90a3ad99"),
-            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin a", "c755bab551e408965a8e15647c62f760d9d76875d86b2590c6708ab9c6614baf"),
-            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin b", "398e2947c1a5116badd6b90121f7e2c8721946edff989067b3213e65e7ea45af"),
-            (on.clone(), "OOTRR1-EYAQD32I", "pin a", "bc08991c7936566a71d7fbbe597c5fe15160ae4143f68117c1eaacf7576d85c7"),
-            (on.clone(), "OOTRR1-EYAQD32I", "pin b", "43749dd1040da34ad3600ec3e8a5b1babfd75a7c1a93f721c9e110efc2219011"),
-            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "d97f824ef573940b9510579cb7e56490826f7cad856da33063f5c230d2f8e960"),
-            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "f475e2f2ab973177840bf44e89641bea638ec7f44ab991e35e8004f2f71f1a58"),
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin a", "0238bc06819a88a9297b21fea4847cf5efab454b7234a1fcfb6b9c1fa39eebdc"),
+            (with(&[("shuffle_rewards", "off")]), "OOTRR1-XZLA", "pin b", "56f528719dfd82b1134f739fabd7f222f00a68f54634037b14246ee7a5be1aa3"),
+            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin a", "dbbde2ae945e2e8eb27f8fe74e85b432bc1612f02b1f629a822e47f8cf49cc79"),
+            (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin b", "a131002f74c6dd72eb9e521304f3cb01205103b640d91df77e6ddf6e760fd180"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin a", "096fe109ab0f25832732d6ed072e7f036a1f79ecebfa2e1bea9046483f6b0a3d"),
+            (on.clone(), "OOTRR1-EYAQD32I", "pin b", "dd873178d8ba402bb27da1c02d738846cc6631d6c753be11301e310ea10f31ca"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "7fcaeeecc81ae7ebb375b4e96a3bd7a718b9fbcf29988b9c80aab4845baee22f"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "f11163c886134346d67c2af0f690c0e42c940757a2cfec33f5bb534a93fb361f"),
         ];
         for (mut s, old, seed, sum) in cases {
             s.set(crate::open_world::TIME, Value::Bool(false)).unwrap();

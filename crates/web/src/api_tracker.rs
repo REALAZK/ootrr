@@ -5,6 +5,7 @@ use std::time::Duration;
 
 use ootrr_core::json::Json;
 use ootrr_core::tracker::index::Index;
+use ootrr_core::settings::seed::SeedFile;
 use ootrr_core::tracker::targets::KINDS;
 
 use crate::api_validate::{self, Report};
@@ -116,6 +117,17 @@ pub fn mode(sh: &Shared, b: &Json) -> Hr<Json> {
     Ok(Json::obj().with("ok", true.into()))
 }
 
+pub fn seed(sh: &Shared, b: &Json) -> Hr<Json> {
+    ensure(sh);
+    let text: Option<&str> = body::opt_text(b, "seed_text")?.filter(|s| !s.is_empty());
+    let sf: Option<SeedFile> = match text {
+        Some(t) => Some(SeedFile::parse(t).map_err(|e| Fail::new(422, &format!("That file is not a seed file this version can read. ({e})")))?),
+        None => None,
+    };
+    let s = sh.tracker.set_seed(sf.as_ref()).map_err(|e| Fail::new(500, &e.to_string()))?;
+    Ok(Json::obj().with("ok", true.into()).with("loaded", s.is_some().into()).with("rewired", Json::Int(s.map(|x| x.rewired as i64).unwrap_or(0))))
+}
+
 pub fn mark(sh: &Shared, b: &Json) -> Hr<Json> {
     let id: &str = body::short(b, "id")?;
     let on: bool = b.get("on").and_then(|x| x.as_bool()).ok_or_else(|| Fail::bad("on must be true or false"))?;
@@ -151,7 +163,28 @@ fn hosts() -> Json {
             .with("path", Json::Null)
             .with("hint", "Pick your Hookshot folder. The tracker finds user\\save\\<user> and its slot folders inside it.".into()),
     );
+    out.push(
+        Json::obj()
+            .with("host", "longshot".into())
+            .with("label", "Longshot".into())
+            .with("path", longshot_saves().map(|p| Json::from(pathsafe::text(&p))).unwrap_or(Json::Null))
+            .with("hint", "Pick your Longshot game folder (the one with bin\\longshot.exe). On Linux the saves are in ~/.local/share/longshot/save.".into()),
+    );
     Json::Arr(out)
+}
+
+fn longshot_saves() -> Option<PB> {
+    let base: Option<PB> = if cfg!(windows) {
+        env::var("USERPROFILE").ok().map(|h| PB::from(h).join("Games").join("Longshot").join("user"))
+    } else {
+        env::var("XDG_DATA_HOME")
+            .ok()
+            .filter(|x| !x.is_empty())
+            .map(PB::from)
+            .or_else(|| env::var("HOME").ok().map(|h| PB::from(h).join(".local").join("share")))
+            .map(|d| d.join("longshot"))
+    };
+    base.and_then(|b| pathsafe::abs(&b.join("save").to_string_lossy()).ok()).filter(|p| p.is_dir())
 }
 
 pub fn index(sh: &Shared) -> Json {

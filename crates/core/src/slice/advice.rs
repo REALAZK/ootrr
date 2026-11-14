@@ -14,6 +14,9 @@ pub fn changes(p: &Plan) -> Vec<&'static str> {
     if p.rewards {
         out.push("set Story and NPC rewards to Vanilla");
     }
+    if !p.excluded.is_empty() {
+        out.push("exclude fewer locations");
+    }
     if p.drops.any() {
         out.push("shuffle fewer pots and crates");
     }

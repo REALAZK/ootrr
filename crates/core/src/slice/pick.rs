@@ -48,9 +48,6 @@ fn reason(d: &Data, w: &World, p: &Plan, name: &str) -> Option<String> {
     let Some(l) = w.loc(name) else {
         return Some("location is not in the logic world".to_string());
     };
-    if p.excluded.iter().any(|e| e == name) {
-        return Some("excluded by the player".to_string());
-    }
     if !p.remake && crate::slice::remake_chests::gated(name) {
         return Some(crate::slice::remake_chests::OFF.to_string());
     }
@@ -116,8 +113,8 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
                 continue;
             }
             flow += 1;
-            if p.excluded.iter().any(|e| *e == l.name) {
-                *left.entry("excluded by the player".to_string()).or_insert(0) += 1;
+            if p.kakariko && crate::start_state::KAKARIKO_EXCLUDED.contains(&l.name.as_str()) {
+                *left.entry("the castle visit is skipped, so the check cannot be reached".to_string()).or_insert(0) += 1;
                 continue;
             }
             match w.loc(&l.name) {
@@ -131,8 +128,6 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
             flow += 1;
             if !d.song_ok(&l.name) {
                 *left.entry("this song lesson cannot hand out another item safely yet".to_string()).or_insert(0) += 1;
-            } else if p.excluded.iter().any(|e| *e == l.name) {
-                *left.entry("excluded by the player".to_string()).or_insert(0) += 1;
             } else {
                 match w.loc(&l.name) {
                     Some(x) => free.push(x),
@@ -144,13 +139,9 @@ pub fn pick(d: &Data, w: &World, p: &Plan) -> Pick {
     if p.hearts {
         for l in d.cat.locs.iter().filter(|l| l.kind == "bossheart") {
             flow += 1;
-            if p.excluded.iter().any(|e| *e == l.name) {
-                *left.entry("excluded by the player".to_string()).or_insert(0) += 1;
-            } else {
-                match w.loc(&l.name) {
-                    Some(x) => free.push(x),
-                    None => *left.entry("location is not in the logic world".to_string()).or_insert(0) += 1,
-                }
+            match w.loc(&l.name) {
+                Some(x) => free.push(x),
+                None => *left.entry("location is not in the logic world".to_string()).or_insert(0) += 1,
             }
         }
     }

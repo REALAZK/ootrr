@@ -164,9 +164,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           NOTES: |
-            Pre-release for testing. Seeds that used to take minutes or never finish now generate in seconds, and a seed that cannot be made fails fast with a plain message, an elapsed time line and a Cancel button. Story and NPC rewards are now on by default, and Stones and Medallions are a separate toggle that is off by default, so they no longer turn up at NPCs like the Kakariko rooftop man. Gold Skulltulas in the Confident and pooled mode now shuffle 77 of 100, up from 54, with a few stricter skulltula rules. New: start with almost any item, song or heart containers, and removing maps, compasses and keys now really takes them out of the pool. New experimental settings: open Zora's Fountain, open Jabu Jabu's Belly, a working Open Door of Time toggle (now off by default) and time always passes (on by default, so the clock and night work from the start). From this release OOTRR is under the GPL-3.0-or-later license. Most of this has not been played in game yet. Seeds made with older versions may not build, generate them again.
+            Stable release. New in this version: the Exclusions setting, where you drag checks into a list and they only ever hold items the seed does not need. If too many checks are excluded the seed is not built. Pots can now hold key items and put the pot back until the item is picked up. Zelda's Letter is removed from the pool when the Kakariko gate starts open. The tracker reads gift checks from the loaded seed. Seeds made with older versions may not build, generate them again.
 
-            OOTRR ${{ needs.version.outputs.version }} shuffles chests, and optionally boss hearts, songs, story and NPC rewards, with gossip hints, faster pickups, a start reward, an open Kokiri Forest, a plandomizer and small keys in any dungeon or anywhere. The new game intro is skipped by default. Most options other than the intro skip are off by default and experimental.
+            OOTRR ${{ needs.version.outputs.version }} shuffles chests, and optionally boss hearts, songs, story and NPC rewards, with gossip hints, faster pickups, a start reward, an open Kokiri Forest, a plandomizer and small keys in any dungeon or anywhere. The new game intro is skipped by default.
 
             No game files, keys or dumps are included. You need your own extracted game files.
 
@@ -181,5 +181,5 @@ jobs:
               --repo "${GITHUB_REPOSITORY}" \
               --title "OOTRR ${{ needs.version.outputs.version }}" \
               --notes "$NOTES" \
-              --prerelease
+              --latest
           fi

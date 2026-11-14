@@ -17,7 +17,7 @@ pub const SKULLS_JSON: &str = include_str!("../../../../data/skulltulas.json");
 pub const SETTING: &str = "shuffle_skulltulas";
 pub const KIND: &str = "gs";
 pub const TOKEN: &str = "Gold Skulltula Token";
-pub const NOTE: &str = "Gold Skulltulas are shuffled. A skulltula drops its new item instead of the token. The item shows the get window when it is picked up and only then is the skulltula saved, so an item that is left behind comes back with its skulltula on the next visit. Experimental, untested in the game.";
+pub const NOTE: &str = "Gold Skulltulas are shuffled. A skulltula drops its new item instead of the token. The item shows the get window when it is picked up and only then is the skulltula saved, so an item that is left behind comes back with its skulltula on the next visit.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
@@ -112,9 +112,9 @@ fn key(w: &World, name: &str) -> Option<(usize, String)> {
     Some((w.locs[l].region, format!("{:?}", w.locs[l].rule.node)))
 }
 
-fn pool_ok(d: &Data, w: &World, p: &Plan, pool: &str) -> bool {
+fn pool_ok(d: &Data, w: &World, _p: &Plan, pool: &str) -> bool {
     let members: Vec<&Loc> = d.cat.locs.iter().filter(|l| l.pool.as_deref() == Some(pool)).collect();
-    if members.is_empty() || members.iter().any(|l| l.kind != KIND || p.excluded.contains(&l.name)) {
+    if members.is_empty() || members.iter().any(|l| l.kind != KIND) {
         return false;
     }
     let first: Option<(usize, String)> = key(w, &members[0].name);
@@ -127,9 +127,6 @@ fn gate(w: &World, p: &Plan, name: &str) -> Option<String> {
     }
     if w.loc(name).is_none() {
         return Some("location is not in the logic world".to_string());
-    }
-    if p.excluded.iter().any(|e| e == name) {
-        return Some("excluded by the player".to_string());
     }
     None
 }

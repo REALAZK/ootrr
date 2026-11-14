@@ -3,6 +3,7 @@ use std::path::PathBuf as PB;
 use std::sync::Arc;
 
 use ootrr_core::TITLE_ID;
+use ootrr_core::cosmetic::{self, Cosmetics, Music};
 use ootrr_core::json::Json;
 use ootrr_core::modpack::Host;
 use ootrr_core::settings::seed::SeedFile;
@@ -32,6 +33,7 @@ pub struct Plan {
     pub name: String,
     pub target: PB,
     pub host: Host,
+    pub cos: Cosmetics,
 }
 
 fn mods_slot(md: &PB, game: &PB, romfs: &PB) -> bool {
@@ -54,7 +56,7 @@ pub fn plan(b: &Json) -> Hr<Plan> {
     }
     let host: Host = match body::opt_text(b, "host")? {
         None | Some("") => Host::Eden,
-        Some(s) => Host::parse(s).ok_or_else(|| refuse("Host: use eden, hookshot or nx2navi."))?,
+        Some(s) => Host::parse(s).ok_or_else(|| refuse("Host: use eden, hookshot, longshot or nx2navi."))?,
     };
     let md: PB = pathsafe::abs(body::short(b, "mod_dir")?)?;
     let romfs: PB = rep.romfs.clone().unwrap_or_else(|| game.clone());
@@ -70,11 +72,20 @@ pub fn plan(b: &Json) -> Hr<Plan> {
     }
     if inside(&md, &game) || inside(&md, &romfs) {
         if !host.flat() || !mods_slot(&md, &game, &romfs) {
-            return Err(refuse("Mod folder: it may not be inside the game folder. Hookshot and NX2navi use the game's mods folder."));
+            return Err(refuse("Mod folder: it may not be inside the game folder. Hookshot, Longshot and NX2navi use the game's mods folder."));
         }
     }
+    let music: Music = match body::opt_text(b, "music")? {
+        None | Some("") => Music::Off,
+        Some(s) => Music::parse(s).ok_or_else(|| refuse("Music: use off, grouped or anywhere."))?,
+    };
+    let seed_text: String = body::opt_text(b, "cosmetic_seed")?.unwrap_or("").trim().to_string();
+    if seed_text.len() > 64 {
+        return Err(refuse("Cosmetic seed: at most 64 characters."));
+    }
+    let cos: Cosmetics = Cosmetics { music, seed: seed_text };
     let target: PB = if host.flat() { md.join(name) } else { md.join(TITLE_ID).join(name) };
-    Ok(Plan { seed, romfs, load: md, name: name.to_string(), target, host })
+    Ok(Plan { seed, romfs, load: md, name: name.to_string(), target, host, cos })
 }
 
 pub fn run(jobs: &Arc<Jobs>, b: &Json) -> Hr<Json> {
@@ -86,7 +97,23 @@ pub fn run(jobs: &Arc<Jobs>, b: &Json) -> Hr<Json> {
         c.ok(10);
         c.begin("Read the game files and edit the chests");
         match slice::build_for(&p.seed, &p.romfs, &p.load, &p.name, p.host) {
-            Ok(built) => {
+            Ok(mut built) => {
+                if p.cos.any() {
+                    c.begin("Write the cosmetic changes");
+                    match cosmetic::apply(&built.root, &p.romfs, &p.cos, &p.seed.seed) {
+                        Ok(notes) => {
+                            for n in notes {
+                                built.report.push_str(&format!("{n}
+"));
+                            }
+                        }
+                        Err(e) => {
+                            c.mark("failed");
+                            c.finish("failed", &e.to_string());
+                            return;
+                        }
+                    }
+                }
                 c.ok(90);
                 c.begin("Mod files written");
                 c.ok(100);
@@ -204,13 +231,16 @@ mod tests {
     }
 
     #[test]
-    fn hookshot_and_nx2navi_write_inside_the_games_mods_folder() {
+    fn hookshot_longshot_and_nx2navi_write_inside_the_games_mods_folder() {
         let d: PB = tmp("flat");
         let g: PB = game(&d);
         let m: PB = g.join("mods");
-        fs::create_dir_all(&m).unwrap();
         let s: String = seed_text();
-        for host in ["hookshot", "nx2navi"] {
+        assert!(!m.exists());
+        assert!(plan(&req(&s, &g, &m, "randomizer-seed").with("host", "longshot".into())).is_ok());
+        assert!(m.is_dir());
+        assert!(plan(&req(&s, &g, &m, "x").with("host", "wii".into())).is_err());
+        for host in ["hookshot", "longshot", "nx2navi"] {
             let body: Json = req(&s, &g, &m, "randomizer-seed").with("host", host.into());
             let p: Plan = plan(&body).unwrap();
             assert!(p.target.ends_with("randomizer-seed"), "{}", p.target.display());
@@ -218,6 +248,24 @@ mod tests {
             assert_eq!(p.host.id(), host);
         }
         assert!(plan(&req(&s, &g, &m, "x")).is_err());
+        let _ = fs::remove_dir_all(&d);
+    }
+
+    #[test]
+    fn the_music_options_are_parsed_and_checked() {
+        let d: PB = tmp("music");
+        let g: PB = game(&d);
+        let m: PB = d.join("mods");
+        fs::create_dir_all(&m).unwrap();
+        let s: String = seed_text();
+        let base = || req(&s, &g, &m, "x");
+        assert_eq!(plan(&base()).unwrap().cos.music, Music::Off);
+        assert!(!plan(&base()).unwrap().cos.any());
+        let p: Plan = plan(&base().with("music", "grouped".into()).with("cosmetic_seed", " tune ".into())).unwrap();
+        assert_eq!(p.cos.music, Music::Grouped);
+        assert_eq!(p.cos.seed, "tune");
+        assert!(plan(&base().with("music", "loud".into())).is_err());
+        assert!(plan(&base().with("cosmetic_seed", "x".repeat(65).into())).is_err());
         let _ = fs::remove_dir_all(&d);
     }
 }

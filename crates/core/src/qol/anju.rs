@@ -12,7 +12,7 @@ pub const INPUT: &str = "Int_A";
 pub const OLD: i32 = 7;
 pub const NEW: i32 = 1;
 
-pub const NOTE: &str = "Anju needs one cucco in the pen instead of seven. The remaining six still run loose and the texts still say seven. Experimental and untested in the game.";
+pub const NOTE: &str = "Anju needs one cucco in the pen instead of seven. The remaining six still run loose and the texts still say seven.";
 
 fn hits(a: &Ainb) -> Vec<(usize, usize)> {
     let mut out: Vec<(usize, usize)> = Vec::new();

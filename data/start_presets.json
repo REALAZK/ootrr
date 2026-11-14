@@ -8,7 +8,7 @@
       "edits": [
         {"kind": "bool", "name": "Npc_Hylia_Soldier_003_GateOpen", "value": true}
       ],
-      "note": "The Kakariko gate to Death Mountain starts open. The guard flag it reads also opens the Happy Mask Shop and changes some Market and Kakariko talk. The flag's new game value is set in the flag list, experimental and untested in the game."
+      "note": "The Kakariko gate to Death Mountain starts open. The guard flag it reads also opens the Happy Mask Shop and changes some Market and Kakariko talk. The flag's new game value is set in the flag list."
     },
     {
       "setting": "zora_fountain",
@@ -16,7 +16,7 @@
       "edits": [
         {"kind": "enum", "name": "Step_Get_StoneOfWater", "value": "Step07"}
       ],
-      "note": "The Zora quest starts at the step King Zora reaches after reading Ruto's Letter (Get_StoneOfWater Step07). Impa's hint about the Zoras in the castle garden no longer appears and some Zora talk may assume the letter was read. The new game value is set in the flag list, experimental and untested in the game."
+      "note": "The Zora quest starts at the step King Zora reaches after reading Ruto's Letter (Get_StoneOfWater Step07). Impa's hint about the Zoras in the castle garden no longer appears and some Zora talk may assume the letter was read. The new game value is set in the flag list."
     },
     {
       "setting": "jabu_open",
@@ -25,7 +25,7 @@
         {"kind": "bool", "name": "GaveFishToJabJab", "value": true},
         {"kind": "bool", "name": "JabJabOpenedMouth", "value": true}
       ],
-      "note": "Jabu Jabu starts as if he had been fed a fish once, so his mouth opens when you walk up and the mouth entrance works. The new game values are set in the flag list, experimental and untested in the game."
+      "note": "Jabu Jabu starts as if he had been fed a fish once, so his mouth opens when you walk up and the mouth entrance works. The new game values are set in the flag list."
     },
     {
       "setting": "time_always_passes",
@@ -34,7 +34,7 @@
         {"kind": "bool", "name": "HyruleField_ArriveEntrance", "value": true},
         {"kind": "bool", "name": "HavePlayedEvent.Dm_HrlField_0020", "value": true}
       ],
-      "note": "The world clock runs from the start. The game normally holds the clock at 6:00 until Kaepora's first Hyrule Field talk and stops it at 15:00 until Impa's send off, and both flags it reads are set at new game. Kaepora, the Zelda meeting and the send off still play. Experimental and untested in the game."
+      "note": "The world clock runs from the start. The game normally holds the clock at 6:00 until Kaepora's first Hyrule Field talk and stops it at 15:00 until Impa's send off, and both flags it reads are set at new game. Kaepora, the Zelda meeting and the send off still play."
     },
     {
       "setting": "skip_epona_race",

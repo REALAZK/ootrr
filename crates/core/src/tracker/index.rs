@@ -172,6 +172,9 @@ fn spots(rf: &mut Romfs, ts: &[Target]) -> Res<Found> {
         if let Some(h) = t.hash() {
             want_h.entry(sc.clone()).or_default().insert(h);
         }
+        if let Some(h) = t.twin {
+            want_h.entry(sc.clone()).or_default().insert(h);
+        }
         if let Some(g) = t.keeper() {
             want_g.entry(sc).or_default().insert(g.to_string());
         }
@@ -368,6 +371,13 @@ pub fn build(root: &P) -> Res<Index> {
             _ => None,
         };
         let mut sp: Spots = found.cloned().unwrap_or_default();
+        if let Some(extra) = t.twin.and_then(|h| by_h.get(&(sc.clone(), h))) {
+            for x in extra {
+                if !sp.iter().any(|y| y.0 == x.0) {
+                    sp.push(x.clone());
+                }
+            }
+        }
         if let Some(pm) = &t.map {
             sp.sort_by_key(|x| x.0 != *pm);
         }
