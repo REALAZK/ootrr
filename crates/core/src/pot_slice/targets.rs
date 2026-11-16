@@ -149,6 +149,22 @@ mod tests {
     }
 
     #[test]
+    fn the_falling_token_serves_every_container_kind() {
+        let d: Data = Data::load().unwrap();
+        let mut seen: Vec<Kind> = Vec::new();
+        for k in [Kind::Pot, Kind::Crate, Kind::Flying, Kind::Hive, Kind::Rock, Kind::Grass] {
+            let Some(n) = eligible(&d).into_iter().find(|n| d.pots.kind_of(n) == Some(k)) else {
+                continue;
+            };
+            assert_eq!(actor_of(&d, &n, "Gold Skulltula Token", &BM::new()).unwrap(), ("Obj_Token_Gold_Fall".to_string(), true), "{n}");
+            let t: Vec<Give> = targets(&d, &seed(&[(&n, "Gold Skulltula Token")])).unwrap();
+            assert!(!t.is_empty() && t.iter().all(|g| g.kit && g.kind == k && g.actor == "Obj_Token_Gold_Fall"), "{n} {t:?}");
+            seen.push(k);
+        }
+        assert!(seen.len() >= 5, "{seen:?}");
+    }
+
+    #[test]
     fn chest_actor_pools_follow_the_items_that_moved_through_pots() {
         let d: Data = Data::load().unwrap();
         let n: String = eligible(&d).into_iter().find(|n| d.vanilla_of(n) == Some("Recovery Heart")).unwrap();
