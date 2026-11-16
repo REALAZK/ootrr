@@ -220,7 +220,7 @@ mod tests {
         let n: usize = all.iter().filter(|e| e.status == Status::Built).count();
         assert!(n >= 50, "{n}");
         let goron: &Entry = all.iter().find(|e| e.item == "Item_Gauntlet_Goron").unwrap();
-        assert_eq!(goron.flag.as_deref(), Some("in_game_first"));
+        assert_eq!(goron.flag, None);
         assert_eq!(goron.identity.as_deref(), Some("Item_Gauntlet_Goron"));
     }
 

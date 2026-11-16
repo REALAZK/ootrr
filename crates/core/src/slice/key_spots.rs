@@ -254,7 +254,7 @@ mod tests {
         assert!(bow.spec().unwrap().1.ammo);
         assert!(pick("Item_Range_SlingShot").unwrap().spec().unwrap().1.ammo);
         assert_eq!(pick("Item_Bottle_Letter").unwrap().pack, "Obj_Bottle_LetterLand");
-        assert!(pick("Item_Gauntlet_Goron").is_none());
+        assert_eq!(pick("Item_Gauntlet_Goron").unwrap().pack, "Obj_Gauntlet_Goron");
         assert!(pick("Item_NutBag_Medium").is_none());
         assert!(pick("Item_NutBag_Large").is_some());
         assert!(pick("Item_Bombchu").is_none());
@@ -308,7 +308,8 @@ mod tests {
         assert!(!placeable(&d, "Rutos Letter", Spot::Skull));
         assert!(placeable(&d, "Rutos Letter", Spot::Free));
         assert!(placeable(&d, "Progressive Hookshot", Spot::Skull));
-        assert!(!placeable(&d, "Progressive Strength Upgrade", Spot::Free));
+        assert!(placeable(&d, "Progressive Strength Upgrade", Spot::Free));
+        assert_eq!(contents(&d, "Progressive Strength Upgrade"), vec!["Item_Gauntlet_Goron".to_string(), "Item_Gauntlet_Silver".to_string(), "Item_Gauntlet_Gold".to_string()]);
         assert!(!placeable(&d, "Ocarina", Spot::Free));
         assert!(!placeable(&d, "Milk", Spot::Free));
         assert!(!placeable(&d, "Small Key (Forest Temple)", Spot::Free));

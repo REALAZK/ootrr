@@ -1154,8 +1154,8 @@ mod tests {
             (with(&[("shuffle_rewards", "off"), ("shuffle_chests", "overworld")]), "OOTRR1-BAAQCQ5V", "pin b", "a131002f74c6dd72eb9e521304f3cb01205103b640d91df77e6ddf6e760fd180"),
             (on.clone(), "OOTRR1-EYAQD32I", "pin a", "8a31bac1c7d8577115cda932cd4ce7464dd1f19e0f78040b258cc50a4a17d538"),
             (on.clone(), "OOTRR1-EYAQD32I", "pin b", "7b54ab16a0952f47b01e31b3e86fa2d05b167624c0b812aeacab4cffb68d4505"),
-            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "b5a6008f8acd78caa0fa34c6f9f1ddd97e92463cf86c5a1e952e4b37930c487f"),
-            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "c8280556c99407d2d414790cfae4a995e52fdf422def2e36fdb11f6510409953"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin a", "21a00e26f32f68a42802395a8e8bf6dd49a35d0b4ca433bc0692f525306dd1dd"),
+            (pots.clone(), "OOTRR1-BEAQGCQBAMTACAK2JA", "pin b", "2f417f1f964aa40190065d9539dd28755b3b58b4419de552d22606af37fc393d"),
         ];
         for (mut s, old, seed, sum) in cases {
             s.set(crate::open_world::TIME, Value::Bool(false)).unwrap();
@@ -1194,8 +1194,8 @@ mod tests {
         let cases: [(Settings, &str, &str); 4] = [
             (hives.clone(), "pin a", "c265674ebb7800804ad0beb8f252a94665b2ccc87bc035b452cacd5ee744a24a"),
             (hives.clone(), "pin b", "e3765a1397d0a53d74edf1e799aab059f66a424664c5f9681f96e6c61d0a427f"),
-            (both.clone(), "pin a", "c3ea19687f6b71b684792d0cb4b54620153e842f909833544b343d607d1e4f15"),
-            (both.clone(), "pin b", "7bec77eda16b5d1a10c913bee041229c0cf83a5c2f6c9bcd338b121a2639113b"),
+            (both.clone(), "pin a", "218e8002d4ec1a626f0679d49f7e8b95583ea469e8418532689a14623268351d"),
+            (both.clone(), "pin b", "ef2a4a3029250d4eaeaf16d40b1267d55188694e9d535e44687fd8b7b278ae1a"),
         ];
         for (s, seed, sum) in cases {
             let g: Generated = generate_data(&d, &s, seed, &GenOpts::default()).unwrap();

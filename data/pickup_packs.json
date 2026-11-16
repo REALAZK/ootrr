@@ -461,9 +461,8 @@
       "status": "built",
       "tier": "Strength 1 of 3",
       "identity": "Item_Gauntlet_Goron",
-      "notes": "The pouch file names the item actor, as the shipped item does. The save flags exist only under Armor_Child_Gauntlet_Goron. In game check needed. 41 files, 36540 bytes. Wave 2 merge: kept flagged. The identity field holds the PouchActor that is written. The save names are under Armor_Child_Gauntlet_Goron, so this pack needs an in game test before any seed may place it.",
-      "identity_note": "PouchActor Item_Gauntlet_Goron, ActorInfo ActorName Armor_Child_Gauntlet_Goron",
-      "flag": "in_game_first"
+      "notes": "The pouch file names the item actor, as the shipped item does. The save flags exist only under Armor_Child_Gauntlet_Goron. 41 files, 36540 bytes. Experimental: the flag is lifted so seeds may place it, the in game check is on the tester card.",
+      "identity_note": "PouchActor Item_Gauntlet_Goron, ActorInfo ActorName Armor_Child_Gauntlet_Goron"
     },
     {
       "group": "D",

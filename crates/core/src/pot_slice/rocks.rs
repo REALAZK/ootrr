@@ -276,7 +276,7 @@ mod tests {
             assert!(ok("Gold Skulltula Token", loc), "{loc}");
             assert!(ok("Piece of Heart", loc), "{loc}");
             assert!(ok("Megaton Hammer", loc), "{loc}");
-            assert!(!ok("Progressive Strength Upgrade", loc), "{loc}");
+            assert!(ok("Progressive Strength Upgrade", loc), "{loc}");
             assert!(!ok("Small Key (Forest Temple)", loc), "{loc}");
         }
     }
