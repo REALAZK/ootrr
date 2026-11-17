@@ -20,6 +20,7 @@ pub const BOSS_FLAG: &str = "IsBossBattle";
 pub const APPEAR_FLAG: &str = "GossipStone_FairySpiritAppearOk";
 pub const GENERATOR: &str = "GossipStone_FairyGenerator";
 pub const NEVER: u32 = 2;
+pub const CLEAR: u32 = 1;
 
 pub const DATA: &str = "GameDataActor";
 pub const SOUND: &str = "SoundSystemActor";
@@ -155,12 +156,12 @@ pub fn no_bottles(raw: &[u8], name: &str) -> Res<Vec<u8>> {
         let quiet: u16 = push(
             f,
             format!("{BOTTLE_MARK}Music{i}"),
-            Kind::Switch { actor: sa, query: sq, cases: vec![Case { val: 0, ev: main }], params: cont(vec![("BgmName", Val::Str(BATTLE_BGM.to_string()))]) },
+            Kind::Switch { actor: sa, query: sq, cases: vec![Case { val: CLEAR, ev: main }], params: cont(vec![("BgmName", Val::Str(BATTLE_BGM.to_string()))]) },
         )?;
         let calm: u16 = push(
             f,
             format!("{BOTTLE_MARK}Boss{i}"),
-            Kind::Switch { actor: ba, query: bq, cases: vec![Case { val: 0, ev: quiet }], params: cont(vec![("Index", Val::Int(-1)), ("GameDataName", Val::Str(BOSS_FLAG.to_string()))]) },
+            Kind::Switch { actor: ba, query: bq, cases: vec![Case { val: CLEAR, ev: quiet }], params: cont(vec![("Index", Val::Int(-1)), ("GameDataName", Val::Str(BOSS_FLAG.to_string()))]) },
         )?;
         f.entries[i].main = calm;
     }
@@ -286,10 +287,10 @@ mod tests {
         for (i, e) in f.entries.iter().enumerate() {
             let Kind::Switch { cases, params, .. } = &f.events[e.main as usize].kind else { panic!() };
             assert_eq!(params.as_ref().unwrap().get("GameDataName"), Some(&Val::Str(BOSS_FLAG.into())));
-            assert_eq!(cases.len(), 1);
+            assert_eq!((cases.len(), cases[0].val), (1, CLEAR));
             let Kind::Switch { cases, params, .. } = &f.events[cases[0].ev as usize].kind else { panic!() };
             assert_eq!(params.as_ref().unwrap().get("BgmName"), Some(&Val::Str(BATTLE_BGM.into())));
-            assert_eq!(cases, &vec![Case { val: 0, ev: i as u16 }]);
+            assert_eq!(cases, &vec![Case { val: CLEAR, ev: i as u16 }]);
         }
         assert!(no_bottles(&out, "Dm_SY_OutBottle").is_err());
         assert!(no_bottles(&raw, "Other").is_err());
