@@ -49,6 +49,12 @@ fn setting_json(s: &Setting) -> Json {
         if let Some(b) = &s.max_by {
             o.put("max_by", b.as_str().into());
         }
+        if s.step != 1 {
+            o.put("step", s.step.into());
+        }
+        if s.times > 0 {
+            o.put("times", s.times.into());
+        }
     }
     if s.kind == Kind::List {
         o.put("max_items", Json::Int(s.max_items as i64));

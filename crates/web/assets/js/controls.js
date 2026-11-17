@@ -31,12 +31,16 @@ export function marked(text, terms) {
   return String(text).split(re).map((part, i) => (i % 2 ? h("mark", null, part) : part));
 }
 
+function shown(s, v) {
+  return s.times ? `${Number(v) / s.times}x` : String(v);
+}
+
 function tip_content(s, vals) {
   return () => {
     const kids = [h("div", { class: "tiptext" }, s.tip)];
     const cs = (s.choices || []).filter((c) => c.tip);
     if (s.kind === "choice" && cs.length) kids.push(h("dl", null, cs.map((c) => [h("dt", null, c.label), h("dd", null, c.tip)])));
-    if (s.kind === "number") kids.push(h("dl", null, h("dd", null, `From ${s.min} to ${max_of(s, vals())}. Default ${s.default}.`)));
+    if (s.kind === "number") kids.push(h("dl", null, h("dd", null, `From ${shown(s, s.min)} to ${shown(s, max_of(s, vals()))}. Default ${shown(s, s.default)}.`)));
     return kids;
   };
 }
@@ -71,23 +75,26 @@ function choice(s, ctx, terms) {
 
 function number(s, ctx, terms) {
   const val = h("span", { class: "val" });
-  const range = h("input", { type: "range", id: `c_${s.id}`, min: s.min, max: s.max, step: "1" });
-  range.addEventListener("input", () => (val.textContent = range.value));
+  const step = s.step || 1;
+  const range = h("input", { type: "range", id: `c_${s.id}`, min: s.min, max: s.max, step: String(step) });
+  range.addEventListener("input", () => (val.textContent = shown(s, range.value)));
   range.addEventListener("change", () => ctx.set(s.id, Number.parseInt(range.value, 10)));
   const less = h("button", { type: "button", class: "btn", "aria-label": `Less ${s.label}` }, "−");
   const more = h("button", { type: "button", class: "btn", "aria-label": `More ${s.label}` }, "+");
   let now = s.default;
-  less.onclick = () => ctx.set(s.id, now - 1);
-  more.onclick = () => ctx.set(s.id, now + 1);
+  let top = s.max;
+  less.onclick = () => ctx.set(s.id, Math.max(s.min, now - step));
+  more.onclick = () => ctx.set(s.id, Math.min(top, now + step));
   return {
     label: h("label", { for: `c_${s.id}` }, marked(s.label, terms), ": ", val),
     body: h("div", { class: "sl" }, less, range, more),
     sync(v, on, vals) {
       const m = max_of(s, vals);
       now = v;
+      top = m;
       range.max = m;
       range.value = v;
-      val.textContent = String(v);
+      val.textContent = shown(s, v);
       range.disabled = !on;
       less.disabled = !on || v <= s.min;
       more.disabled = !on || v >= m;

@@ -144,6 +144,8 @@ pub struct Setting {
     pub min: i64,
     pub max: i64,
     pub max_by: Option<String>,
+    pub step: i64,
+    pub times: i64,
     pub max_items: usize,
     pub deps: Vec<Dep>,
     pub disabled: Option<Value>,
@@ -165,6 +167,8 @@ impl Setting {
             min: 0,
             max: 0,
             max_by: None,
+            step: 1,
+            times: 0,
             max_items: 0,
             deps: Vec::new(),
             disabled: None,
@@ -221,6 +225,12 @@ impl Setting {
 
     pub fn max_by(mut self, id: &str) -> Setting {
         self.max_by = Some(id.to_string());
+        self
+    }
+
+    pub fn multiplier(mut self, step: i64, times: i64) -> Setting {
+        self.step = step;
+        self.times = times;
         self
     }
 

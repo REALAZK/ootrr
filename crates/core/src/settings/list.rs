@@ -190,12 +190,15 @@ fn starting_songs() -> Setting {
 fn difficulty() -> Vec<Setting> {
     use crate::difficulty as d;
     vec![
-        Setting::number(d::HEALTH_NUM, d::HEALTH, "difficulty", "Enemy health (%)", d::NORMAL, d::STAT_RANGE.0, d::STAT_RANGE.1)
-            .tip("How much health enemies and bosses have, as a percentage of normal: 50 is half (0.5x), 100 is unchanged and 500 is five times (5x). Health is rounded and never drops below one hit. Enemies that are beaten by a scripted hit, such as Deku Scrubs, are unchanged. Experimental, untested in the game."),
-        Setting::number(d::DAMAGE_NUM, d::DAMAGE, "difficulty", "Enemy damage (%)", d::NORMAL, d::STAT_RANGE.0, d::STAT_RANGE.1)
-            .tip("How hard enemy attacks and enemy projectiles hit, as a percentage of normal: 50 is half (0.5x), 100 is unchanged and 500 is five times (5x). Traps, lava and falls are unchanged. Experimental, untested in the game."),
-        Setting::number(d::SPEED_NUM, d::SPEED, "difficulty", "Enemy speed (%)", d::NORMAL, d::SPEED_RANGE.0, d::SPEED_RANGE.1)
-            .tip("How fast enemies move and how often they attack, as a percentage of normal: 75 is three quarters (0.75x), 100 is unchanged and 200 is twice as fast (2x). Enemies that only move through their animations, such as Octoroks and Skulltulas, keep their pace. Experimental, untested in the game."),
+        Setting::number(d::HEALTH_NUM, d::HEALTH, "difficulty", "Enemy health", d::NORMAL, d::STAT_RANGE.0, d::STAT_RANGE.1)
+            .multiplier(d::STAT_STEP, d::NORMAL)
+            .tip("How much health enemies and bosses have, from half (0.5x) to five times (5x) the usual amount. Health is rounded and never drops below one hit. Enemies that are beaten by a scripted hit, such as Deku Scrubs, are unchanged. The settings string stores this as a percentage. Experimental, untested in the game."),
+        Setting::number(d::DAMAGE_NUM, d::DAMAGE, "difficulty", "Enemy damage", d::NORMAL, d::STAT_RANGE.0, d::STAT_RANGE.1)
+            .multiplier(d::STAT_STEP, d::NORMAL)
+            .tip("How hard enemy attacks and enemy projectiles hit, from half (0.5x) to five times (5x) the usual damage. Traps, lava and falls are unchanged. The settings string stores this as a percentage. Experimental, untested in the game."),
+        Setting::number(d::SPEED_NUM, d::SPEED, "difficulty", "Enemy speed", d::NORMAL, d::SPEED_RANGE.0, d::SPEED_RANGE.1)
+            .multiplier(d::SPEED_STEP, d::NORMAL)
+            .tip("How fast enemies move and how often they attack, from three quarters (0.75x) to twice (2x) the usual speed. Enemies that only move through their animations, such as Octoroks and Skulltulas, keep their pace. The settings string stores this as a percentage. Experimental, untested in the game."),
         Setting::toggle(d::NO_HEARTS_NUM, d::NO_HEARTS, "difficulty", "No heart drops", false)
             .tip("Enemies, pots, grass and other random drops never give recovery hearts. Hearts that are placed as shuffled items are still there. Experimental, untested in the game."),
         Setting::toggle(d::NO_FAIRIES_NUM, d::NO_FAIRIES, "difficulty", "No gossip fairies", false)

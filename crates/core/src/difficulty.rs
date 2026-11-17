@@ -34,6 +34,8 @@ pub const NO_BOTTLES_NUM: u16 = 117;
 pub const NORMAL: i64 = 100;
 pub const STAT_RANGE: (i64, i64) = (50, 500);
 pub const SPEED_RANGE: (i64, i64) = (75, 200);
+pub const STAT_STEP: i64 = 25;
+pub const SPEED_STEP: i64 = 5;
 pub const ACTOR_PACKS: &str = "Pack/Actor";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
