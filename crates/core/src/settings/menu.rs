@@ -676,6 +676,16 @@ pub const MENU: &[Page] = &[
         sections: &[sec("Time of day", &["time_always_passes", "early_beds"]), sec("Link and Navi", &["navi_return", "bunny_hood"])],
     },
     Page { id: "hints", label: "Hints", heading: GAMEPLAY, sections: &[sec("Hints", &["gossip_hints", "chests_match_contents", "misc_hints", "scrub_hint_text"])] },
+    Page {
+        id: "difficulty",
+        label: "Difficulty",
+        heading: GAMEPLAY,
+        sections: &[
+            sec("Enemies", &["enemy_health", "enemy_damage", "enemy_speed"]),
+            sec("Drops and healing", &["no_heart_drops", "no_ammo_drops", "no_gossip_fairies", "no_bottles_in_combat"]),
+            sec("Game over", &["lose_heart_on_death"]),
+        ],
+    },
 ];
 
 pub fn problems(sch: &Schema) -> Vec<String> {

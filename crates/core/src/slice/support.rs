@@ -93,6 +93,7 @@ pub struct Plan {
     pub treasure: bool,
     pub kit: crate::start_items::Kit,
     pub open: crate::open_world::Opts,
+    pub difficulty: crate::difficulty::Opts,
     pub npc: crate::npc_hints::Opts,
     /// crate::story_skip: Saria's gift, the child Temple of Time and the first sword draw.
     /// Always on; the field stays so the parts can be told apart in the build.
@@ -464,6 +465,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     let npc: crate::npc_hints::Opts = crate::npc_hints::read(s, kakariko, &mut bad);
     let treasure: bool = crate::slice::treasure::mode(s, &mut bad);
     let open: crate::open_world::Opts = crate::open_world::read(s, &mut bad);
+    let difficulty: crate::difficulty::Opts = crate::difficulty::read(s, &mut bad);
     let (bean_merchant, medigoron_merchant): (bool, bool) = crate::flow_extra::merchants(s, &mut bad);
     let medigoron: bool = rewards && medigoron_merchant;
     let bean_sale: bool = open.beans && bean_merchant;
@@ -557,6 +559,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
         notes.push(crate::slice::treasure::NOTE.to_string());
     }
     notes.extend(open.notes()?);
+    notes.extend(difficulty.notes());
     if bridge {
         notes.push(crate::deku_bridge::NOTE.to_string());
     }
@@ -564,7 +567,7 @@ pub fn plan(s: &Settings) -> Res<Plan> {
     if silver {
         notes.push(crate::slice::silver::NOTE.to_string());
     }
-    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, cows, cows_other, frog_songs, frog_bug, potion, scrubs, scrubs_b, hearts, world, songs, hints, fast, chest_sizes, owned, intro, start, forest, door, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure, kit, open, npc, shops, bridge, silver, medigoron, bean_sale, scrub_prices, scrub_hint, merchant_prices, story, endings })
+    Ok(Plan { chests, small, boss, map, ganon, rewards, dungeon_rewards, extra, trade, cows, cows_other, frog_songs, frog_bug, potion, scrubs, scrubs_b, hearts, world, songs, hints, fast, chest_sizes, owned, intro, start, forest, door, kakariko, gear, pouch, excluded, notes, drops, skulls, remake, chus, qol, treasure, kit, open, npc, shops, bridge, silver, medigoron, bean_sale, scrub_prices, scrub_hint, merchant_prices, story, endings, difficulty })
 }
 
 #[cfg(test)]

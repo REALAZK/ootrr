@@ -15,6 +15,7 @@ pub mod chest_size;
 pub mod chest_slot;
 pub mod cow_clone;
 pub mod deku_bridge;
+pub mod difficulty;
 pub mod door_fix;
 pub mod door_open;
 pub mod dungeon_credit;
