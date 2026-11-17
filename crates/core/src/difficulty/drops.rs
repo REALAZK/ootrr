@@ -10,7 +10,9 @@ pub const BOMB: u32 = 3237216321;
 pub const NUT: u32 = 2211636230;
 pub const STICK: u32 = 4192551701;
 pub const NEEDED: u32 = 2121460961;
-pub const AMMO: [u32; 4] = [SHOTS, BOMB, NUT, STICK];
+pub const ARROWS: u32 = 798871343;
+pub const CHUS: u32 = 2565786591;
+pub const AMMO: [u32; 6] = [SHOTS, BOMB, NUT, STICK, ARROWS, CHUS];
 
 pub const HEART_ACTORS: [&str; 1] = ["Obj_Heart"];
 pub const AMMO_ACTORS: [&str; 6] = ["Obj_Arrow", "Obj_Bomb", "Obj_DekuSeed", "Obj_DekuNut", "Obj_DekuStick", "Obj_Bombchu"];

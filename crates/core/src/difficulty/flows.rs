@@ -21,6 +21,16 @@ pub const APPEAR_FLAG: &str = "GossipStone_FairySpiritAppearOk";
 pub const GENERATOR: &str = "GossipStone_FairyGenerator";
 pub const NEVER: u32 = 2;
 pub const CLEAR: u32 = 1;
+pub const FIGHT: u32 = 0;
+pub const TRUE: u32 = 0x8000_0001;
+pub const FALSE: u32 = 0;
+pub const SAVE_FLAG: &str = "Sequence_RequestLastGameOverSave";
+pub const SET_BOOL: &str = "EventTriggerSetGameDataBool";
+pub const PLAYER: &str = "Player_Event";
+pub const START: &str = "EventTriggerPlayerEventStartWithDrawn";
+pub const PLAY_AS: &str = "EventPlayerPlayASForFlowchart";
+pub const PUT_AWAY: &str = "EventPlayerDrawnShieldAfterUseBottle";
+pub const REFUSE_AS: &str = "EvtTalkNo";
 
 pub const DATA: &str = "GameDataActor";
 pub const SOUND: &str = "SoundSystemActor";
@@ -131,10 +141,42 @@ pub fn lose_heart(raw: &[u8]) -> Res<Vec<u8>> {
         format!("{HEART_MARK}Check"),
         Kind::Switch { actor: qa, query: q, cases, params: cont(vec![("Index", Val::Int(-1)), ("GameDataName", Val::Str(MAX_LIFE.to_string())), ("Value", Val::Int(FLOOR_HEARTS * HEART))]) },
     )?;
+    let (ka, k): (u16, u16) = action(f, DATA, SET_BOOL)?;
+    let keep: u16 = push(
+        f,
+        format!("{HEART_MARK}Keep"),
+        Kind::Action { next: check, actor: ka, act: k, params: cont(vec![("Index", Val::Int(-1)), ("GameDataName", Val::Str(SAVE_FLAG.to_string())), ("Value", Val::Bool(TRUE))]) },
+    )?;
     if let Kind::Action { next, .. } = &mut f.events[*at].kind {
-        *next = check;
+        *next = keep;
     }
     finish(&b)
+}
+
+fn refusal(f: &mut Flow, i: usize) -> Res<u16> {
+    let (pa, away): (u16, u16) = action(f, PLAYER, PUT_AWAY)?;
+    let (_, shake): (u16, u16) = action(f, PLAYER, PLAY_AS)?;
+    let (_, start): (u16, u16) = action(f, PLAYER, START)?;
+    let last: u16 = push(f, format!("{BOTTLE_MARK}Away{i}"), Kind::Action { next: NONE, actor: pa, act: away, params: cont(vec![("IsWaitEnd", Val::Bool(TRUE)), ("IsImmediateDrawn", Val::Bool(FALSE))]) })?;
+    let no: u16 = push(
+        f,
+        format!("{BOTTLE_MARK}Shake{i}"),
+        Kind::Action {
+            next: last,
+            actor: pa,
+            act: shake,
+            params: cont(vec![
+                ("IsWaitEnd", Val::Bool(TRUE)),
+                ("IsAllSlot", Val::Bool(FALSE)),
+                ("ForceFadeFrame", Val::Int(-1)),
+                ("KeepOneTimeAnm", Val::Bool(FALSE)),
+                ("ASCommand", Val::Str(REFUSE_AS.to_string())),
+                ("UseAnmDriven", Val::Bool(FALSE)),
+                ("ClothWarpMode", Val::Int(0)),
+            ]),
+        },
+    )?;
+    push(f, format!("{BOTTLE_MARK}Start{i}"), Kind::Action { next: no, actor: pa, act: start, params: None })
 }
 
 pub fn no_bottles(raw: &[u8], name: &str) -> Res<Vec<u8>> {
@@ -153,15 +195,16 @@ pub fn no_bottles(raw: &[u8], name: &str) -> Res<Vec<u8>> {
         if main == NONE {
             continue;
         }
+        let deny: u16 = refusal(f, i)?;
         let quiet: u16 = push(
             f,
             format!("{BOTTLE_MARK}Music{i}"),
-            Kind::Switch { actor: sa, query: sq, cases: vec![Case { val: CLEAR, ev: main }], params: cont(vec![("BgmName", Val::Str(BATTLE_BGM.to_string()))]) },
+            Kind::Switch { actor: sa, query: sq, cases: vec![Case { val: FIGHT, ev: deny }, Case { val: CLEAR, ev: main }], params: cont(vec![("BgmName", Val::Str(BATTLE_BGM.to_string()))]) },
         )?;
         let calm: u16 = push(
             f,
             format!("{BOTTLE_MARK}Boss{i}"),
-            Kind::Switch { actor: ba, query: bq, cases: vec![Case { val: CLEAR, ev: quiet }], params: cont(vec![("Index", Val::Int(-1)), ("GameDataName", Val::Str(BOSS_FLAG.to_string()))]) },
+            Kind::Switch { actor: ba, query: bq, cases: vec![Case { val: FIGHT, ev: deny }, Case { val: CLEAR, ev: quiet }], params: cont(vec![("Index", Val::Int(-1)), ("GameDataName", Val::Str(BOSS_FLAG.to_string()))]) },
         )?;
         f.entries[i].main = calm;
     }
@@ -259,9 +302,14 @@ mod tests {
         let out: Vec<u8> = lose_heart(&raw).unwrap();
         let b: Bf = Bf::parse(&out).unwrap();
         let f: &Flow = &b.flows[0];
-        assert_eq!(f.events.len(), 5);
+        assert_eq!(f.events.len(), 6);
         let Kind::Action { next, .. } = &f.events[1].kind else { panic!() };
-        assert_eq!(*next, 4);
+        assert_eq!(*next, 5);
+        let Kind::Action { next, params, actor, act } = &f.events[5].kind else { panic!() };
+        assert_eq!(*next, 4, "the game over save is asked for before the heart check");
+        assert_eq!(params.as_ref().unwrap().get("GameDataName"), Some(&Val::Str(SAVE_FLAG.into())));
+        assert_eq!(params.as_ref().unwrap().get("Value"), Some(&Val::Bool(TRUE)));
+        assert_eq!(f.actors[*actor as usize].actions[*act as usize], SET_BOOL);
         let Kind::Action { next, .. } = &f.events[0].kind else { panic!() };
         assert_eq!(*next, 2, "going back to the title screen costs nothing");
         let Kind::Switch { cases, params, actor, query } = &f.events[4].kind else { panic!() };
@@ -282,15 +330,26 @@ mod tests {
         let out: Vec<u8> = no_bottles(&raw, "Dm_SY_OutBottle").unwrap();
         let b: Bf = Bf::parse(&out).unwrap();
         let f: &Flow = &b.flows[0];
-        assert_eq!(f.events.len(), 6);
-        assert_eq!(f.actors.iter().map(|a| a.name.as_str()).collect::<Vec<_>>(), vec!["PouchSystemActor", DATA, SOUND]);
+        assert_eq!(f.events.len(), 12);
+        assert_eq!(f.actors.iter().map(|a| a.name.as_str()).collect::<Vec<_>>(), vec!["PouchSystemActor", DATA, SOUND, PLAYER]);
+        let name = |e: u16| -> String {
+            let Kind::Action { actor, act, .. } = &f.events[e as usize].kind else { panic!() };
+            f.actors[*actor as usize].actions[*act as usize].clone()
+        };
+        let next = |e: u16| -> u16 {
+            let Kind::Action { next, .. } = &f.events[e as usize].kind else { panic!() };
+            *next
+        };
         for (i, e) in f.entries.iter().enumerate() {
             let Kind::Switch { cases, params, .. } = &f.events[e.main as usize].kind else { panic!() };
             assert_eq!(params.as_ref().unwrap().get("GameDataName"), Some(&Val::Str(BOSS_FLAG.into())));
-            assert_eq!((cases.len(), cases[0].val), (1, CLEAR));
-            let Kind::Switch { cases, params, .. } = &f.events[cases[0].ev as usize].kind else { panic!() };
+            assert_eq!((cases[0].val, cases[1].val), (FIGHT, CLEAR));
+            let deny: u16 = cases[0].ev;
+            let Kind::Switch { cases, params, .. } = &f.events[cases[1].ev as usize].kind else { panic!() };
             assert_eq!(params.as_ref().unwrap().get("BgmName"), Some(&Val::Str(BATTLE_BGM.into())));
-            assert_eq!(cases, &vec![Case { val: CLEAR, ev: i as u16 }]);
+            assert_eq!(cases, &vec![Case { val: FIGHT, ev: deny }, Case { val: CLEAR, ev: i as u16 }]);
+            assert_eq!((name(deny), name(next(deny)), name(next(next(deny)))), (START.to_string(), PLAY_AS.to_string(), PUT_AWAY.to_string()));
+            assert_eq!(next(next(next(deny))), NONE, "a refused bottle still ends by putting the bottle away");
         }
         assert!(no_bottles(&out, "Dm_SY_OutBottle").is_err());
         assert!(no_bottles(&raw, "Other").is_err());

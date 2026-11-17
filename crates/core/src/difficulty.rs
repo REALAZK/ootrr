@@ -1,5 +1,6 @@
 pub mod drops;
 pub mod flows;
+pub mod lottery;
 pub mod stats;
 
 use std::fs;
@@ -86,7 +87,7 @@ impl Opts {
             out.push(format!("Enemies move {} times as fast and wait that much less between attacks. Enemies that only move through their animations keep their pace. Experimental, untested in the game.", times(self.speed)));
         }
         if self.no_hearts {
-            out.push("Enemies, pots, grass and other random drops never give recovery hearts. Experimental, untested in the game.".to_string());
+            out.push("Enemies, pots, grass and other random drops never give recovery hearts, also when your health is low. Where the game would hand out a heart because you need one, a green rupee drops. Experimental, untested in the game.".to_string());
         }
         if self.no_ammo {
             out.push("Enemies, pots, grass and other random drops never give arrows, seeds, bombs, Deku Nuts or Deku Sticks. Experimental, untested in the game.".to_string());
@@ -95,10 +96,10 @@ impl Opts {
             out.push("Playing a song to a gossip stone no longer calls a fairy that heals you. Experimental, untested in the game.".to_string());
         }
         if self.lose_heart {
-            out.push("Each game over that you continue from takes away one heart container, down to three hearts. A fairy in a bottle that revives you costs nothing. Experimental, untested in the game.".to_string());
+            out.push("Each game over that you continue from takes away one heart container, down to three hearts, and the game is saved as it stood when you fell, so the loss and everything you had collected stay. A fairy in a bottle that revives you costs nothing. Experimental, untested in the game.".to_string());
         }
         if self.no_bottles {
-            out.push("Drinking from a bottle or letting out its contents does nothing while the enemy battle music plays or during a boss battle. Experimental, untested in the game.".to_string());
+            out.push("While the enemy battle music plays or during a boss battle, Link shakes his head and puts the bottle away without drinking or letting out its contents. Experimental, untested in the game.".to_string());
         }
         out
     }
@@ -202,6 +203,15 @@ pub fn stage(rf: &mut Romfs, o: &Opts, have: Have) -> Res<Vec<Out>> {
             if let Some(x) = pack_out(rf, have, &f, o)? {
                 outs.push(x);
             }
+        }
+    }
+    if o.cut().any() {
+        let raw: Vec<u8> = match have(lottery::FILE) {
+            Some(b) => b,
+            None => rf.read(lottery::FILE)?,
+        };
+        if let Some(out) = lottery::edit(&raw, o.cut())? {
+            outs.push(Out { path: lottery::FILE.to_string(), old: raw.len(), new: out.len(), z: out });
         }
     }
     if o.no_fairies {
@@ -311,7 +321,7 @@ mod tests {
         let o: Opts = Opts { health: 200, damage: 150, speed: 150, no_hearts: true, no_fairies: true, no_ammo: true, lose_heart: true, no_bottles: true };
         let outs: Vec<Out> = stage(&mut rf, &o, &none).unwrap();
         let at = |p: &str| -> &Out { outs.iter().find(|x| x.path == p).unwrap_or_else(|| panic!("{p} was not staged")) };
-        for f in [flows::GOSSIP_FILE, flows::OVER_FILE, drops::FOLIAGE, "Pack/Actor/Enemy_Stalfos.pack.zs", "Pack/Actor/Enemy_Keese.pack.zs"] {
+        for f in [flows::GOSSIP_FILE, flows::OVER_FILE, drops::FOLIAGE, lottery::FILE, "Pack/Actor/Enemy_Stalfos.pack.zs", "Pack/Actor/Enemy_Keese.pack.zs"] {
             at(f);
         }
         for (f, _) in flows::BOTTLE_FLOWS {
