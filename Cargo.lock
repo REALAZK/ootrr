@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "ootrr"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "ootrr-core",
  "ootrr-mem",
@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "ootrr-core"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "ootrr-cosmetics",
  "ootrr-game",
@@ -22,7 +22,7 @@ dependencies = [
 
 [[package]]
 name = "ootrr-cosmetics"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "ootrr-game",
  "ruzstd",
@@ -30,32 +30,32 @@ dependencies = [
 
 [[package]]
 name = "ootrr-game"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "ruzstd",
 ]
 
 [[package]]
 name = "ootrr-logic"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "ootrr-game",
 ]
 
 [[package]]
 name = "ootrr-mem"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "ootrr-core",
 ]
 
 [[package]]
 name = "ootrr-os"
-version = "0.8.1"
+version = "0.8.2"
 
 [[package]]
 name = "ootrr-web"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "ootrr-core",
  "ootrr-game",
