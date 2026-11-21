@@ -71,3 +71,11 @@ See `<playtest folder>\spawn-combo\TESTS.md`. Turn the Longshot tool's own L + R
 - **Change.** The hold check now reads `TrigLSPush` and `TrigRSPush` (outputs 5 and 10 of `QueryControllerTrigMaskChecker` on the hold mask) instead of `TrigL` / `TrigR` (3 and 8). The press check is unchanged (`TrigDown` 2, `TrigUp` 11). The checker's outputs are named, so the bit is whatever the game maps to that name; the names come from the vanilla `GameSystemActor.event.root` checker, which the shape test copies.
 - **Tested.** Unit and game-file tests (`the_buttons_are_read_from_the_hold_mask_and_the_press_mask` now expects the two stick pushes). Not run in the game.
 - **How to test in the game.** Hold both sticks in, press D-pad Down: an enemy appears 3 m ahead. With both held, D-pad Up: same kind again. Stick clicks alone, or one stick and the D-pad, do nothing.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 25):** Spawn enemies with BOTH STICK CLICKS + D-pad (rc 15; confirmed by hand 19 Nov: "glorious". The old L + R never worked by hand: both open the item wheel) (setting 132, `enemy_spawn_combo`): Down spawns a random ordinary enemy in front of Link, Up spawns the same again
+- **State:** Fixed, scripted test passed
+- **What was seen in the game:** Opus fix (19 Nov, `feature/opus-fixes` 4efaaaf): every create used holder slot 0, so only the first press worked; now a slot counter. Bridge L+R+Down: 12 presses, 12 different enemies 3 m ahead (Up repeated the kind), the 13th and 14th nothing (cap 12). The user probably saw nothing because Longshot's own L+R+D-pad tool shortcut takes the D-pad rc13 (19 Nov, merged build, script): 6 combo presses gave 5 to 10 new enemies with the combo alone, with every other setting group on, and with all other settings on; could not reproduce the failure.
+- **Next step:** User: real pad with the Longshot shortcut off; check that a kill frees a slot fx-r1 (19 Nov, 91c3d0a, code only): combo is now both stick clicks (L3 + R3) + D-pad, user decision.

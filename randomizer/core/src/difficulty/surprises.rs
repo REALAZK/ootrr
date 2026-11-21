@@ -13,7 +13,7 @@ use crate::zs;
 
 pub const SALT: &str = "fake-pots";
 pub const ONE_IN: u64 = 10;
-pub const CHANCE: i32 = 2;
+pub const CHANCE: i32 = 6;
 pub const NAMED: u32 = 126134492;
 pub const POT_TABLE: &str = "DropTable_ResourceSupply_00";
 pub const FOLIAGE_TABLE: &str = "DropTable_Foliage_00";
@@ -47,7 +47,7 @@ pub const POTS: [(&str, &str); 8] = [
 pub const POT_KEYS: [&str; 8] = ["Dynamic", "Gyaml", "Hash", "IsPhysicsStable", "Phive", "Rotate", "SRTHash", "Translate"];
 pub const RESETTER: &str = "SupplyItemResetSystemActor";
 pub const GROUPS: [&str; 2] = ["FarDeleteGroups", "SimultaneousGroups"];
-pub const NOTE: &str = "Now and then, about one time in 25, cutting grass or breaking an ordinary pot lets out an enemy instead of the usual drop: a Poe or a small crawling hand from a pot, a Skulltula or a small hand from grass. About 1 in 10 plain pots are flying pots in disguise (never pots that hold a key, a fairy, an item or a set drop, nor any in the first room of a dungeon). Experimental, untested in the game.";
+pub const NOTE: &str = "Now and then, about one time in 8, cutting grass or breaking an ordinary pot lets out an enemy instead of the usual drop: a Poe or a small crawling hand from a pot, a Skulltula or a small hand from grass. About 1 in 10 plain pots are flying pots in disguise (never pots that hold a key, a fairy, an item or a set drop, nor any in the first room of a dungeon). Experimental, untested in the game.";
 
 pub fn chance() -> i32 {
     std::env::var(CHANCE_VAR).ok().and_then(|v| v.parse::<i32>().ok()).filter(|v| (1..=20).contains(v)).unwrap_or(CHANCE)
@@ -551,8 +551,8 @@ mod tests {
     }
 
     #[test]
-    fn the_surprise_chance_is_two_percent_by_default() {
-        assert_eq!(CHANCE, 2);
+    fn the_surprise_chance_is_six_percent_by_default() {
+        assert_eq!(CHANCE, 6);
     }
 
     fn game() -> Option<Romfs> {

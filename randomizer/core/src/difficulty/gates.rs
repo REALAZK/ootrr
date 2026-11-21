@@ -57,6 +57,13 @@ pub const WOODS_GUARD: &str = "Enemy_Wolfos";
 pub const SKELETON_GUARD: &str = "Enemy_Stalfos";
 pub const SCRUB_GUARD: &str = "Enemy_Scrub_Mad";
 pub const DODONGO_GUARD: &str = "Enemy_Dodongo";
+pub const POE_GUARD: &str = "Enemy_Poe";
+pub const LIKELIKE_GUARD: &str = "Enemy_LikeLike";
+pub const GIANT: f32 = 2.5;
+pub const LEEVER_GUARD: &str = "Enemy_Leever_Gate";
+pub const LEEVER_GIANT: &str = "Enemy_Leever_Gate_Giant";
+pub const KEESE_GUARD: &str = "Enemy_Keese";
+pub const DARKLINK_GUARD: &str = "Enemy_MiddleBoss_DarkLink";
 pub const BARRIER_HALF: f32 = 1.0;
 pub const INSET: f32 = 2.5 + BARRIER_HALF;
 pub const LEAST: f32 = 2.0;
@@ -77,6 +84,9 @@ pub struct Gate {
     pub sink: f32,
     pub radius: f32,
     pub new_kind: &'static str,
+    pub more_kind: &'static str,
+    pub loose: &'static [[f32; 3]],
+    pub scale: f32,
     pub closed_forest_only: bool,
 }
 
@@ -99,19 +109,30 @@ impl Shuffle {
     }
 }
 
-pub const BEYOND_DUNGEON_DOOR: [u8; 3] = [1, 2, 6];
-pub const GATES: [Gate; 11] = [
-    Gate { id: 1, name: "the passage out of the Sacred Forest Meadow's scrub lane", map: "SacredForestMeadow_Child", a: [-8.13, 114.46, -82.57], b: [-5.03, 114.47, -82.57], spot: [-6.4, 104.81, -53.4], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: SCRUB_GUARD, closed_forest_only: false },
-    Gate { id: 2, name: "the Death Mountain Trail below the Dodongo's Cavern path", map: "DeathMountainTrail_Child", a: [-52.85, 106.91, -2.46], b: [-47.86, 106.93, -0.56], spot: [-54.67, 105.8, 6.39], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: DODONGO_GUARD, closed_forest_only: false },
-    Gate { id: 3, name: "Zora's River before the Bean Seller", map: "ZoraRiver_Child", a: [-60.62, 100.11, -8.67], b: [-64.0, 99.85, -7.09], spot: [-64.05, 99.71, -14.09], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: ZORA_GUARD, closed_forest_only: false },
-    Gate { id: 4, name: "Zora's River, the second narrows", map: "ZoraRiver_Child", a: [-25.79, 107.46, -23.17], b: [-23.86, 107.72, -26.27], spot: [-18.84, 106.01, -18.5], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: ZORA_GUARD, closed_forest_only: false },
-    Gate { id: 5, name: "Zora's River, the upper narrows", map: "ZoraRiver_Child", a: [61.43, 108.87, -21.08], b: [60.85, 108.64, -14.65], spot: [34.73, 106.31, -24.81], more: &[[29.84, 106.68, -20.6]], also: &[], sink: 0.0, radius: RADIUS, new_kind: ZORA_GUARD, closed_forest_only: false },
-    Gate { id: 6, name: "the path from Kokiri Forest to the Deku Tree", map: "KokiriForest_Child", a: [45.09, 113.77, -26.27], b: [45.43, 112.83, -19.5], spot: [38.26, 113.25, -17.34], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: "", closed_forest_only: true },
-    Gate { id: 7, name: "the Lost Woods, east passage", map: "LostWood_Child", a: [28.81, 100.18, -50.21], b: [28.86, 100.23, -45.78], spot: [19.39, 99.67, -48.13], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: WOODS_GUARD, closed_forest_only: false },
-    Gate { id: 9, name: "the Lost Woods, both doors of the small room", map: "LostWood_Child", a: [-4.49, 100.3, 2.16], b: [-4.45, 100.19, -2.56], spot: [0.0, 99.87, -0.5], more: &[], also: &[([4.48, 100.26, -1.96], [4.52, 100.26, 2.08])], sink: 0.0, radius: RADIUS, new_kind: SKELETON_GUARD, closed_forest_only: false },
-    Gate { id: 11, name: "the ruined Market, south entrance", map: "Market_Adult", a: [0.65, 102.04, 52.21], b: [-4.51, 102.07, 52.27], spot: [-1.67, 100.07, 32.58], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: MARKET_GUARD, closed_forest_only: false },
-    Gate { id: 12, name: "Gerudo Valley, the way on to the fortress", map: "GerudoValley_Adult", a: [10.82, 98.0, 0.76], b: [11.23, 98.0, -6.52], spot: [21.14, 98.18, -3.23], more: &[[21.14, 98.18, -0.23]], also: &[], sink: 0.0, radius: RADIUS, new_kind: SKELETON_GUARD, closed_forest_only: false },
-    Gate { id: 13, name: "Hyrule Field, the way to Gerudo Valley", map: "HyruleField_Adult", a: [-251.35, 136.64, 206.06], b: [-246.42, 135.53, 187.44], spot: [-214.24, 129.62, 194.89], more: &[], also: &[], sink: 0.5, radius: RADIUS, new_kind: FIELD_GUARD, closed_forest_only: false },
+pub const BEYOND_DUNGEON_DOOR: [u8; 12] = [1, 2, 6, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+
+pub const GATES: [Gate; 21] = [
+    Gate { id: 1, name: "the passage out of the Sacred Forest Meadow's scrub lane", map: "SacredForestMeadow_Child", a: [-8.13, 114.46, -82.57], b: [-5.03, 114.47, -82.57], spot: [-6.4, 104.81, -53.4], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: SCRUB_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 2, name: "the Death Mountain Trail below the Dodongo's Cavern path", map: "DeathMountainTrail_Child", a: [-52.85, 106.91, -2.46], b: [-47.86, 106.93, -0.56], spot: [-54.67, 105.8, 6.39], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: DODONGO_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 3, name: "Zora's River before the Bean Seller", map: "ZoraRiver_Child", a: [-60.62, 100.11, -8.67], b: [-64.0, 99.85, -7.09], spot: [-64.05, 99.71, -14.09], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: ZORA_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 4, name: "Zora's River, the second narrows", map: "ZoraRiver_Child", a: [-25.79, 107.46, -23.17], b: [-23.86, 107.72, -26.27], spot: [-18.84, 106.01, -18.5], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: ZORA_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 5, name: "Zora's River, the upper narrows", map: "ZoraRiver_Child", a: [61.43, 108.87, -21.08], b: [60.85, 108.64, -14.65], spot: [34.73, 106.31, -24.81], more: &[[29.84, 106.68, -20.6]], also: &[], sink: 0.0, radius: RADIUS, new_kind: ZORA_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 6, name: "the path from Kokiri Forest to the Deku Tree", map: "KokiriForest_Child", a: [45.09, 113.77, -26.27], b: [45.43, 112.83, -19.5], spot: [38.26, 113.25, -17.34], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: "", more_kind: "", loose: &[], scale: 1.0, closed_forest_only: true },
+    Gate { id: 7, name: "the Lost Woods, east passage", map: "LostWood_Child", a: [28.81, 100.18, -50.21], b: [28.86, 100.23, -45.78], spot: [19.39, 99.67, -48.13], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: WOODS_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 9, name: "the Lost Woods, both doors of the small room", map: "LostWood_Child", a: [-4.49, 100.3, 2.16], b: [-4.45, 100.19, -2.56], spot: [0.0, 99.87, -0.5], more: &[], also: &[([4.48, 100.26, -1.96], [4.52, 100.26, 2.08])], sink: 0.0, radius: RADIUS, new_kind: SKELETON_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 11, name: "the ruined Market, south entrance", map: "Market_Adult", a: [0.65, 102.04, 52.21], b: [-4.51, 102.07, 52.27], spot: [-1.67, 100.07, 32.58], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: MARKET_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 12, name: "Gerudo Valley, the way on to the fortress", map: "GerudoValley_Adult", a: [10.82, 98.0, 0.76], b: [11.23, 98.0, -6.52], spot: [21.14, 98.18, -3.23], more: &[[21.14, 98.18, -0.23]], also: &[], sink: 0.0, radius: RADIUS, new_kind: SKELETON_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 13, name: "Hyrule Field, the way to Gerudo Valley", map: "HyruleField_Adult", a: [-251.35, 136.64, 206.06], b: [-246.42, 135.53, 187.44], spot: [-214.24, 129.62, 194.89], more: &[], also: &[], sink: 0.5, radius: RADIUS, new_kind: FIELD_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 14, name: "Death Mountain Crater, the west ledge by the Deku Scrub", map: "DeathMountainCrater_Adult", a: [-28.0, 119.35, 33.0], b: [-16.5, 119.4, 33.0], spot: [-21.5, 119.39, 36.5], more: &[], also: &[], sink: 0.0, radius: 5.0, new_kind: DODONGO_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 15, name: "Death Mountain Trail, the way up past the junction", map: "DeathMountainTrail_Child", a: [-16.99, 122.43, -29.2], b: [-12.0, 122.58, -29.2], spot: [-14.0, 123.61, -24.0], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: DODONGO_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 16, name: "Death Mountain Trail, the way up past the junction", map: "DeathMountainTrail_Adult", a: [-16.82, 122.28, -29.2], b: [-12.0, 122.54, -29.2], spot: [-14.0, 123.13, -24.0], more: &[[-12.5, 123.05, -26.3], [-16.5, 123.6, -20.5], [-17.5, 123.69, -17.0]], also: &[], sink: 0.0, radius: RADIUS, new_kind: DODONGO_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 17, name: "the Graveyard, the way to the Shadow Temple", map: "Graveyard_Child", a: [72.35, 108.56, 0.62], b: [72.35, 108.46, 4.34], spot: [67.6, 108.64, 2.5], more: &[[69.0, 108.62, 0.9], [69.0, 108.54, 4.3]], also: &[], sink: 0.0, radius: RADIUS, new_kind: POE_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 18, name: "the Graveyard, the way to the Shadow Temple", map: "Graveyard_Adult", a: [72.35, 108.56, 0.62], b: [72.35, 108.46, 4.34], spot: [67.6, 109.03, 2.5], more: &[[69.0, 109.27, 0.9], [69.0, 108.22, 4.3]], also: &[], sink: 0.0, radius: RADIUS, new_kind: POE_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 19, name: "Hyrule Field, the way down to Lake Hylia", map: "HyruleField_Child", a: [-104.13, 139.6, 371.34], b: [-61.78, 139.6, 401.59], spot: [-80.6, 141.11, 374.0], more: &[[-88.8, 141.48, 371.7], [-75.1, 140.86, 379.9]], also: &[], sink: 0.0, radius: RADIUS, new_kind: ZORA_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 20, name: "Lon Lon Ranch, the north gate", map: "HyruleField_Child", a: [-65.5, 150.0, 183.5], b: [-56.5, 150.0, 184.5], spot: [-60.5, 150.02, 168.0], more: &[[-64.0, 150.2, 166.0], [-57.0, 149.91, 166.0]], also: &[], sink: 0.0, radius: RADIUS, new_kind: SKELETON_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
+    Gate { id: 21, name: "Lake Hylia, the bridge by the laboratory", map: "HyruleField_Child", a: [-168.3, 137.6, 428.0], b: [-158.6, 137.3, 428.0], spot: [-161.0, 137.05, 419.5], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: LIKELIKE_GUARD, more_kind: "", loose: &[[-157.0, 139.0, 419.0], [-157.0, 139.0, 423.5], [-164.0, 139.5, 418.0], [-160.0, 140.5, 424.0]], scale: 1.0, closed_forest_only: false },
+    Gate { id: 22, name: "Lake Hylia, the bridge by the laboratory", map: "HyruleField_Adult", a: [-168.3, 137.6, 428.0], b: [-158.6, 137.3, 428.0], spot: [-161.0, 137.02, 419.5], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: LIKELIKE_GUARD, more_kind: "", loose: &[[-157.0, 139.0, 419.0], [-157.0, 139.0, 423.5], [-164.0, 139.5, 418.0], [-160.0, 140.5, 424.0]], scale: 1.0, closed_forest_only: false },
+    Gate { id: 23, name: "Ganon's Castle, the north exit of the first round room", map: "InsideGanonCastle", a: [-4.0, 110.3, 60.0], b: [4.0, 110.3, 60.0], spot: [0.0, 110.3, 76.0], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: DARKLINK_GUARD, more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false },
 ];
 
 pub fn dir_of(g: &Gate) -> &'static str {
@@ -374,10 +395,18 @@ pub fn resolve(ys: &Byml, yd: &mut Byml, raws: &[&[u8]], g: &Gate) -> Res<Option
             for (j, at) in spots.iter().enumerate() {
                 let s: String = if j == 0 { seed.clone() } else { format!("{seed} {j}") };
                 let h: u64 = fresh(raws, &s);
-                let n: Node = actor(kind, h, *at, euler(0.0, turn_from(g, *at)));
+                let k: &str = if j == 0 || g.more_kind.is_empty() { kind } else { g.more_kind };
+                let mut n: Node = actor(k, h, *at, euler(0.0, turn_from(g, *at)));
+                if j == 0 && g.scale != 1.0 {
+                    n.set("Scale", floats([g.scale; 3]));
+                }
                 add.push(n.clone());
                 guards.push(n);
                 modes.push(Mode::Trigger);
+            }
+            for (j, at) in g.loose.iter().enumerate() {
+                let h: u64 = fresh(raws, &format!("{seed} loose {j}"));
+                add.push(actor(KEESE_GUARD, h, *at, euler(0.0, turn_from(g, *at))));
             }
         }
     }
@@ -708,7 +737,7 @@ mod tests {
     use super::*;
     use crate::difficulty::encounters::RING;
 
-    const G: Gate = Gate { id: 9, name: "t", map: "T_Child", a: [0.0, 5.0, 0.0], b: [6.0, 6.0, 0.0], spot: [3.0, 5.0, 10.0], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: "Enemy_New", closed_forest_only: false };
+    const G: Gate = Gate { id: 9, name: "t", map: "T_Child", a: [0.0, 5.0, 0.0], b: [6.0, 6.0, 0.0], spot: [3.0, 5.0, 10.0], more: &[], also: &[], sink: 0.0, radius: RADIUS, new_kind: "Enemy_New", more_kind: "", loose: &[], scale: 1.0, closed_forest_only: false };
 
     fn foe(kind: &str, h: u64, at: [f32; 3], flag: bool) -> Node {
         let mut a: Node = actor(kind, h, at, [0.0; 3]);
@@ -755,7 +784,7 @@ mod tests {
             assert_eq!(pieces(g).len(), total);
             assert_eq!(count(g), total);
         }
-        assert_eq!(GATES.iter().map(count).collect::<Vec<usize>>(), vec![2, 3, 2, 2, 3, 3, 2, 4, 3, 3, 6]);
+        assert_eq!(GATES.iter().map(count).collect::<Vec<usize>>(), vec![2, 3, 2, 2, 3, 3, 2, 4, 3, 3, 6, 4, 2, 2, 2, 2, 14, 4, 4, 4, 3]);
     }
 
     #[test]
@@ -843,7 +872,8 @@ mod tests {
         assert!(GATES.iter().all(|g| active(g, false, false, Shuffle::Off)));
         assert!(GATES.iter().all(|g| !active(g, false, false, Shuffle::Wide)));
         let kept: Vec<u8> = GATES.iter().filter(|g| active(g, false, false, Shuffle::Dungeons)).map(|g| g.id).collect();
-        assert_eq!(kept, vec![3, 4, 5, 7, 9, 11, 12, 13]);
+        assert_eq!(kept, vec![3, 4, 5, 7, 9, 11, 12, 13, 23]);
+        assert!(GATES.iter().filter(|g| (14..23).contains(&g.id)).all(|g| active(g, false, false, Shuffle::Off) && !active(g, false, false, Shuffle::Dungeons)));
         let closed: Vec<u8> = GATES.iter().filter(|g| g.closed_forest_only).map(|g| g.id).collect();
         assert_eq!(closed, vec![6]);
         assert_eq!(GATES.iter().filter(|g| active(g, true, false, Shuffle::Off)).count(), GATES.len() - 1);
@@ -1181,6 +1211,9 @@ mod tests {
         let mut rf: Romfs = Romfs::open(&root).unwrap();
         assert!(rf.read("Pack/Actor/Obj_EnemyCounter_A_08.pack.zs").is_ok());
         assert!(rf.read(&format!("Pack/Actor/{ZORA_GUARD}.pack.zs")).is_ok());
+        for k in GATES.iter().flat_map(|g| [g.new_kind, g.more_kind]).filter(|k| !k.is_empty() && *k != LEEVER_GUARD && *k != LEEVER_GIANT) {
+            assert!(rf.read(&format!("Pack/Actor/{k}.pack.zs")).is_ok(), "{k}");
+        }
         let meadow: Byml = rf.read_byml(&file(&GATES[0], "Static")).unwrap();
         assert_eq!(actors(&meadow).iter().filter(|a| text(a, "Gyaml") == BARRIER).count(), 1);
     }
@@ -1210,5 +1243,213 @@ mod tests {
         let plan: Plan = place(&mut y, &[], &hand, &f).unwrap();
         assert_eq!(plan.hands.len(), 4);
         assert_eq!(y.root.get("SimultaneousGroups").unwrap().as_arr().unwrap().len(), 1 + count(&G) + 1);
+    }
+
+    #[test]
+    fn the_twentieth_of_november_gates_make_the_marked_guards_for_the_ages_asked() {
+        let want: [(u8, &str, &str, usize); 9] = [
+            (14, "DeathMountainCrater_Adult", DODONGO_GUARD, 1),
+            (15, "DeathMountainTrail_Child", DODONGO_GUARD, 1),
+            (16, "DeathMountainTrail_Adult", DODONGO_GUARD, 4),
+            (17, "Graveyard_Child", POE_GUARD, 3),
+            (18, "Graveyard_Adult", POE_GUARD, 3),
+            (19, "HyruleField_Child", ZORA_GUARD, 3),
+            (20, "HyruleField_Child", SKELETON_GUARD, 3),
+            (21, "HyruleField_Child", LIKELIKE_GUARD, 1),
+            (22, "HyruleField_Adult", LIKELIKE_GUARD, 1),
+        ];
+        let ys: Byml = map(Vec::new(), true);
+        let mut yd: Byml = map(Vec::new(), false);
+        for (id, m, kind, n) in want {
+            let g: &Gate = GATES.iter().find(|g| g.id == id).unwrap();
+            assert_eq!(g.map, m, "gate {id}");
+            assert!(!g.closed_forest_only && !HELD.contains(&id), "gate {id}");
+            let f: Found = resolve(&ys, &mut yd, &[], g).unwrap().unwrap();
+            assert_eq!(f.guards.len(), n, "gate {id}");
+            assert_eq!(text(&f.guards[0], "Gyaml"), kind, "gate {id}");
+            let rest: &str = if g.more_kind.is_empty() { kind } else { g.more_kind };
+            assert!(f.guards[1..].iter().all(|x| text(x, "Gyaml") == rest), "gate {id}");
+            assert!(f.modes.iter().all(|x| *x == Mode::Trigger), "gate {id}");
+            assert_eq!(f.add.len(), n + g.loose.len(), "gate {id}");
+            assert_eq!(g.loose.len(), if id >= 21 { 4 } else { 0 }, "gate {id}");
+            assert!(f.guards[0].get("Scale").is_none(), "gate {id}");
+            assert!(f.guards[1..].iter().all(|x| x.get("Scale").is_none()), "gate {id}");
+        }
+        assert!(GATES.iter().all(|g| g.scale == 1.0 && g.more_kind.is_empty()));
+        for (c, a) in [(15u8, 16u8), (17, 18), (21, 22)] {
+            let x: &Gate = GATES.iter().find(|g| g.id == c).unwrap();
+            let y: &Gate = GATES.iter().find(|g| g.id == a).unwrap();
+            assert!(x.map.ends_with("_Child") && y.map.ends_with("_Adult"));
+            assert!(dist(x.a, y.a) < 0.5 && dist(x.b, y.b) < 0.5 && dist(x.spot, y.spot) < 1.0, "gates {c} and {a}");
+            assert_eq!(x.name, y.name);
+        }
+    }
+
+    #[test]
+    fn the_ganon_castle_gate_puts_dark_link_in_the_first_round_room_and_the_lake_and_ranch_gates_use_their_new_kinds() {
+        let g: &Gate = GATES.iter().find(|g| g.id == 23).unwrap();
+        assert_eq!(g.map, "InsideGanonCastle");
+        assert_eq!(g.new_kind, DARKLINK_GUARD);
+        assert!(g.more.is_empty() && g.also.is_empty() && !g.closed_forest_only);
+        assert!(file(g, "Static").ends_with("InsideGanonCastle/InsideGanonCastle_Static.bcett.byml.zs"));
+        assert!(faces_guards(g));
+        assert!(clear(g, [area_box(g).0[0], area_box(g).0[1]], area_box(g).1));
+        let ys: Byml = map(Vec::new(), true);
+        let mut yd: Byml = map(Vec::new(), false);
+        let f: Found = resolve(&ys, &mut yd, &[], g).unwrap().unwrap();
+        assert_eq!(f.guards.len(), 1);
+        assert_eq!(text(&f.guards[0], "Gyaml"), "Enemy_MiddleBoss_DarkLink");
+        let ranch: &Gate = GATES.iter().find(|g| g.id == 20).unwrap();
+        assert_eq!((ranch.new_kind, ranch.more.len()), (SKELETON_GUARD, 2));
+        for id in [21u8, 22] {
+            let lake: &Gate = GATES.iter().find(|g| g.id == id).unwrap();
+            assert_eq!((lake.new_kind, lake.more.len(), lake.loose.len()), (LIKELIKE_GUARD, 0, 4));
+        }
+        assert_eq!(GATES.iter().find(|g| g.id == 9).unwrap().new_kind, SKELETON_GUARD);
+    }
+
+    #[test]
+    fn every_gate_guard_stands_on_the_navmesh_floor_with_clearance() {
+        let Some(root) = dump() else {
+            eprintln!("skipped: set OOTRR_ROMFS");
+            return;
+        };
+        let mut rf: Romfs = Romfs::open(&root).unwrap();
+        let mut bad: Vec<String> = Vec::new();
+        for g in GATES.iter().filter(|g| makes(g)) {
+            let Some(ground) = crate::difficulty::ground::load(&mut rf, g.map).unwrap() else {
+                continue;
+            };
+            for (j, p) in std::iter::once(g.spot).chain(g.more.iter().copied()).enumerate() {
+                let kind: &str = if j == 0 || g.more_kind.is_empty() { g.new_kind } else { g.more_kind };
+                let flies: bool = kind == KEESE_GUARD || kind == POE_GUARD;
+                let (up, down): (f32, f32) = if flies { (1.0, 10.0) } else { (0.6, 0.6) };
+                match ground.floor_near(p[0], p[1], p[2], up, down) {
+                    None => bad.push(format!("gate {} {:?} {kind}: no navmesh floor, floors here {:?}", g.id, p, ground.floors(p[0], p[2]).iter().map(|f| f.0).collect::<Vec<f32>>())),
+                    Some((_, face)) => {
+                        let c: f32 = ground.clear(p);
+                        if !flies && c < 1.0 {
+                            bad.push(format!("gate {} {:?} {kind}: {c:.2} from a wall (face {face})", g.id, p));
+                        }
+                    }
+                }
+            }
+        }
+        assert!(bad.is_empty(), "{bad:#?}");
+    }
+
+    const NEAR: f32 = 12.0;
+    const DROP: f32 = 3.6;
+    const JUMP: f32 = 4.1;
+    const STEP: f32 = 0.8;
+    const CELL: f32 = 0.5;
+    const REACH: f32 = 140.0;
+    const CLOSED: [u8; 1] = [14];
+    const WEST_ROCKS: (f32, f32) = (-19.9, -33.0);
+
+    fn seg_dist(p: [f32; 2], a: [f32; 2], b: [f32; 2]) -> f32 {
+        let d: [f32; 2] = [b[0] - a[0], b[1] - a[1]];
+        let l: f32 = (d[0] * d[0] + d[1] * d[1]).max(1e-9);
+        let t: f32 = (((p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1]) / l).clamp(0.0, 1.0);
+        (p[0] - a[0] - t * d[0]).hypot(p[1] - a[1] - t * d[1])
+    }
+
+    fn blocked(x: f32, y: f32, z: f32, g: &Gate) -> bool {
+        (matches!(g.id, 15 | 16) && x < WEST_ROCKS.0 && z > WEST_ROCKS.1)
+            || walls(g).into_iter().any(|(a, b)| {
+                let len: f32 = (b[0] - a[0]).hypot(b[2] - a[2]);
+                let d: [f32; 2] = [(b[0] - a[0]) / len, (b[2] - a[2]) / len];
+                let (p, q): ([f32; 2], [f32; 2]) = ([a[0] - d[0] * MARGIN, a[2] - d[1] * MARGIN], [b[0] + d[0] * MARGIN, b[2] + d[1] * MARGIN]);
+                (y - a[1].min(b[1])).abs() < 3.5 && seg_dist([x, z], p, q) < BARRIER_HALF
+            })
+    }
+
+    fn lower(ground: &crate::difficulty::ground::Ground, x: f32, z: f32, from: f32, down: f32) -> Option<f32> {
+        ground.floors(x, z).into_iter().map(|f| f.0).filter(|y| *y <= from && *y >= from - down).fold(None, |m: Option<f32>, y| Some(m.map_or(y, |m| m.max(y))))
+    }
+
+    fn leaks(rf: &mut Romfs, g: &Gate) -> Option<Vec<[f32; 3]>> {
+        let ground = crate::difficulty::ground::load(rf, g.map).unwrap()?;
+        if ground.tiles {
+            return None;
+        }
+        let start: (f32, u32) = ground.floor_near(g.spot[0], g.spot[1], g.spot[2], 0.6, 0.6)?;
+        let c: [f32; 3] = mid(g);
+        let key = |x: f32, z: f32, y: f32| ((x / CELL).round() as i32, (z / CELL).round() as i32, (y * 2.0).round() as i32);
+        let mut seen: std::collections::BTreeSet<(i32, i32, i32)> = std::collections::BTreeSet::new();
+        let mut todo: Vec<[f32; 3]> = vec![[g.spot[0], start.0, g.spot[2]]];
+        seen.insert(key(g.spot[0], g.spot[2], start.0));
+        let mut out: Vec<[f32; 3]> = Vec::new();
+        while let Some(p) = todo.pop() {
+            for (dx, dz) in [(1.0f32, 0.0f32), (-1.0, 0.0), (0.0, 1.0), (0.0, -1.0), (1.0, 1.0), (1.0, -1.0), (-1.0, 1.0), (-1.0, -1.0)] {
+                let mut found: Option<(f32, f32, f32)> = None;
+                for k in 1..=(JUMP * 2.0 / dx.hypot(dz)) as usize {
+                    let (x, z): (f32, f32) = (p[0] + dx * CELL * k as f32, p[2] + dz * CELL * k as f32);
+                    if blocked(x, p[1], z, g) {
+                        break;
+                    }
+                    let hit: Option<f32> = if k == 1 { lower(&ground, x, z, p[1] + STEP, DROP + STEP) } else { lower(&ground, x, z, p[1] - 0.3, DROP) };
+                    if let Some(y) = hit {
+                        found = Some((x, y, z));
+                        break;
+                    }
+                    if k == 1 && ground.floors(x, z).iter().any(|f| f.0 > p[1] + STEP && f.0 < p[1] + 8.0) {
+                        break;
+                    }
+                }
+                let Some((x, y, z)) = found else {
+                    continue;
+                };
+                if (x - c[0]).hypot(z - c[2]) > REACH || blocked(x, y, z, g) || !seen.insert(key(x, z, y)) {
+                    continue;
+                }
+                todo.push([x, y, z]);
+                for (a, b) in walls(g) {
+                    let (n, _): ([f32; 2], f32) = wall_side(a, b, g.spot);
+                    let side: f32 = n[0] * (x - a[0]) + n[1] * (z - a[2]);
+                    if side < -2.0 && (y - a[1].min(b[1])).abs() < 6.0 && seg_dist([x, z], [a[0], a[2]], [b[0], b[2]]) < NEAR {
+                        out.push([x, y, z]);
+                    }
+                }
+            }
+        }
+        Some(out)
+    }
+
+    #[test]
+    fn the_barrier_cuts_the_floor_so_a_walker_on_the_guard_side_cannot_reach_the_far_side() {
+        let Some(root) = dump() else {
+            eprintln!("skipped: set OOTRR_ROMFS");
+            return;
+        };
+        let mut rf: Romfs = Romfs::open(&root).unwrap();
+        let mut bad: Vec<String> = Vec::new();
+        let mut checked: Vec<u8> = Vec::new();
+        for g in GATES.iter().filter(|g| makes(g)) {
+            let Some(l) = leaks(&mut rf, g) else {
+                continue;
+            };
+            checked.push(g.id);
+            if !l.is_empty() && CLOSED.contains(&g.id) {
+                bad.push(format!("gate {}: {} floor points past the wall are reachable, first at {:?}", g.id, l.len(), l[0]));
+            }
+        }
+        assert!(CLOSED.iter().all(|id| checked.contains(id)), "{checked:?}");
+        assert!(bad.is_empty(), "{bad:#?}");
+    }
+
+    #[test]
+    fn the_trail_guards_and_walls_keep_well_clear_of_the_goron_city_loading_zone() {
+        let zone: [f32; 3] = [-1.65, 120.17, -26.12];
+        for g in GATES.iter().filter(|g| matches!(g.id, 15 | 16)) {
+            for p in std::iter::once(g.spot).chain(g.more.iter().copied()) {
+                assert!(dist(p, zone) >= 8.0, "gate {} guard {:?}", g.id, p);
+            }
+            for (a, b) in walls(g) {
+                let reach: f32 = MARGIN + BARRIER_HALF;
+                let d: f32 = seg_dist([zone[0], zone[2]], [a[0], a[2]], [b[0], b[2]]);
+                assert!(d - reach >= 8.0, "gate {} wall {d}", g.id);
+            }
+        }
     }
 }

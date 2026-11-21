@@ -70,3 +70,16 @@ In rc 16, with the Shadow Temple fix from `test/handson2`: the scripted round 3 
 - **Played by hand:** Gohma and Phantom Ganon.
 - **Played by script:** Phantom Ganon and Twinrova (see feature 11).
 - **Not played:** Barinade, Volvagia, Morpha, Bongo Bongo, and the Shadow Temple load with the fix.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 12):** Bosses spawn minions
+- **State:** Built, in the game once
+- **What was seen in the game:** Keese seen in Gohma's room before the introduction (19 Nov); Gohma's Keese now appear as the door-shut scene ends, the other rooms unchanged rc13 (19 Nov): the 3 Keese are listed at map load too (20.0/15.7/24.3, 50.5, 62.8/70.3/70.3); door walk NOT TESTED.
+- **Next step:** Walk through the Gohma door on feature/boss-adds; then Dodongo's babies and the other rooms
+
+
+## Moved from STATUS.md (20 Nov): pointer
+
+Scripted and by-hand results for the boss adds are under feature 11.

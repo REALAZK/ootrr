@@ -192,6 +192,10 @@ pub fn enemy_users(rf: &Romfs) -> Res<Vec<String>> {
     Ok(out)
 }
 
+pub fn link_stage_for(rf: &mut Romfs, have: Have, users: Vec<String>) -> Res<Vec<Out>> {
+    Ok(vec![edit_zs(rf, have, elink::FILE, |raw| Ok(heal_link(raw, &users)?.0))?])
+}
+
 pub fn link_stage(rf: &mut Romfs, have: Have) -> Res<Vec<Out>> {
     let users: Vec<String> = enemy_users(rf)?;
     Ok(vec![edit_zs(rf, have, elink::FILE, |raw| Ok(heal_link(raw, &users)?.0))?])

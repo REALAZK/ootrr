@@ -33,3 +33,11 @@ One slider that scales the health of every enemy and boss. Stored as a whole per
 ## Notes
 - This is the template for any "scale a number on every enemy" feature: find the parameter file in one pack, survey it across all packs, filter by file name.
 - You reported enemies looking red. I found no cause in this edit; it only changes one number per enemy.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 01):** Enemy health
+- **State:** Done
+- **What was seen in the game:** Scaling seen (19 Nov): at enemy_health 200 the overlay shows Stalfos 36/36 and Lizalfos 18/18, exactly double vanilla 18 and 9
+- **Next step:** Peahat larva not read

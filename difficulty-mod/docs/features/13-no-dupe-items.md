@@ -38,3 +38,11 @@ Never played. To test, with two empty bottles:
 - Milk and half Milk count as different.
 - Deku Scrub potion sellers, cow Milk and the Market potion gift: the bottle is not filled and nothing is charged, but the NPC's lines will not match.
 - Ending the catch flow at its entry may leave Link frozen, as the bottle-use flows did in rc 1; both guarded flows now end with a proper refusal as described above, not yet played.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 13):** No dupe items
+- **State:** Done (bottled fairy)
+- **What was seen in the game:** Confirmed by the user (18 Nov): a second fairy could not be bottled while holding one, and the refusal animation is right
+- **Next step:** Other duplicate cases (gifts, other bottle contents) not tried

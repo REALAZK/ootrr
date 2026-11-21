@@ -34,3 +34,11 @@ Never played. To test:
 - If the 5-way roll does not work, the fallback is the shipped 6-way roll with the sixth case rolling again.
 - This agent also fixed a build-order problem that affects every feature: two late build steps editing the same file could overwrite each other. The fix is in the combined branch.
 - Pattern to reuse for any NPC line: copy one of the NPC's own talk events, point it at a new label, add the label to every language.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 19):** Bean Seller's pitch
+- **State:** Done
+- **What was seen in the game:** User (18 Nov): the dialogue works
+- **Next step:** None

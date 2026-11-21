@@ -35,3 +35,11 @@ Never played. To test:
 
 ## Seen in the game
 Not tested (batch 1 stopped early, 18 Nov).
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 03):** Enemy speed
+- **State:** Built, untested
+- **What was seen in the game:** Nothing (batch 1 aborted before this)
+- **Next step:** Batch 1

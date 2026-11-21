@@ -93,7 +93,6 @@ Options, cheapest first:
 
 1. **Red enemies:** constant tint or a flash, and does it happen with enemy health at 1x?
 2. **Zora's Domain hole:** is the hidden hole near the middle of the domain the one you meant?
-3. ~~Lose heart on death at three hearts~~ Answered: whatever is simplest.
 4. **Dead Hand hole (N2):** which hole is "the hole which is really dark and spooky"? The Zora's Domain one, or another (for example one in Kakariko or the Graveyard)? An approximate place is enough; I can find it on the object map.
 5. **A15:** is it acceptable that bottles stay blocked until you leave the area or the enemy is dead?
 
@@ -126,10 +125,15 @@ Options, cheapest first:
 - **Ledges.** The in-bounds rule (actors nearby) still lets an enemy onto a roof or cliff top that has props. If the game test finds some, a reachability check from the map's arrival points over the mesh would remove them.
 
 
-## Resolved: gates and weaponless children (20 Nov, branch feature/gate-sword, not merged)
-You decided: the gates do not spawn until the player has the sword. Child gates (1 to 6, 9) now create their guards and barrier only while the saved flag `IsGet.Weapon_Sword_Kokiri` is set; adult gates (11 to 13) are unchanged. The earlier item-logic requirement (branch feature/gate-logic) was reverted, since a swordless player is never blocked. Details in `features/20-enemies-block-the-way.md`, "Sword condition".
-Open for you: (1) a sword given through Starting items may not set the flag, in which case that player never meets the gates (safe, but to be checked in the game); (2) a gate may appear mid-map when the sword is picked up, or on the next load: to be seen; (3) the Dodongo (gate 2) and the Mad Scrub (gate 1) are assumed killable by the child's sword from the logic's enemy rules, not yet checked in the game.
-
 ## From the enemy randomizer v2 (20 Nov, branch feature/enemy-randomizer, not played)
 - **More enemies could change, if you allow it.** v2 draws from every map and changes about four in five of the enemies it may touch, but with your v1 safety rules only 117 enemies in the whole game may change (91 do with seed "game"). Unreferenced enemies blocked only by an extra placement key: `Presence` (a spawn condition such as night or a story flag; 22 enemies) and `IsPhysicsStable` (9). Allowing both keeps the "nothing refers to it" rule and adds about 30. Not done: your call. The other 102 blocked enemies are named by an AI group (room logic), so they stay.
 - **Skulltulas in child maps never change** (18): the only other ceiling kind is the Wallmaster, which the Kokiri Sword alone cannot beat. A Keese hanging from the same ceiling would be the only option, untested. Not done.
+
+## Future work from the 21 Nov hands-on (not started)
+- **Volvagia in the field (Functional WIP):** when beaten she should drop a red rupee and flee, not freeze before her death animation. Q17 (too harsh?) is unanswered; the default is to leave her deadly.
+- **Fireball storms:** swap the Death Mountain backdrop to its erupting version while a storm is active. Desert Colossus storm is switched off because Link fell through the floor there; find the cause before bringing it back. The storm wrong-spot bug (rocks landing in another ring) is fixed on `playtest/next` but unconfirmed in the game.
+- **Random enemy sizes (145/146):** not working. The game ignores placement Scale for ordinary enemies. Find what made the mega Like Like and the temple Beamos bigger (a pack value or model scale) and use that.
+- **Gate editor (Longshot tool):** needs a real blocking barrier placed live, tied to a dummy guard, instead of fairy markers.
+- **Playtest panel:** a teleport button should switch to the age a place needs (the child Wasteland teleport goes to a black screen), or refuse with a message.
+- **Gates 15 and 16:** move up the Death Mountain Trail above Goron City once the user sends a screenshot.
+- **Enemy randomizer:** the user still sees few swaps (Dodongo's Cavern); v1 was called boring.

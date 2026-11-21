@@ -1,7 +1,11 @@
 pub mod ambush;
+pub mod beamos;
 pub mod fireballs;
 pub mod gates;
 pub mod hook;
+pub mod hurt;
+pub mod leevers;
+pub mod mega_like;
 pub mod backup;
 pub mod battle_bgm;
 pub mod bowling;
@@ -15,6 +19,7 @@ pub mod horde;
 pub mod fairy;
 pub mod flows;
 pub mod elink;
+pub mod fuses;
 pub mod fx;
 pub mod lottery;
 pub mod minibosses;
@@ -24,7 +29,11 @@ pub mod respawn;
 pub mod spawn;
 pub mod stats;
 pub mod surprises;
+pub mod sizes;
+pub mod swap;
 pub mod target;
+pub mod timers;
+pub mod volvagia;
 pub mod wake;
 
 use std::fs;
@@ -39,6 +48,7 @@ use crate::zs;
 
 pub const HEALTH: &str = "enemy_health";
 pub const DAMAGE: &str = "enemy_damage";
+pub const HURT: &str = "damage_taken";
 pub const SPEED: &str = "enemy_speed";
 pub const NO_HEARTS: &str = "no_heart_drops";
 pub const NO_FAIRIES: &str = "no_gossip_fairies";
@@ -65,9 +75,16 @@ pub const SPAWN_COMBO: &str = "enemy_spawn_combo";
 pub const KAKARIKO: &str = "open_kakariko";
 pub const BOWLING: &str = "unbreakable_bowling_grass";
 pub const FIREBALLS: &str = "fireball_storms";
+pub const VOLVAGIA: &str = "volvagia_roams";
+pub const MEGA_LIKE: &str = "mega_like_likes";
+pub const FUSES: &str = "random_fuses";
+pub const RANDOMIZER: &str = "enemy_randomizer";
+pub const SIZES: &str = "enemy_sizes";
+pub const SIZES_HEALTH: &str = "enemy_sizes_health";
 
 pub const HEALTH_NUM: u16 = 110;
 pub const DAMAGE_NUM: u16 = 111;
+pub const HURT_NUM: u16 = 148;
 pub const SPEED_NUM: u16 = 112;
 pub const NO_HEARTS_NUM: u16 = 113;
 pub const NO_FAIRIES_NUM: u16 = 114;
@@ -91,6 +108,12 @@ pub const CUCCO_NUM: u16 = 131;
 pub const SPAWN_COMBO_NUM: u16 = 132;
 pub const BOWLING_NUM: u16 = 139;
 pub const FIREBALLS_NUM: u16 = 140;
+pub const VOLVAGIA_NUM: u16 = 143;
+pub const MEGA_LIKE_NUM: u16 = 144;
+pub const FUSES_NUM: u16 = 151;
+pub const RANDOMIZER_NUM: u16 = 150;
+pub const SIZES_NUM: u16 = 145;
+pub const SIZES_HEALTH_NUM: u16 = 146;
 
 pub const NORMAL: i64 = 100;
 pub const STAT_RANGE: (i64, i64) = (50, 500);
@@ -105,6 +128,7 @@ pub const MORE_STEP: i64 = 50;
 pub struct Opts {
     pub health: i64,
     pub damage: i64,
+    pub hurt: hurt::Hurt,
     pub speed: i64,
     pub no_hearts: bool,
     pub no_fairies: bool,
@@ -125,16 +149,23 @@ pub struct Opts {
     pub cucco: bool,
     pub bowling: bool,
     pub fireballs: bool,
+    pub fuses: bool,
     pub spawn_combo: bool,
+    pub volvagia: bool,
+    pub mega_like: bool,
+    pub randomizer: bool,
+    pub sizes: sizes::Range,
+    pub sized_health: bool,
     pub forest_open: bool,
     pub shops: bool,
     pub mido_gone: bool,
     pub entrances: gates::Shuffle,
+    pub timers: i64,
 }
 
 impl Default for Opts {
     fn default() -> Opts {
-        Opts { health: NORMAL, damage: NORMAL, speed: NORMAL, no_hearts: false, no_fairies: false, no_ammo: false, lose_heart: false, no_bottles: false, no_target: false, no_dupes: false, extra: 0, respawn: false, minibosses: false, regen: false, minions: false, fairy_helps: false, backup: false, gates: false, encounters: false, cucco: false, bowling: false, fireballs: false, spawn_combo: false, forest_open: false, shops: false, mido_gone: false, entrances: gates::Shuffle::Off }
+        Opts { health: NORMAL, damage: NORMAL, hurt: hurt::Hurt::Normal, speed: NORMAL, no_hearts: false, no_fairies: false, no_ammo: false, lose_heart: false, no_bottles: false, no_target: false, no_dupes: false, extra: 0, respawn: false, minibosses: false, regen: false, minions: false, fairy_helps: false, backup: false, gates: false, encounters: false, cucco: false, bowling: false, fireballs: false, spawn_combo: false, randomizer: false, sizes: sizes::Range::Off, sized_health: false, fuses: false, mega_like: false, volvagia: false, forest_open: false, shops: false, mido_gone: false, entrances: gates::Shuffle::Off, timers: NORMAL }
     }
 }
 
@@ -149,7 +180,7 @@ impl Opts {
     }
 
     pub fn packs(&self) -> bool {
-        self.health != NORMAL || self.damage != NORMAL || self.speed != NORMAL || self.cut().any() || self.no_target || self.no_bottles
+        self.health != NORMAL || self.damage != NORMAL || self.hurt != hurt::Hurt::Normal || self.speed != NORMAL || self.cut().any() || self.no_target || self.no_bottles
     }
 
     pub fn gate_list(&self) -> Vec<gates::Gate> {
@@ -164,7 +195,7 @@ impl Opts {
     }
 
     pub fn any(&self) -> bool {
-        self.packs() || self.no_fairies || self.lose_heart || self.no_bottles || self.no_dupes || self.extra > 0 || self.respawn || self.minibosses || self.regen || self.minions || self.fairy_helps || self.backup || self.encounters || self.cucco || self.bowling || self.fireballs || self.spawn_combo || self.gates()
+        self.packs() || self.no_fairies || self.lose_heart || self.no_bottles || self.no_dupes || self.extra > 0 || self.respawn || self.minibosses || self.regen || self.minions || self.fairy_helps || self.backup || self.encounters || self.cucco || self.bowling || self.fireballs || self.spawn_combo || self.randomizer || self.sizes.on() || self.fuses || self.mega_like || self.volvagia || self.timers != NORMAL || self.gates()
     }
 
     pub fn notes(&self) -> Vec<String> {
@@ -174,6 +205,9 @@ impl Opts {
         }
         if self.damage != NORMAL {
             out.push(format!("Enemies and their projectiles hit {} times as hard. Grabs, traps, lava and falls do their usual damage.", times(self.damage)));
+        }
+        if self.hurt != hurt::Hurt::Normal {
+            out.push(hurt::note(self.hurt));
         }
         if self.speed != NORMAL {
             out.push(format!("Enemies are set to move and attack {} times as fast. Experimental: most enemies ignore it, and in our tests only Lizalfos clearly sped up.", times(self.speed)));
@@ -188,8 +222,8 @@ impl Opts {
             out.push("Enemies, pots, grass and other random drops never give recovery hearts. Where the game would hand you a heart because you're low, you get a green rupee.".to_string());
         }
         if self.no_ammo {
-            let shops: &str = if self.shops { " Shopsanity is on: a special deal can take the place of a shelf that sold ammo, and the logic doesn't check that ammo can still be bought, so the only arrows may be in a shop you can't afford or reach yet." } else { "" };
-            out.push(format!("Enemies, pots, grass and other random drops never give arrows, seeds, bombs, Deku Nuts or Deku Sticks.{shops} Seen working on grass; pots and enemy drops are untested."));
+            let shops: &str = if self.shops { " Shopsanity is on: a special deal can take the place of a shelf that sold arrows, bombs or seeds, and the logic does not check that any ammo can still be bought, so you may find a seed where the only arrows are in the shops you cannot afford or cannot reach." } else { "" };
+            out.push(format!("Enemies, pots, grass and other random drops never give arrows, seeds, bombs, Deku Nuts or Deku Sticks, except where the game stocks a boss fight: the Gohma larvae and eggs, the pots before the boss doors, the Ganon castle rubble and the Poe Meg fight.{shops} Round 2 is not played in the game yet."));
         }
         if self.no_fairies {
             out.push("Playing a song at a gossip stone no longer brings out a fairy.".to_string());
@@ -238,8 +272,29 @@ impl Opts {
         if self.fireballs {
             out.push(fireballs::NOTE.to_string());
         }
+        if self.fuses {
+            out.push(fuses::NOTE.to_string());
+        }
+        if self.timers != NORMAL {
+            out.push(timers::NOTE.to_string());
+        }
         if self.spawn_combo {
             out.push(spawn::NOTE.to_string());
+        }
+        if self.volvagia {
+            out.push(volvagia::NOTE.to_string());
+        }
+        if self.mega_like {
+            out.push(mega_like::NOTE.to_string());
+        }
+        if self.randomizer {
+            out.push(swap::NOTE.to_string());
+        }
+        if self.sizes.on() {
+            out.push(sizes::NOTE.to_string());
+            if self.sized_health {
+                out.push(sizes::NOTE_HEALTH.to_string());
+            }
         }
         if self.fairy_helps {
             out.push("When you use a bottled fairy, or one revives you, every enemy and boss that is awake heals to full health too.".to_string());
@@ -250,6 +305,9 @@ impl Opts {
                 out.push("Enemies block the way is on, but no gate fits these entrance and forest settings, so nothing is blocked.".to_string());
             } else {
                 out.push(format!("A barrier blocks the way at {} while its guards are alive, and drops when they are beaten. At Zora's River the guards are Lizalfos added for this. The barrier and guards come back whenever the area reloads.", names.join(", ")));
+            }
+            if self.gate_list().iter().any(|g| g.new_kind == gates::LEEVER_GIANT) {
+                out.push(leevers::NOTE.to_string());
             }
             if let Some(n) = gates::shuffle_note(self.entrances) {
                 out.push(n);
@@ -287,19 +345,22 @@ pub fn read(s: &Settings, bad: &mut Vec<String>) -> Opts {
     let damage: i64 = num(DAMAGE, STAT_RANGE);
     let speed: i64 = num(SPEED, SPEED_RANGE);
     let extra: i64 = num(MORE, MORE_RANGE) - NORMAL;
+    let hurt: hurt::Hurt = chosen(s.text(HURT), bad).map(hurt::Hurt::from_setting).unwrap_or(hurt::Hurt::Normal);
     let mut flag = |id: &str| -> bool {
         s.flag(id).unwrap_or_else(|e| {
             bad.push(e.to_string());
             false
         })
     };
-    let o: Opts = Opts { health, damage, speed, no_hearts: flag(NO_HEARTS), no_fairies: flag(NO_FAIRIES), no_ammo: flag(NO_AMMO), lose_heart: flag(LOSE_HEART), no_bottles: flag(NO_BOTTLES), no_target: flag(NO_TARGET), no_dupes: flag(NO_DUPES), extra: 0, respawn: flag(RESPAWN), minibosses: flag(MINIBOSSES), regen: flag(REGEN), minions: flag(MINIONS), fairy_helps: flag(FAIRY_HELPS), backup: flag(BACKUP), gates: flag(GATES), encounters: false, cucco: flag(CUCCO), bowling: flag(BOWLING), fireballs: flag(FIREBALLS), spawn_combo: flag(SPAWN_COMBO), forest_open: false, shops: false, mido_gone: false, entrances: gates::Shuffle::Off };
+    let o: Opts = Opts { health, damage, hurt, speed, no_hearts: flag(NO_HEARTS), no_fairies: flag(NO_FAIRIES), no_ammo: flag(NO_AMMO), lose_heart: flag(LOSE_HEART), no_bottles: flag(NO_BOTTLES), no_target: flag(NO_TARGET), no_dupes: flag(NO_DUPES), extra: 0, respawn: flag(RESPAWN), minibosses: flag(MINIBOSSES), regen: flag(REGEN), minions: flag(MINIONS), fairy_helps: flag(FAIRY_HELPS), backup: flag(BACKUP), gates: flag(GATES), encounters: false, cucco: flag(CUCCO), bowling: flag(BOWLING), fireballs: flag(FIREBALLS), spawn_combo: flag(SPAWN_COMBO), randomizer: flag(RANDOMIZER), sizes: sizes::Range::Off, sized_health: flag(SIZES_HEALTH), fuses: flag(FUSES), mega_like: flag(MEGA_LIKE), volvagia: flag(VOLVAGIA), forest_open: false, shops: false, mido_gone: false, entrances: gates::Shuffle::Off, timers: NORMAL };
     let forest_open: bool = chosen(s.text(FOREST), bad).map(|t| t == "open").unwrap_or(true);
     let entrances: gates::Shuffle = chosen(s.text(ENTRANCES), bad).map(|t| gates::Shuffle::from_setting(t)).unwrap_or(gates::Shuffle::Wide);
     let shops: bool = chosen(s.text(crate::shops::plan::SETTING), bad).map(|t| t != "off").unwrap_or(false);
     let closed: bool = s.text(FOREST).map(|t| t == "closed").unwrap_or(true);
     let mido_gone: bool = !closed && s.text(KAKARIKO).map(|t| t == "open").unwrap_or(false);
-    Opts { extra, encounters: extra > 0, forest_open, mido_gone, entrances, shops, ..o }
+    let sizes: sizes::Range = chosen(s.text(SIZES), bad).map(sizes::Range::from_setting).unwrap_or_default();
+    let timers: i64 = chosen(s.text(timers::SETTING), bad).and_then(timers::percent).unwrap_or(NORMAL);
+    Opts { extra, sizes, timers, encounters: extra > 0, forest_open, mido_gone, entrances, shops, ..o }
 
 }
 
@@ -318,6 +379,12 @@ fn edit_entry(e: &Entry, o: &Opts) -> Res<Option<Vec<u8>>> {
     {
         return if stats::is_enemy_attack(s) { stats::attack(&e.data, o.damage) } else { Ok(None) };
     }
+    if n == hurt::FILE && o.hurt != hurt::Hurt::Normal {
+        return hurt::edit(&e.data, o.hurt);
+    }
+    if o.hurt != hurt::Hurt::Normal && hurt::is_grab(n) {
+        return hurt::grab(&e.data, o.hurt);
+    }
     if o.speed != NORMAL
         && let Some(s) = stats::stem(n, stats::MOVE_DIR, stats::MOVE_EXT)
     {
@@ -329,7 +396,7 @@ fn edit_entry(e: &Entry, o: &Opts) -> Res<Option<Vec<u8>>> {
         return if stats::is_enemy(s) { stats::pace(&e.data, o.speed) } else { Ok(None) };
     }
     if n.starts_with(drops::DIR) {
-        return drops::edit(&e.data, o.cut());
+        return drops::edit(&e.data, drops::for_table(n, o.cut()));
     }
     if o.no_target
         && let Some(s) = stats::stem(n, target::DIR, target::EXT)
@@ -409,6 +476,10 @@ fn step(rf: &mut Romfs, outs: &mut Vec<Out>, have: Have, f: impl FnOnce(&mut Rom
 }
 
 pub fn stage(rf: &mut Romfs, o: &Opts, have: Have, seed: &str) -> Res<Vec<Out>> {
+    stage_noted(rf, o, have, seed, &mut Vec::new())
+}
+
+pub fn stage_noted(rf: &mut Romfs, o: &Opts, have: Have, seed: &str, notes: &mut Vec<String>) -> Res<Vec<Out>> {
     let mut outs: Vec<Out> = Vec::new();
     for f in pack_files(rf, o)? {
         if let Some(x) = pack_out(rf, have, &f, o)? {
@@ -432,6 +503,8 @@ pub fn stage(rf: &mut Romfs, o: &Opts, have: Have, seed: &str) -> Res<Vec<Out>> 
     }
     if o.regen || o.fairy_helps {
         step(rf, &mut outs, have, fx::link_stage)?;
+    } else if o.mega_like {
+        step(rf, &mut outs, have, |rf, have| fx::link_stage_for(rf, have, vec![mega_like::BASE.to_string()]))?;
     }
     if o.backup {
         step(rf, &mut outs, have, |rf, have| Ok(backup::stage(rf, have, ACTOR_PACKS)?.1))?;
@@ -490,6 +563,12 @@ pub fn stage(rf: &mut Romfs, o: &Opts, have: Have, seed: &str) -> Res<Vec<Out>> 
     if o.fireballs {
         step(rf, &mut outs, have, fireballs::stage)?;
     }
+    if o.fuses {
+        step(rf, &mut outs, have, fuses::stage)?;
+    }
+    if o.timers != NORMAL {
+        step(rf, &mut outs, have, |rf, have| timers::stage(rf, have, o.timers))?;
+    }
     if o.spawn_combo {
         step(rf, &mut outs, have, spawn::stage)?;
     }
@@ -497,23 +576,30 @@ pub fn stage(rf: &mut Romfs, o: &Opts, have: Have, seed: &str) -> Res<Vec<Out>> 
     if !gl.is_empty() {
         step(rf, &mut outs, have, |rf, have| gates::stage(rf, have, &gl))?;
     }
+    if o.randomizer {
+        step(rf, &mut outs, have, |rf, have| swap::stage(rf, have, seed, notes))?;
+    }
     if o.extra > horde::FROM {
         step(rf, &mut outs, have, |rf, have| horde::stage(rf, have, seed, o.extra, o.encounters))?;
+    }
+    if o.sizes.on() {
+        step(rf, &mut outs, have, |rf, have| sizes::stage(rf, have, seed, o.sizes, o.sized_health, notes))?;
     }
     Ok(outs)
 }
 
-pub fn worked(rf: &mut Romfs, pk: &crate::modpack::Pack, o: &Opts, seed: &str, late: &mut Vec<Out>) -> Res<()> {
+pub fn worked(rf: &mut Romfs, pk: &crate::modpack::Pack, o: &Opts, seed: &str, late: &mut Vec<Out>) -> Res<Vec<String>> {
+    let mut notes: Vec<String> = Vec::new();
     if !o.any() {
-        return Ok(());
+        return Ok(notes);
     }
     let root: std::path::PathBuf = pk.work.join("romfs");
     let outs: Vec<Out> = {
         let have = |p: &str| -> Option<Vec<u8>> { late.iter().rev().find(|x| x.path == p).map(|x| x.z.clone()).or_else(|| fs::read(p.split('/').fold(root.clone(), |a, s| a.join(s))).ok()) };
-        stage(rf, o, &have, seed)?
+        stage_noted(rf, o, &have, seed, &mut notes)?
     };
     merge(late, outs);
-    Ok(())
+    Ok(notes)
 }
 
 #[cfg(test)]
@@ -545,6 +631,23 @@ mod tests {
     }
 
     #[test]
+    fn the_size_settings_are_read_and_default_off() {
+        let mut bad: Vec<String> = Vec::new();
+        let o: Opts = read(&Settings::default(), &mut bad);
+        assert!(bad.is_empty() && o.sizes == sizes::Range::Off && !o.sized_health && !o.any());
+        let mut s: Settings = Settings::default();
+        s.set(SIZES, Value::s("wild")).unwrap();
+        let o: Opts = read(&s, &mut bad);
+        assert!(bad.is_empty() && o.sizes == sizes::Range::Wild && !o.sized_health && o.any() && !o.packs());
+        assert_eq!(o.notes().len(), 1);
+        s.set(SIZES, Value::s("mild")).unwrap();
+        s.set(SIZES_HEALTH, Value::Bool(true)).unwrap();
+        let o: Opts = read(&s, &mut bad);
+        assert!(o.sizes == sizes::Range::Mild && o.sized_health);
+        assert_eq!(o.notes().len(), 2);
+    }
+
+    #[test]
     fn the_gates_follow_the_forest_and_entrance_settings() {
         let mut s: Settings = Settings::default();
         s.set(GATES, Value::Bool(true)).unwrap();
@@ -563,7 +666,7 @@ mod tests {
         s.set(ENTRANCES, Value::s("dungeons")).unwrap();
         let o: Opts = read(&s, &mut bad);
         assert!(o.entrances == gates::Shuffle::Dungeons && o.gates());
-        assert_eq!(o.gate_list().iter().map(|g| g.id).collect::<Vec<u8>>(), vec![3, 4, 5, 9, 11, 12, 13]);
+        assert_eq!(o.gate_list().iter().map(|g| g.id).collect::<Vec<u8>>(), vec![3, 4, 5, 9, 11, 12, 13, 23]);
         assert!(o.notes().iter().any(|n| n.contains("dungeon entrances are shuffled")));
         s.set(ENTRANCES, Value::s("everything")).unwrap();
         let o: Opts = read(&s, &mut bad);
@@ -594,7 +697,7 @@ mod tests {
         s.set(HEALTH, Value::Int(250)).unwrap();
         s.set(DAMAGE, Value::Int(50)).unwrap();
         s.set(SPEED, Value::Int(200)).unwrap();
-        for id in [NO_HEARTS, NO_FAIRIES, NO_AMMO, LOSE_HEART, NO_BOTTLES, NO_TARGET, NO_DUPES, RESPAWN, MINIBOSSES, REGEN, MINIONS, FAIRY_HELPS, BACKUP, GATES, CUCCO, SPAWN_COMBO, FIREBALLS, BOWLING] {
+        for id in [NO_HEARTS, NO_FAIRIES, NO_AMMO, LOSE_HEART, NO_BOTTLES, NO_TARGET, NO_DUPES, RESPAWN, MINIBOSSES, REGEN, MINIONS, FAIRY_HELPS, BACKUP, GATES, CUCCO, SPAWN_COMBO, FIREBALLS, BOWLING, MEGA_LIKE, FUSES, RANDOMIZER, VOLVAGIA] {
             s.set(id, Value::Bool(true)).unwrap();
         }
         s.set(MORE, Value::Int(150)).unwrap();
@@ -602,9 +705,9 @@ mod tests {
         let mut bad: Vec<String> = Vec::new();
         let o: Opts = read(&back, &mut bad);
         assert!(bad.is_empty());
-        assert_eq!(o, Opts { health: 250, damage: 50, speed: 200, no_hearts: true, no_fairies: true, no_ammo: true, lose_heart: true, no_bottles: true, no_target: true, no_dupes: true, extra: 50, respawn: true, minibosses: true, regen: true, minions: true, fairy_helps: true, backup: true, gates: true, encounters: true, cucco: true, bowling: true, fireballs: true, spawn_combo: true, ..Opts::default() });
+        assert_eq!(o, Opts { health: 250, damage: 50, speed: 200, no_hearts: true, no_fairies: true, no_ammo: true, lose_heart: true, no_bottles: true, no_target: true, no_dupes: true, extra: 50, respawn: true, minibosses: true, regen: true, minions: true, fairy_helps: true, backup: true, gates: true, encounters: true, cucco: true, bowling: true, fireballs: true, spawn_combo: true, randomizer: true, fuses: true, mega_like: true, volvagia: true, ..Opts::default() });
         assert!(o.any() && o.packs());
-        assert_eq!(o.notes().len(), 25);
+        assert_eq!(o.notes().len(), 29);
         assert_eq!(o.notes().iter().collect::<std::collections::BTreeSet<&String>>().len(), o.notes().len());
         assert!(o.notes().iter().any(|n| n.contains("About 50 in 100")));
         assert!(Opts { extra: 100, ..Opts::default() }.any() && !Opts { extra: 100, ..Opts::default() }.packs());
@@ -708,6 +811,65 @@ mod tests {
 
     fn none(_p: &str) -> Option<Vec<u8>> {
         None
+    }
+
+    #[test]
+    fn the_damage_taken_setting_is_read_and_survives_the_settings_string() {
+        let mut s: Settings = Settings::default();
+        s.set(HURT, Value::s("normal")).unwrap();
+        assert_eq!(s.encode().unwrap(), Settings::default().encode().unwrap());
+        for (id, h) in [("double", hurt::Hurt::Double), ("quadruple", hurt::Hurt::Quadruple), ("one_hit", hurt::Hurt::OneHit)] {
+            s.set(HURT, Value::s(id)).unwrap();
+            let back: Settings = Settings::decode(&s.encode().unwrap()).unwrap().settings;
+            let mut bad: Vec<String> = Vec::new();
+            let o: Opts = read(&back, &mut bad);
+            assert!(bad.is_empty());
+            assert_eq!(o, Opts { hurt: h, ..Opts::default() });
+            assert!(o.any() && o.packs() && o.notes().len() == 1);
+        }
+    }
+
+    #[test]
+    fn one_hit_kills_changes_the_players_damage_file_and_the_grab_files_in_the_game() {
+        let Some(root) = dump() else {
+            eprintln!("skipped: set OOTRR_ROMFS");
+            return;
+        };
+        let mut rf: Romfs = Romfs::open(&root).unwrap();
+        assert!(stage(&mut rf, &Opts::default(), &none, "seed").unwrap().is_empty());
+        let o: Opts = Opts { hurt: hurt::Hurt::OneHit, ..Opts::default() };
+        let outs: Vec<Out> = stage(&mut rf, &o, &none, "seed").unwrap();
+        for p in ["Pack/Actor/Player_Base.pack.zs", "Pack/Actor/Player_Child.pack.zs", "Pack/Actor/Player_Adult.pack.zs"] {
+            let out: &Out = outs.iter().find(|x| x.path == p).unwrap_or_else(|| panic!("{p} was not staged"));
+            let es: Vec<Entry> = sarc::parse(&rf.zs.decompress(&out.z).unwrap()).unwrap();
+            let old: Vec<Entry> = sarc::parse(&rf.read_zs(p).unwrap()).unwrap();
+            let raw: &[u8] = &sarc::get(&es, hurt::FILE).unwrap().data;
+            let was: &[u8] = &sarc::get(&old, hurt::FILE).unwrap().data;
+            assert_eq!(raw.len(), was.len());
+            let d: lottery::Doc = lottery::Doc::open(raw).unwrap();
+            let top: Vec<(String, lottery::Slot)> = d.map(d.root().unwrap()).unwrap();
+            let ext: Vec<(String, lottery::Slot)> = d.map(lottery::find(&top, hurt::EXTERNAL).unwrap()).unwrap();
+            let rates: Vec<(u32, lottery::Slot)> = d.hash(lottery::find(&ext, hurt::RATES).unwrap()).unwrap();
+            assert_eq!(rates.len(), 19);
+            assert!(rates.iter().all(|r| f32::from_bits(r.1.val) == hurt::KILL_RATE));
+            let int: Vec<(String, lottery::Slot)> = d.map(lottery::find(&top, hurt::INTERNAL).unwrap()).unwrap();
+            let fall: Vec<(String, lottery::Slot)> = d.map(lottery::find(&int, hurt::FALL).unwrap()).unwrap();
+            assert_eq!(lottery::find(&fall, hurt::FALL_MIN).unwrap().val as i32, hurt::KILL_INT);
+            let lava: Vec<(String, lottery::Slot)> = d.map(lottery::find(&int, "LavaDamageParameters").unwrap()).unwrap();
+            assert_eq!(lottery::find(&lava, "Damage").unwrap().val as i32, hurt::KILL_INT);
+            assert_eq!(lottery::find(&lava, "ContinuousDamage").unwrap().val, 0);
+        }
+        let mut grabber = |p: &str, stem: &str| -> Option<Node> {
+            let out: &Out = outs.iter().find(|x| x.path == p)?;
+            let es: Vec<Entry> = sarc::parse(&rf.zs.decompress(&out.z).unwrap()).unwrap();
+            let e: &Entry = sarc::get(&es, &format!("{}{stem}{}", hurt::GRAB_DIR, hurt::GRAB_EXT))?;
+            Byml::parse(&e.data).unwrap().root.get(hurt::GRAB_KEY).cloned()
+        };
+        for (p, stem) in [("Pack/Actor/Enemy_ReDead.pack.zs", "Enemy_ReDead"), ("Pack/Actor/Enemy_LikeLike.pack.zs", "Enemy_LikeLike"), ("Pack/Actor/Enemy_DeadHand_Hand.pack.zs", "Enemy_DeadHand_Hand"), ("Pack/Actor/Enemy_Floormaster_Little.pack.zs", "Enemy_Floormaster_Little")] {
+            assert_eq!(grabber(p, stem), Some(Node::I32(hurt::KILL_INT)), "{stem}");
+        }
+        assert_eq!(grabber("Pack/Actor/Enemy_Wallmaster.pack.zs", "Enemy_Wallmaster"), None);
+        assert_eq!(o.notes(), vec![hurt::note(hurt::Hurt::OneHit)]);
     }
 
     #[test]
@@ -1241,7 +1403,7 @@ mod tests {
             return;
         };
         let mut rf: Romfs = Romfs::open(&root).unwrap();
-        let o: Opts = Opts { no_hearts: true, no_fairies: true, no_ammo: true, lose_heart: true, no_bottles: true, no_target: true, no_dupes: true, extra: 900, respawn: true, minibosses: true, regen: true, minions: true, fairy_helps: true, backup: true, gates: true, encounters: true, cucco: true, bowling: true, spawn_combo: true, ..Opts::default() };
+        let o: Opts = Opts { no_hearts: true, no_fairies: true, no_ammo: true, lose_heart: true, no_bottles: true, no_target: true, no_dupes: true, extra: 900, respawn: true, minibosses: true, regen: true, minions: true, fairy_helps: true, backup: true, gates: true, encounters: true, cucco: true, bowling: true, spawn_combo: true, mega_like: true, ..Opts::default() };
         let outs: Vec<Out> = stage(&mut rf, &o, &none, "seed").unwrap();
         let paths: std::collections::BTreeSet<&str> = outs.iter().map(|x| x.path.as_str()).collect();
         assert_eq!(paths.len(), outs.len(), "no file is staged twice");

@@ -114,3 +114,11 @@ From `docs\code-review-2026-11-18.md`, open problem (c). The in-session design i
 - Why the autosave variant most likely failed: `AfterChangeBanc` had just autosaved, or the request came while the boot event was still running.
 - Suggested fix, data only, if the hole matters: write `PlayerStatus.MaxLife` with `EventTriggerSetGameDataInt` next to the player action (both then agree), wait some frames, then request the autosave. If no save keeps the cut, the fallback is the revive-in-place design already ranked third above. `Sequence_RequestLastGameOverSave` was tried and did not help.
 - Not built in the review-fixes branch: it needs a wait step in the boot flow that I could not test without the game. The leftovers `Keep::CountSave` and `AUTOSAVE` in `flows.rs` stay as the hook for this experiment.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 07):** Lose heart on death
+- **State:** Done, with one limit
+- **What was seen in the game:** 6 → 5 → 4 → 3 hearts over three deaths; a 4th death stays at 3; no side effects. The final build was replayed: 6 → 5 → 4 (script, 18 Nov). Confirmed by hand too (user died without a fairy: back with 5 hearts). Merged into `playtest/difficulty-all`
+- **Next step:** Limit: the loss does not survive quitting and continuing (accepted as "simplest for now"). Fairy revival costs no heart: confirmed by the user (revived at 6 hearts max)

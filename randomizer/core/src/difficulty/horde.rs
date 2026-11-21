@@ -1034,16 +1034,44 @@ pub fn plan(rf: &mut Romfs, have: Have, seed: &str, extra: i64) -> Res<(Vec<Plan
     Ok((out, temps))
 }
 
+pub const NIGHT_FILE: &str = "Banc/HyruleField/HyruleField_Child_Static.bcett.byml.zs";
+pub const NIGHT_AREA: &str = "StalchildAutoPlacementArea";
+pub const NIGHT_KEYS: [&str; 2] = ["CreateStalchildCountMin", "CreateStalchildCountMax"];
+
+pub fn double_night(y: &mut Byml) -> usize {
+    let mut n: usize = 0;
+    let Some(list) = y.root.get_mut("Actors").and_then(|l| l.as_arr_mut()) else {
+        return 0;
+    };
+    for a in list.iter_mut().filter(|a| a.get("Gyaml").and_then(|g| g.as_str()) == Some(NIGHT_AREA)) {
+        let Some(d) = a.get_mut("Dynamic") else {
+            continue;
+        };
+        for k in NIGHT_KEYS {
+            if let Some(Node::I32(v)) = d.get(k) {
+                let v2: i32 = *v * 2;
+                d.set(k, Node::I32(v2));
+                n += 1;
+            }
+        }
+    }
+    n
+}
+
 pub fn stage(rf: &mut Romfs, have: Have, seed: &str, extra: i64, woken: bool) -> Res<Vec<Out>> {
     let (plans, temps): (Vec<Plan>, Map<String, Node>) = plan(rf, have, seed, extra)?;
     let mut by: BTreeMap<String, Vec<&Spot>> = BTreeMap::new();
     for s in plans.iter().flat_map(|p| p.spots.iter()) {
         by.entry(s.file.clone()).or_default().push(s);
     }
+    by.entry(NIGHT_FILE.to_string()).or_default();
     let mut outs: Vec<Out> = Vec::new();
     for (f, ss) in &by {
         let (b, id): (Vec<u8>, Option<u32>) = raw(rf, have, f)?;
         let mut y: Byml = Byml::parse(&b)?;
+        if f == NIGHT_FILE {
+            double_night(&mut y);
+        }
         let mut rng: Rng = Rng::from_text(&format!("{seed}|{SALT}|srt|{f}"));
         let more: Vec<Node> = ss.iter().map(|s| node(s, &temps, rng.next_u64() as u32)).collect();
         let Some(list) = y.root.get_mut("Actors").and_then(|l| l.as_arr_mut()) else {
@@ -1062,6 +1090,23 @@ pub fn stage(rf: &mut Romfs, have: Have, seed: &str, extra: i64, woken: bool) ->
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_night_stalchild_areas_double_their_counts() {
+        let Some(root) = std::env::var_os("OOTRR_ROMFS").map(std::path::PathBuf::from).filter(|p| p.join("Banc").is_dir()) else {
+            eprintln!("skipped: set OOTRR_ROMFS");
+            return;
+        };
+        let mut rf: Romfs = Romfs::open(&root).unwrap();
+        let mut y: Byml = rf.read_byml(NIGHT_FILE).unwrap();
+        let counts = |y: &Byml| -> Vec<i32> {
+            y.root.get("Actors").and_then(|l| l.as_arr()).unwrap().iter().filter(|a| a.get("Gyaml").and_then(|g| g.as_str()) == Some(NIGHT_AREA)).flat_map(|a| NIGHT_KEYS.iter().filter_map(|k| match a.get("Dynamic").and_then(|d| d.get(k)) { Some(Node::I32(v)) => Some(*v), _ => None })).collect()
+        };
+        let was: Vec<i32> = counts(&y);
+        assert!(!was.is_empty());
+        assert_eq!(double_night(&mut y), was.len());
+        assert_eq!(counts(&y), was.iter().map(|v| v * 2).collect::<Vec<i32>>());
+    }
 
     #[test]
     fn the_class_table_is_sane() {
@@ -1276,7 +1321,7 @@ mod tests {
             let b: &[Node] = now.root.get("Actors").unwrap().as_arr().unwrap();
             let n: usize = ps.iter().flat_map(|p| p.spots.iter()).filter(|s| s.file == o.path).count();
             assert_eq!(b.len(), a.len() + n, "{}", o.path);
-            assert_eq!(&b[..a.len()], a);
+            assert!(o.path == NIGHT_FILE || &b[..a.len()] == a);
             for c in &b[a.len()..] {
                 assert!(c.get("Links").is_none() && c.get("Name").is_none());
                 assert!(kind(gyaml(c)).is_some());

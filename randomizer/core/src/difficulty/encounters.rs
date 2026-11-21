@@ -16,12 +16,19 @@ pub const FINGERS: &str = "Enemy_DeadHand_Hand";
 pub const KNIGHT: &str = "Enemy_IronKnuckle_Silver";
 pub const LIKE: &str = "Enemy_LikeLike";
 pub const GUAY: &str = "Enemy_Guay_Fixed";
-pub const NIGHT: &str = "Enemy_Guay_Nocturnal";
+pub const OCTO: &str = "Enemy_Octorok";
+pub const SCRUB: &str = "Enemy_Scrub_Mad";
+pub const LEAF: &str = "Enemy_Scrub_Mad_Leaf";
+pub const BEAMOS: &str = crate::difficulty::beamos::CLASS;
+pub const BEAMOS_SCALE: f32 = 1.6;
+pub const FIRST_ADULT: &str = "HavePlayedEvent.Dm_TimeTemple_0065";
+pub const LAKE_FULL: &str = "HavePlayedEvent.Dm_LakeHrl_0020";
+pub const ADULT: &str = "HyruleField_Adult";
 pub const SEED: &str = "ootrr special encounters";
 pub const GROUPS: [&str; 2] = ["FarDeleteGroups", "SimultaneousGroups"];
 pub const RING: f32 = 3.0;
 pub const APPEAR: f32 = 3.5;
-pub const NOTE: &str = "Special encounters: a Dead Hand waits in the dark hole in east Hyrule Field (by the ReDead and the chest) and in the foggy hole at the foot of the Death Mountain Trail (with the Baby Dodongos), and an Iron Knuckle stands in the open field between Kakariko, Lon Lon Ranch and Kokiri Forest and gets up when you come close. Nine Like Likes wait around Lake Hylia, child and adult. Child Hyrule Field gets 24 more Guays in six loose flocks over the open grass. They come back whenever the area reloads.";
+pub const NOTE: &str = "Special encounters: a Dead Hand waits in the dark hole in east Hyrule Field (by the ReDead and the chest) and in the foggy hole at the foot of the Death Mountain Trail (with the Baby Dodongos), and an Iron Knuckle stands in the open field between Kakariko, Lon Lon Ranch and Kokiri Forest and gets up when you come close. Nine Like Likes wait around Lake Hylia, child and adult. Child Hyrule Field gets 24 more Guays in six loose flocks over the open grass. Twelve Octoroks swim in the open water of Lake Hylia, along the two rope bridges and off the fishing pond shore, child and adult (once the lake is full again). Ten Mad Scrubs hide in the trees south west of Lon Lon Ranch, in both maps. Ten Beamos stand between the pillars of the adult Temple of Time hall and are only there after the first adult scenes in the temple. They are a new kind with a longer sight, so they see Link anywhere in the aisle; the game's own Beamos are untouched. They come back whenever the area reloads.";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum What {
@@ -29,6 +36,9 @@ pub enum What {
     IronKnuckle,
     LikeLike,
     Guay,
+    Octorok,
+    MadScrub,
+    Beamos,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -41,7 +51,7 @@ pub struct Place {
     pub turn: f32,
 }
 
-pub const PLACES: [Place; 36] = [
+pub const PLACES: [Place; 68] = [
     Place { name: "dead_hand_hyrule_field_hole", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::DeadHand, at: [148.6, 136.41, 13.7], turn: 0.7887344 },
     Place { name: "dead_hand_death_mountain_hole", dir: "DeathMountainTrail", maps: &["DeathMountainTrail_Child", "DeathMountainTrail_Adult"], what: What::DeadHand, at: [-5.0, 58.17, -38.5], turn: 0.2617994 },
     Place { name: "iron_knuckle_hyrule_field", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::IronKnuckle, at: [134.0, 157.7, 168.5], turn: 0.0 },
@@ -78,6 +88,38 @@ pub const PLACES: [Place; 36] = [
     Place { name: "guay_hyrule_field_east_middle_2", dir: "HyruleField", maps: &["HyruleField_Child"], what: What::Guay, at: [143.0, 159.3, 131.0], turn: 2.1 },
     Place { name: "guay_hyrule_field_east_middle_3", dir: "HyruleField", maps: &["HyruleField_Child"], what: What::Guay, at: [144.0, 158.1, 138.0], turn: 3.7 },
     Place { name: "guay_hyrule_field_east_middle_4", dir: "HyruleField", maps: &["HyruleField_Child"], what: What::Guay, at: [137.0, 159.7, 139.0], turn: 5.2 },
+    Place { name: "octorok_lake_hylia_bridge_1_north_1", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-179.7, 129.0, 435.1], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_1_north_2", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-187.7, 129.0, 441.7], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_1_north_3", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-194.5, 129.0, 445.7], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_1_south_1", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-174.9, 129.0, 445.5], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_1_south_2", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-185.5, 129.0, 452.4], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_2_west_1", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-206.4, 129.0, 470.8], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_2_east_1", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-192.9, 129.0, 474.6], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_2_west_2", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-205.8, 129.0, 481.1], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_2_east_2", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-193.0, 129.0, 484.0], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_bridge_2_west_3", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-206.9, 129.0, 489.1], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_fishing_pond_shore_1", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-114.2, 129.0, 472.8], turn: 0.0 },
+    Place { name: "octorok_lake_hylia_fishing_pond_shore_2", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::Octorok, at: [-103.5, 129.0, 465.5], turn: 0.0 },
+    Place { name: "mad_scrub_ranch_trees_1", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-154.2, 143.89, 286.3], turn: 0.0 },
+    Place { name: "mad_scrub_ranch_trees_2", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-137.9, 145.36, 289.4], turn: 0.9 },
+    Place { name: "mad_scrub_ranch_trees_3", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-116.3, 148.27, 294.1], turn: 1.8 },
+    Place { name: "mad_scrub_ranch_trees_4", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-98.5, 147.53, 301.1], turn: 2.7 },
+    Place { name: "mad_scrub_ranch_trees_5", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-76.2, 149.12, 310.2], turn: 3.6 },
+    Place { name: "mad_scrub_ranch_trees_6", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-161.7, 142.29, 312.2], turn: 4.5 },
+    Place { name: "mad_scrub_ranch_trees_7", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-150.6, 142.72, 319.7], turn: 5.4 },
+    Place { name: "mad_scrub_ranch_trees_8", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-139.8, 143.56, 323.5], turn: 6.3 },
+    Place { name: "mad_scrub_ranch_trees_9", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-118.4, 144.69, 328.6], turn: 7.2 },
+    Place { name: "mad_scrub_ranch_trees_10", dir: "HyruleField", maps: &["HyruleField_Child", "HyruleField_Adult"], what: What::MadScrub, at: [-97.4, 144.54, 330.2], turn: 8.1 },
+    Place { name: "beamos_temple_of_time_north_1", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [85.0, 103.94, -43.5], turn: 0.0 },
+    Place { name: "beamos_temple_of_time_north_2", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [92.5, 103.94, -43.5], turn: 0.0 },
+    Place { name: "beamos_temple_of_time_north_3", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [99.5, 103.94, -43.5], turn: 0.0 },
+    Place { name: "beamos_temple_of_time_north_4", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [106.5, 103.94, -43.5], turn: 0.0 },
+    Place { name: "beamos_temple_of_time_north_5", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [113.5, 104.01, -43.5], turn: 0.0 },
+    Place { name: "beamos_temple_of_time_south_1", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [85.0, 103.94, -24.5], turn: 3.1415927 },
+    Place { name: "beamos_temple_of_time_south_2", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [92.5, 103.94, -24.5], turn: 3.1415927 },
+    Place { name: "beamos_temple_of_time_south_3", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [99.5, 103.94, -24.5], turn: 3.1415927 },
+    Place { name: "beamos_temple_of_time_south_4", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [106.5, 103.94, -24.5], turn: 3.1415927 },
+    Place { name: "beamos_temple_of_time_south_5", dir: "Market", maps: &["Market_Adult"], what: What::Beamos, at: [113.5, 103.96, -24.5], turn: 3.1415927 },
 ];
 
 pub fn file(dir: &str, map: &str, kind: &str) -> String {
@@ -194,9 +236,46 @@ pub fn like_like(y: &mut Byml, p: &Place, raws: &[&[u8]], map: &str) -> Res<usiz
 pub fn guay(y: &mut Byml, p: &Place, raws: &[&[u8]], map: &str) -> Res<usize> {
     let mut taken: Vec<u64> = Vec::new();
     let id: u64 = next(raws, &mut taken, &format!("{SEED} {map} {}", p.name));
-    let mut g: Node = actor(GUAY, id, p.at, euler(0.0, p.turn));
-    g.set("Dynamic", Node::Map(vec![(NIGHT.to_string(), Node::Bool(true))]));
+    let g: Node = actor(GUAY, id, p.at, euler(0.0, p.turn));
     list(y, "Actors")?.push(g);
+    Ok(1)
+}
+
+pub fn octorok(y: &mut Byml, p: &Place, raws: &[&[u8]], map: &str) -> Res<usize> {
+    let mut taken: Vec<u64> = Vec::new();
+    let id: u64 = next(raws, &mut taken, &format!("{SEED} {map} {}", p.name));
+    let mut o: Node = actor(OCTO, id, p.at, euler(0.0, p.turn));
+    o.set("Dynamic", Node::Map(vec![("Drop__DropTable".to_string(), Node::Str("None".to_string()))]));
+    if map == ADULT {
+        let flag: Vec<(String, Node)> = vec![("FlagName".to_string(), Node::Str(LAKE_FULL.to_string())), ("IsCheckLazy".to_string(), Node::Bool(false)), ("IsNegation".to_string(), Node::Bool(false))];
+        o.set("Presence", Node::Map(flag));
+    }
+    list(y, "Actors")?.push(o);
+    Ok(1)
+}
+
+pub fn mad_scrub(y: &mut Byml, p: &Place, raws: &[&[u8]], map: &str) -> Res<usize> {
+    let mut taken: Vec<u64> = Vec::new();
+    let body: u64 = next(raws, &mut taken, &format!("{SEED} {map} {} body", p.name));
+    let leaf: u64 = next(raws, &mut taken, &format!("{SEED} {map} {} leaf", p.name));
+    let b: Node = actor(SCRUB, body, p.at, euler(0.0, p.turn));
+    let mut l: Node = actor(LEAF, leaf, p.at, euler(0.0, p.turn));
+    l.set("Links", Node::Arr(vec![reference(leaf, body)]));
+    let acts: &mut Vec<Node> = list(y, "Actors")?;
+    acts.push(b);
+    acts.push(l);
+    Ok(2)
+}
+
+pub fn beamos(y: &mut Byml, p: &Place, raws: &[&[u8]], map: &str) -> Res<usize> {
+    let mut taken: Vec<u64> = Vec::new();
+    let id: u64 = next(raws, &mut taken, &format!("{SEED} {map} {}", p.name));
+    let mut b: Node = actor(BEAMOS, id, p.at, euler(0.0, p.turn));
+    b.set("Dynamic", Node::Map(vec![("Drop__DropTable".to_string(), Node::Str("None".to_string()))]));
+    b.set("Scale", crate::difficulty::ambush::floats([BEAMOS_SCALE; 3]));
+    let flag: Vec<(String, Node)> = vec![("FlagName".to_string(), Node::Str(FIRST_ADULT.to_string())), ("IsCheckLazy".to_string(), Node::Bool(false)), ("IsNegation".to_string(), Node::Bool(false))];
+    b.set("Presence", Node::Map(flag));
+    list(y, "Actors")?.push(b);
     Ok(1)
 }
 
@@ -206,6 +285,9 @@ pub fn place(y: &mut Byml, p: &Place, raws: &[&[u8]], map: &str) -> Res<usize> {
         What::IronKnuckle => iron_knuckle(y, p, raws, map),
         What::LikeLike => like_like(y, p, raws, map),
         What::Guay => guay(y, p, raws, map),
+        What::Octorok => octorok(y, p, raws, map),
+        What::MadScrub => mad_scrub(y, p, raws, map),
+        What::Beamos => beamos(y, p, raws, map),
     }
 }
 
@@ -393,6 +475,66 @@ mod tests {
     }
 
     #[test]
+    fn the_octoroks_wait_for_the_full_lake_in_the_adult_map_only_and_a_scrub_comes_with_its_leaf() {
+        let mut child: Byml = map();
+        let mut adult: Byml = map();
+        for p in PLACES.iter().filter(|p| p.what == What::Octorok) {
+            assert_eq!(place(&mut child, p, &[], "HyruleField_Child").unwrap(), 1);
+            assert_eq!(place(&mut adult, p, &[], ADULT).unwrap(), 1);
+        }
+        assert_eq!(count(&child, OCTO), 13);
+        assert!(actors(&child).iter().all(|a| a.get("Presence").is_none()));
+        let gated: Vec<&Node> = actors(&adult).iter().filter(|a| a.get("Presence").is_some()).collect();
+        assert_eq!(gated.len(), 12);
+        for a in gated {
+            assert_eq!(a.get("Presence").and_then(|p| p.get("FlagName")), Some(&Node::Str(LAKE_FULL.to_string())));
+            assert_eq!(a.get("Presence").and_then(|p| p.get("IsNegation")), Some(&Node::Bool(false)));
+        }
+        let mut y: Byml = map();
+        for p in PLACES.iter().filter(|p| p.what == What::MadScrub) {
+            assert_eq!(place(&mut y, p, &[], "Test").unwrap(), 2);
+        }
+        assert_eq!((count(&y, SCRUB), count(&y, LEAF)), (10, 10));
+        for l in actors(&y).iter().filter(|a| text(a, "Gyaml") == LEAF) {
+            let Some(Node::U64(dst)) = l.get("Links").and_then(|k| k.as_arr()).and_then(|k| k[0].get("Dst")) else {
+                panic!("the leaf links to its scrub");
+            };
+            let body: &Node = actors(&y).iter().find(|a| hash_of(a) == Some(*dst)).unwrap();
+            assert_eq!(text(body, "Gyaml"), SCRUB);
+            assert_eq!(vec3(body, "Translate"), vec3(l, "Translate"));
+        }
+    }
+
+    #[test]
+    fn ten_beamos_stand_between_the_pillars_and_wait_for_the_first_adult_scenes() {
+        let beamos: Vec<Place> = PLACES.iter().filter(|p| p.what == What::Beamos).copied().collect();
+        assert_eq!(beamos.len(), 10);
+        assert!(beamos.iter().all(|p| p.maps == ["Market_Adult"] && p.dir == "Market"));
+        let mut y: Byml = map();
+        for p in &beamos {
+            assert_eq!(place(&mut y, p, &[], "Market_Adult").unwrap(), 1);
+        }
+        assert_eq!(count(&y, BEAMOS), 10);
+        let mut ids: Vec<u64> = actors(&y).iter().filter_map(hash_of).collect();
+        ids.sort();
+        ids.dedup();
+        assert_eq!(ids.len(), 11);
+        for a in actors(&y).iter().filter(|a| text(a, "Gyaml") == BEAMOS) {
+            assert!(a.get("Links").is_none() && a.get("Name").is_none());
+            assert_eq!(a.get("Dynamic").and_then(|d| d.get("Drop__DropTable")), Some(&Node::Str("None".to_string())));
+            assert_eq!(a.get("Presence").and_then(|p| p.get("FlagName")), Some(&Node::Str(FIRST_ADULT.to_string())));
+            assert_eq!(a.get("Presence").and_then(|p| p.get("IsNegation")), Some(&Node::Bool(false)));
+            assert_eq!(text(a, "Gyaml"), "Enemy_Beamos_Temple");
+            assert_eq!(vec3(a, "Scale"), Some([BEAMOS_SCALE; 3]));
+            let t: [f32; 3] = vec3(a, "Translate").unwrap();
+            assert!(t[0] > 80.0 && t[0] < 116.0 && ((t[2] + 43.5).abs() < 0.01 || (t[2] + 24.5).abs() < 0.01));
+        }
+        for g in GROUPS {
+            assert_eq!(y.root.get(g).unwrap().as_arr().unwrap().len(), 1);
+        }
+    }
+
+    #[test]
     fn the_guays_are_plain_night_flyers_in_the_child_map_only() {
         let guays: Vec<Place> = PLACES.iter().filter(|p| p.what == What::Guay).copied().collect();
         assert_eq!(guays.len(), 24);
@@ -412,7 +554,7 @@ mod tests {
         let mut ids: Vec<u64> = Vec::new();
         for a in actors(&child).iter().filter(|a| text(a, "Gyaml") == GUAY) {
             assert!(a.get("Links").is_none() && a.get("Name").is_none());
-            assert_eq!(a.get("Dynamic").and_then(|d| d.get(NIGHT)), Some(&Node::Bool(true)));
+            assert!(a.get("Dynamic").is_none());
             let t: [f32; 3] = vec3(a, "Translate").unwrap();
             assert!(!seen.contains(&t));
             seen.push(t);
@@ -440,7 +582,7 @@ mod tests {
         let n: usize = hs.len();
         hs.sort();
         hs.dedup();
-        assert_eq!((n, hs.len()), (40, 40));
+        assert_eq!((n, hs.len()), (72, 72));
         let mut bad: Byml = map();
         bad.root.remove("FarDeleteGroups");
         assert!(dead_hand(&mut bad, &PLACES[0], &[], "Test").is_err());
@@ -450,7 +592,7 @@ mod tests {
     fn each_place_is_listed_once_and_the_files_follow_the_places() {
         let names: std::collections::BTreeSet<&str> = PLACES.iter().map(|p| p.name).collect();
         assert_eq!(names.len(), PLACES.len());
-        assert_eq!(files().len(), 4);
+        assert_eq!(files().len(), 5);
         assert!(files().iter().all(|f| f.ends_with("_Static.bcett.byml.zs")));
         assert_eq!(files_of(&PLACES[..1]).len(), 2);
     }
@@ -492,13 +634,20 @@ mod tests {
                 let knights: usize = here.iter().filter(|p| p.what == What::IronKnuckle).count();
                 let likes: usize = here.iter().filter(|p| p.what == What::LikeLike).count();
                 let guays: usize = here.iter().filter(|p| p.what == What::Guay).count();
+                let octos: usize = here.iter().filter(|p| p.what == What::Octorok).count();
+                let scrubs: usize = here.iter().filter(|p| p.what == What::MadScrub).count();
+                let beamos: usize = here.iter().filter(|p| p.what == What::Beamos).count();
                 assert!(o.new > o.old);
                 assert_eq!(count(&now, HAND), count(&was, HAND) + hands, "{}", o.path);
                 assert_eq!(count(&now, FINGERS), count(&was, FINGERS) + 4 * hands, "{}", o.path);
                 assert_eq!(count(&now, KNIGHT), count(&was, KNIGHT) + knights, "{}", o.path);
                 assert_eq!(count(&now, LIKE), count(&was, LIKE) + likes, "{}", o.path);
                 assert_eq!(count(&now, GUAY), count(&was, GUAY) + guays, "{}", o.path);
-                assert_eq!(actors(&now).len(), actors(&was).len() + 5 * hands + knights + likes + guays);
+                assert_eq!(count(&now, OCTO), count(&was, OCTO) + octos, "{}", o.path);
+                assert_eq!(count(&now, SCRUB), count(&was, SCRUB) + scrubs, "{}", o.path);
+                assert_eq!(count(&now, LEAF), count(&was, LEAF) + scrubs, "{}", o.path);
+                assert_eq!(count(&now, BEAMOS), count(&was, BEAMOS) + beamos, "{}", o.path);
+                assert_eq!(actors(&now).len(), actors(&was).len() + 5 * hands + knights + likes + guays + octos + 2 * scrubs + beamos);
                 assert_eq!(&actors(&now)[..actors(&was).len()], actors(&was), "the actors that were there are untouched");
                 let mut hs: Vec<u64> = actors(&now).iter().filter_map(hash_of).collect();
                 let n: usize = hs.len();
@@ -506,8 +655,8 @@ mod tests {
                 hs.dedup();
                 assert_eq!(hs.len(), n, "no hash is used twice in {}", o.path);
                 for g in GROUPS {
-                    let a: usize = was.root.get(g).unwrap().as_arr().unwrap().len();
-                    let b: usize = now.root.get(g).unwrap().as_arr().unwrap().len();
+                    let a: usize = was.root.get(g).and_then(|n| n.as_arr()).map_or(0, |n| n.len());
+                    let b: usize = now.root.get(g).and_then(|n| n.as_arr()).map_or(0, |n| n.len());
                     assert_eq!(b, a + hands, "{g} in {}", o.path);
                 }
                 assert_eq!(now.root.get("AiGroups"), was.root.get("AiGroups"));
@@ -536,6 +685,26 @@ mod tests {
                             }
                         }
                         assert!(t[0] < -80.0 && t[0] > -300.0 && t[2] > 400.0 && t[2] < 590.0 && t[1] > 130.0 && t[1] < 138.0, "a Like Like is inside the lake area");
+                    }
+                    if text(a, "Gyaml") == OCTO {
+                        assert!(t[0] < -100.0 && t[0] > -210.0 && t[2] > 430.0 && t[2] < 495.0 && t[1] == 129.0, "an Octorok is in the lake");
+                        assert_eq!(a.get("Presence").is_some(), o.path.contains("_Adult"), "only the adult Octoroks wait for the full lake");
+                    }
+                    if text(a, "Gyaml") == SCRUB {
+                        for (g, d) in &near {
+                            if (g.starts_with("Enemy_") && !g.starts_with("Enemy_Scrub_Mad")) || g.contains("Tree") {
+                                assert!(*d >= 3.0, "a Mad Scrub sits {d} from {g}");
+                            }
+                        }
+                        assert!(t[0] < -70.0 && t[0] > -165.0 && t[2] > 280.0 && t[2] < 335.0, "a Mad Scrub is in the ranch trees");
+                    }
+                    if text(a, "Gyaml") == BEAMOS {
+                        for (g, d) in &near {
+                            if g.starts_with("Enemy_") || g.starts_with("Obj_TBox") || g.starts_with("Npc_") || g.starts_with("Obj_TimeTemple") || g.starts_with("Obj_Pot") {
+                                assert!(*d >= 3.0, "a Beamos sits {d} from {g}");
+                            }
+                        }
+                        assert!(o.path.contains("Market_Adult") && a.get("Presence").is_some(), "Beamos are only in the adult Market and wait for the first adult scenes");
                     }
                     if text(a, "Gyaml") == HAND {
                         let landing: &Node = actors(&was)

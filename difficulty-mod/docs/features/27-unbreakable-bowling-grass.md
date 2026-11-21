@@ -50,3 +50,9 @@ Not done yet; needs a person or a bridge session. Make a test mod from `<playtes
 
 ## Seen in the game (20 Nov)
 Passed by the user by hand in hands-on session 6: the lane obstacles stay standing. In rc 16. Menu text: "The grass in the Bombchu Bowling lanes can't be broken, so steer your Bombchus around it." Idea by Sabriel.
+
+
+## Moved from STATUS.md (20 Nov): pointer
+
+Passed by hand in session 6 (see feature 29's moved notes). - **Credit:** the unbreakable Bombchu Bowling grass was inspired by Sabriel. Thank them in the feature doc, the changelog and any pull request description that includes it.
+- **New request (20 Nov): unbreakable Bombchu Bowling grass**, a new difficulty setting so the lane grass can't be cut or blown away. Being built on `feature/bowling-grass`.

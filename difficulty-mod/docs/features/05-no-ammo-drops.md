@@ -1,6 +1,6 @@
 # Limited ammo (was "No ammo drops")
 
-Setting `no_ammo_drops` (number 115), checkbox. Code: `crates/core/src/difficulty/drops.rs` and `difficulty/lottery.rs`.
+Setting `no_ammo_drops` (number 115), checkbox. Code: `randomizer/core/src/difficulty/drops.rs` and `difficulty/lottery.rs`.
 
 ## Request
 "no ammo drops (checkbox)"
@@ -30,28 +30,55 @@ One more type, 2121460961, means "whatever you are lowest on" and carries a list
 - "Whatever you are lowest on" entries have the ammo types removed from their list, leaving magic.
 - In the global lottery file the low-ammo boosts are set to 0 and the eight ammo actor names are pointed at the green rupee.
 
-## Limited ammo: how the boss exceptions work (feature 27)
-Boss arenas are not separate maps with data we can tell apart (the real boss rooms are rooms inside each dungeon's map file; only the Boss Rush copies under `Banc/DreamWorld` are separate). Per-map or per-room edits would mean rewriting dungeon map files. The game already stocks its fights through named drop tables, so the exception is by table name:
+## Limited ammo: what is kept (feature 27, redone in round 2, 20 Nov)
+Your rule: remove drops from enemies, pots, grass, trees and crates; anything near a boss or in a shop stays; anything an enemy drops during a boss fight stays; and ammo must be obtainable during locked sequences that need it. Boss arenas are rooms inside the dungeon map files, so the exceptions are by drop table name (the game already stocks its fights through named tables).
+
+How the game helps a player who is low: some tables carry an entry of ammo type with 0% chance, and the global lottery file adds a boost (`AddProbability`) to entries of that type when the player is low. Round 1 zeroed those boosts for every table, which silently removed the help from places that depend only on it (the remedy spawners in the Ganondorf tower and Ganon fights, the Bongo Bongo hands, Gohma's room). Round 2 leaves the ammo boosts as in the game and instead **deletes the typed ammo entries from every ordinary table**, so the boost has nothing to feed outside the kept tables. Named ammo entries (a table that names the Deku Seed actor) get 0%, as before. "Most needed" lists lose their ammo, keeping magic. Hearts are unchanged (their boost is still zeroed by the hearts setting).
+
+Kept exactly as in the game:
 
 | Table | Used by | Why kept |
 |---|---|---|
-| `DropTable_Enemy_RangedWeapon_02` | Gohma eggs and larvae | 80% Deku Seed (named actor); Gohma's room has no other seed source except two grass tufts that already name seeds in the map |
+| `DropTable_Enemy_RangedWeapon_01` | Poe Meg (miniboss, sealed room) | 100% ammo for the weapon you hold |
+| `DropTable_Enemy_RangedWeapon_02` | Gohma eggs and larvae | 80% Deku Seed, plus the low-supply seed boost |
+| `DropTable_ResourceSupply_Gohma` | pots, grass, crates, rocks in Gohma's room | seed and nut help by the low-supply boost (restored in round 2) |
 | `DropTable_ResourceSupply_FinalBattle` | rubble in the final battle | 15% arrow bundle |
-| `DropTable_Enemy_RangedWeapon_01` | Poe Meg (a miniboss, sealed room) | 100% ammo for the weapon you hold |
-| `Drop_ResourceSupply_BeforeBoss*` | the pots in the room before each boss door, and the pots in Ganondorf's room | these tables have no probability list (they pick the most needed of magic, ammo, bombs), so the old edit never touched them |
+| `DropTable_Ganon_Remedies_00/01/02` | the periodic spawners in the Ganondorf tower and Ganon fights (also placed in the Shadow Temple Bongo Bongo room) | hearts, magic and arrows when low (restored in round 2) |
+| `Enemy_DungeonBoss_BongoBongo_00` | the Bongo Bongo hands | arrows and magic when low (restored in round 2) |
+| `Drop_ResourceSupply_BeforeBoss*` | pots and crates in the room before each boss door, and Ganondorf's room | pick the most needed of magic, ammo, bombs |
+| `DropTable_RangeWeapon_01`, `DropTable_RangeWeapon_02`, `DropTable_Obj_Bomb`, `DropTable_Obj_DekuStick` | pots, grass, crates and rocks that the map places with that table by name | 100% ammo; the game's own supply for rooms that need seeds, arrows, bombs or sticks (list below) |
 
-Everything else is cut as before: every ammo entry elsewhere gets 0%, "most needed" lists lose their ammo, the global low-ammo boosts are 0. **Changed from the first version:** the global file's ammo actor names (`ArrowActor`, `BombActor`, ...) are no longer pointed at the green rupee, because the boss tables resolve their ammo through them. Nothing else uses those names once every other ammo entry is at 0% with no boost.
+Everything else loses its ammo: enemy tables, the default pot, grass, tree and rock table (`DropTable_ResourceSupply_00`; trees reach it through their own tree table list), the Deku Nut table, the other bomb tables. Crates have no default drop of their own (their default is `DropTable_None`), so they only drop what the map names, which the same edit covers. The game test reads every actor pack and the foliage pack, so trees, crates, rocks, pots and grass are checked together.
 
-Known losses and judgement calls, for you to decide:
-- The pots before the boss doors are kept as boss supply, so about 25 pots across the dungeons can still give ammo. If you want them cut except in the boss room itself, that needs per-pot map edits (Ganondorf's room pots are placed with those tables).
-- Boss help that only works through the low-ammo boost (the periodic remedy spawner in the Ganondorf and Ganon fights, the Bongo-Bongo hands' table) loses its ammo, because the boost is global and also feeds every other table.
+## Locked sequences that need ammo (round 2)
+Found by scanning every map file for eye switches and for supply placed by name. The game puts a 100% ammo pot, grass tuft or crate in or beside these, always through the four named tables above, so they are kept:
+
+| Place | Needs | What stays |
+|---|---|---|
+| Inside the Deku Tree: two eye switches, the Gohma room | Deku Seeds | grass with `DropTable_RangeWeapon_01`, stick grass with `DropTable_Obj_DekuStick`, seed tufts named in the map |
+| Dodongo's Cavern: three eye switches, King Dodongo | seeds, bombs | pots with `DropTable_RangeWeapon_01/02`; bomb flowers are placed objects, untouched |
+| Forest Temple: five eye switches, Phantom Ganon | arrows, seeds | eight pots with `DropTable_RangeWeapon_01/02`, the pots before the boss door |
+| Fire Temple: one eye switch | bombs | pot with `DropTable_Obj_Bomb` |
+| Water Temple: two eye switches, Morpha | arrows or seeds | pot with `DropTable_RangeWeapon_02` |
+| Spirit Temple: two eye switches, Twinrova | seeds, arrows, bombs | pots with `DropTable_RangeWeapon_01`, `DropTable_Obj_Bomb` |
+| Shadow Temple: bomb rooms, Bongo Bongo | bombs, arrows | respawning bomb pots, the remedy spawners and the hands' table in the boss room |
+| Bottom of the Well, Gerudo Training Ground (four eye switches), Gerudo Fortress | bombs, arrows | pots and crates with `DropTable_Obj_Bomb`, `DropTable_RangeWeapon_01` |
+| Ganon's Castle (tower, Ganondorf, Ganon, final battle) | arrows, bombs | the pots in the tower and Ganondorf's room, the remedy spawners, rubble in the final battle, two pots that name a Bomb and an Arrow bundle directly in the map |
+
+I did not trace which doors shut behind the player. A room is listed if the map has an eye switch or bomb puzzle and a placed supply. Every eye switch found sits in a dungeon that has such supply.
+
+## Known losses and judgement calls
+- The four puzzle tables are named per placement in the map, not per room, so a few overworld placements that use them still drop ammo: bomb rocks on Death Mountain Trail and in the Crater, one grass tuft in Hyrule Field, one pot in the Market, stick pots in Zora's River, Zora's Domain and Goron City. Cutting them needs per-actor map edits, which I left out; say if you want them.
+- Every dungeon pot or crate the map gives those tables stays, whether or not its room is locked, because telling them apart needs per-room analysis.
+- Ammo named directly in the map actor (not a table) is untouched: two Deku Tree seed tufts besides Gohma's two, one stick pot in Goron City, and the two Ganon's Castle pots.
 - Bomb flowers in King Dodongo's room and the Flare Dancer's room are placed objects, not drops: untouched.
-- Pots and grass that name an ammo actor directly in the map (the two seed tufts in Gohma's room) were never touched by this setting.
+- Not played in the game. The reading that a 0% typed entry is fed by the low-supply boost comes from the data (the Gohma, Meg, remedy and Bongo tables are built that way), not from seeing it.
 
 ## How I tested it
 - Unit tests for each case, including the "lowest on" list.
 - The game-file test for the global file.
 - rc 1 in the game, by you: **did not appear to work.** Same cause as hearts.
+- Round 2 (20 Nov, cargo, branch `feature/limited-ammo`): the game test reads every actor pack and the foliage pack, applies the edit and asserts that no ordinary table keeps a live ammo entry, a typed ammo entry or an ammo "most needed" list; that the Gohma, Meg, final battle, remedy, Bongo Bongo and puzzle tables keep theirs; and the lottery test asserts the ammo boosts are untouched and the heart boost is still zero. Unit tests cover the kept and cut table names and the removal of typed entries. Not played in the game.
 - Feature 27 (cargo, branch `feature/limited-ammo`): `boss_tables_keep_their_ammo_and_every_other_table_loses_it` (unit), `the_game_keeps_ammo_only_in_the_boss_tables` (reads every actor pack and the foliage pack from the game, applies the edit and asserts that the only tables with live ammo are the boss tables, including Gohma, Meg and the final battle, and that ordinary tables such as `DropTable_ResourceSupply_00` and `DropTable_Obj_Bomb` have none), and the lottery test now asserts the ammo actor names are unchanged. Not played in the game.
 
 ## In the game
@@ -76,3 +103,24 @@ Read: map name and the item counts from status/HUD; take a screenshot after each
 
 ## Seen in the game (18 Nov, batch 1, aborted)
 Same mod as 04. Ammo read from the give list after bombs were used: bombs 20 to 9, sticks 10, nuts 20, seeds 30 unchanged during the walk. The number of things cut was not counted, so NOT TESTED.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 05):** No ammo drops
+- **State:** Done (small sample)
+- **What was seen in the game:** Same run as 04: no ammo dropped
+- **Next step:** Pots and enemy kills not sampled yet. With Shopsanity on, the note now warns that a special deal can replace an ammo shelf (review finding 3)
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 27):** "No ammo drops" becomes "Limited ammo" (change request, saved for later)
+- **State:** Built, untested (20 Nov, `feature/limited-ammo` 3c2c674; difficulty tests 190 pass)
+- **What was seen in the game:** Design: ammo is cut everywhere except the game's own boss supply tables (Gohma's eggs and larvae, Poe Meg, final-battle rubble, the pots before each boss door, Gohma's two grass tufts). Setting keeps its id and string position; label is now "Limited ammo". Requested 18 Nov: ammo still drops in boss fights and anywhere else the player cannot flee and would otherwise have no option but to die (the user thinks that is only bosses). Also answers the review's finding that no ammo drops plus shuffled shops can leave no arrow source
+- **Next step:** After the current build is polished and out
+
+
+## Moved from STATUS.md (20 Nov): limited ammo scripted result
+
+  - **Limited ammo:** Kakariko pots gave no seeds or arrows (weak pass, small sample); boss-door pots inconclusive.

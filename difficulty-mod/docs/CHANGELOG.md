@@ -2,6 +2,67 @@
 
 One entry per release candidate (rc), newest first. Each rc is one commit on the `difficulty` branch. "Played" means seen in the running game, by hand or by a script through Longshot's control bridge (see [TESTING.md](TESTING.md)). Feature details are in [features/](features/).
 
+## rc 19
+
+On top of upstream 0.8.2 (0fa64f4) and rc 18. Everything on `playtest/next`: the fixes from the hands-on session of 21 Nov and the Mirror Shield sparkle. No new settings. The fixes made after the second hands-on session (backup ladder order, Lon Lon adult gate, tree enemies, Stalchild waves, the surprise check in grass and others) are **not** in this rc: they come as small separate pull requests.
+
+**Played by hand on 21 Nov and working**
+- Gate 23 (Dark Link) and gate 17 (Graveyard).
+- Mega Like Likes: the shield swallow, their regen, and the green Mirror Shield sparkle when it comes back.
+- Temple of Time Beamos (they reach the aisle and killed Link).
+- Fireball storms: the rocks fly in from the right direction, they land in their own ring (the wrong-spot bug is gone), the areas are twice as big, and a Torch Slug marks each area.
+- Random fuses: bombs, bombchus and Deku Sticks (the stick now burns up).
+- Killing a Mad Scrub; limited ammo; Guay visible in child Hyrule Field; enemy randomizer swaps in Dodongo's Cavern; the Morpha room frame rate; unbreakable Bombchu Bowling grass.
+
+**Fixes in this rc** (built after the first hands-on): Bombchu fuses are now only longer than the game's (3.5 to 5.25 s), bombs and sticks unchanged, so Bombchu Bowling is beatable again (played by hand: beatable, just hard); gates 9 (Stalfos guard), 14 (adult only, bigger wall), 20 (three Stalfos), 21 and 22 (Like Like guard, wall across the bridge only); Stalfos and Wolfos call a lesser kind for backup; pots and grass surprises at 6%; Guay no longer hidden; Baby Dodongos can be swapped; starting kit gains the Master Sword and Biggoron's Sword.
+
+**Not played by hand:** the Desert Colossus storm is switched off (Link fell through the floor), night Stalchild doubling (built, no visible effect), the other gates' real sword kills, gate 20 at night.
+
+**Known problems**
+- **Random enemy sizes (145, 146) do not work.** The game ignores the placement Scale. Labelled "not working yet" on the settings page.
+- **Volvagia in the field (143) is Functional WIP.** She freezes at death and does not regen. The wanted behaviour (red rupee, then she flees) is not built.
+- **Surprises did not show in field grass** (about 30 to 60 tufts cut, none seen).
+- **Gates 14, 19, 21 and 22 are easy to walk round.**
+- **Gates 15 and 16 are in the wrong place** (they block Goron City, not the climb): to be removed.
+- **The enemy backup ladder** is the user's rough order, not a derived difficulty order.
+- **The night Stalchild doubling has no effect.**
+- **The desert storm is switched off.**
+- Mega Like Likes keep calling small Floormasters (they should call none).
+
+**Settings renumbered:** upstream 0.8.2 took 137, 138 and 142 (Nocturne and Prelude triggers, debug names). Skip area intros is now 149 (was 137), Enemy randomizer 150 (was 138), Random fuses 151 (was 142). Settings strings made with rc 17 or 18 and these three settings will not carry them over.
+
+**Build notes:** upstream 0.8.2 merged into `playtest/next` (conflicts in `slice/edit.rs` and `slice/support.rs`, resolved by keeping both sides). Tests pass with the game files: difficulty 296, whole workspace 2,215.
+
+## rc 18
+
+On top of upstream 0.8.1 (3ee77a6) and rc 17. Adds five features that passed scripted tests since rc 17. Branch `playtest/next`. Five new settings (145 to 148, with 145 and 146 for sizes) are all off by default. **Nothing in this entry has been played by hand.** "Script" means a scripted run in the game through Longshot's control bridge.
+
+- **Temple of Time Beamos reach the aisle** ([features/22](features/22-special-encounters.md)). The ten Beamos are now a cloned pack with longer sight at 1.6x size, so they reach the centre of the aisle. Script: a run down the centre costs 0 to 1.5 hearts. Not played: by hand, the Light Arrows scene (still not checked).
+- **Zora's Domain and bottle fixes** ([features/18](features/18-zora-ambush.md), [features/08](features/08-no-bottles-in-combat.md)). A unit test checks that each Zora cave dropper lies on the way out (cave C was never broken). A bottle used in combat now shows the game's own refusal notice; its wording names the Business Scrub. Script: both seen. Not played: by hand.
+- **Random enemy sizes** (new settings 145 and 146, [features/33](features/33-random-enemy-sizes.md)). **Not working:** the 21 Nov hands-on size gallery showed no change in size, so the game ignores the placement Scale. The settings page labels them "not working yet". Wild was played by script in 5 maps, but that only showed the actors were placed. Not played: Mild, enemies stuck in walls, the mix with other settings. It adds about 27 MB to the build when health follows size.
+- **Shorter timers** (new setting 147, [features/34](features/34-shorter-timers.md)). Timed switches, eye switches and torches give less time. Script: switch and torch times measured. Not proven: winning the Dodongo's Cavern torch room at 50%, and the eye switches.
+- **Damage taken** (new setting 148, [features/35](features/35-damage-options.md)). Normal, Double, Quadruple or One hit kills. Script: played, including a fairy revive. Not covered: pit and lava respawn, several grabs.
+
+**Build notes:** merged onto rc 17 by hand (the timers and damage branches conflicted in `difficulty.rs` and the menu; resolved by keeping both). Setting numbers 136 to 148 are unique. Tests pass (difficulty 292, settings 113, whole workspace 2,173 with the game files).
+
+## rc 17
+
+On top of upstream 0.8.1 (3ee77a6) and rc 16. Adds the features that passed scripted tests since rc 16. Branch `playtest/next`. Four new settings (138, 142, 143, 144) and the area-intros one (137); all off by default. **Nothing in this entry has been played by hand yet**, except where it says so. "Script" means a scripted run in the game through Longshot's control bridge.
+
+- **Gates 14 to 23 and gate 9** ([features/20](features/20-enemies-block-the-way.md)). Gates at the crater pocket, the Death Mountain Trail (child and adult), the Graveyard (child and adult), the Hyrule Field neck, Lon Lon Ranch, Lake Hylia's bridge (child and adult) and Ganon's Castle (Dark Link), from the marks you drew on the map, plus a Wolfos at the Lost Woods gate. The guards must stand on the game's own navigation floor (a unit test checks every one). Script: the barrier holds and drops when the guards die at 9, 14, 15, 16 (after moving the Dodongo that fell through the floor), 17, 18, 19, 21, 22 and 23; gate 15 is absent without the sword and appears at once when it is given. Gate 20 (Lon Lon Ranch) guards are cloned Leevers (a giant with 8x life and five small ones): by script, real sword hits killed all six and the barrier dropped. Not played: a hand session; real sword kills at any other gate (the script killed those guards with its own damage command); gate 20 at night and the vanilla Wasteland Leevers; arrival at the Graveyard by the Nocturne; gate 22 with the lake drained; the climb out of the crater pocket (not possible for a child, same as the game's pocket).
+- **Volvagia roams adult Hyrule Field** (new setting 143, [features/21](features/21-volvagia-roams-hyrule-field.md)). By script: she appears on a new save, wakes when Link comes close, flies, breathes fire and burns Link, dies to Megaton Hammer hits (about 7 minutes of swings), leaves no body within about 10 seconds, comes back after leaving and re-entering the field, and is gone once `HavePlayedEvent.Dm_FireTemple_BossOut` is set (it was set by hand with the control bridge to test this). Her health follows "Enemy health" (30 of 30 at 50%). The child field is unchanged. Not played: the real Fire Temple fight won with the setting on (the flag was only set by the test tool), her damage under "Enemy damage", a hand fight. Q17 (is she too harsh: about 3 hearts a hit every 6 s, only the hammer hurts her) is open.
+- **Shield-eating mega Like Likes** (new setting 144, [features/32](features/32-shield-eating-like-likes.md)). Three bigger Like Likes (1.6x size, 3x life) in the Deku Tree meadow of Kokiri Forest, child and adult. When one swallows Link it takes a shield (Mirror, then Hylian, then Deku, one per swallow); killing one gives the Hylian and Deku shields back as pickups, and the Mirror goes back to the pouch silently. By script: both maps load, a swallow removes the shield (the pause menu showed the empty slot), a kill brings it back with no duplicate, they return after a reload, dying in the belly and Try Again keeps the saved shields. Not played: a fight by hand, how 3x life feels, the Mirror as a child, a get-item scene for the returned Mirror (not built).
+- **Special encounters: Lake Hylia Octoroks, Mad Scrubs and Temple of Time Beamos** (part of "More enemies" above 1x, [features/22](features/22-special-encounters.md)). Twelve Octoroks in the open water of Lake Hylia, ten Mad Scrubs in the trees south west of Lon Lon Ranch, ten Beamos between the pillars of the adult Temple of Time. By script: Octoroks surface, spit rocks and die to slingshot seeds (3 or 4 at once took 15 hearts from a swimming Link; frame rate 35 to 50, dips to 22 to 29); the Mad Scrubs pop up and hit Link with nuts and none was seen inside a tree. Not played: killing a Mad Scrub (the script could not), the adult field's scrubs, the full lake. **The Beamos were not played at all**: they are built to appear after the first adult scenes in the temple and nobody has seen them. Not checked: whether they act during the Light Arrows scene.
+- **Fireball storms: more spots, rocks from the volcano** (setting 140). New storm spots (Desert Colossus flats, Hyrule Field south east and near the Market, the Wasteland dunes, the Death Mountain Trail on every visit), and the rocks now arc in from the direction of Death Mountain. By script: all load at 58 to 61 frames a second and rocks and fire are seen at each spot, standing, dodging and on a landing spot. **The direction of the rocks is not seen** (the script cannot judge it). The child Wasteland is black in the game even without the mod (a teleport quirk), so it was not tested. The Trail walk could not be told apart from the game's own boulders.
+- **Random fuses** (new setting 142, [features/31](features/31-random-fuses.md)). Bombs, Bombchus and lit Deku Sticks get a random fuse (bombs 1 to 4 s, Bombchus 2 to 3.5 s, sticks 10 to 24 s). By script: 20 bombs and 10 Bombchus all exploded, none vanished; sticks burned 11 to 19 s on an earlier build with the 5 to 24 s range. Not played: by hand, bomb flowers, Bombchu Bowling (its Bombchus share the actor, so they get short fuses too).
+- **Skip area intros** (new setting 137). The first-visit intro scenes of overworld areas and dungeon entrances that only show the place are skipped, and each area is marked visited. Played by hand at the Fire Temple entrance (session 7: works); the other areas were not looked at one by one.
+- **Limited ammo, round 2** ("No ammo drops" renamed "Limited ammo"; boss fights keep their ammo, puzzle supply kept). Unit tests only. **Not played in the game.** The Deku Tree, Dodongo's Cavern and the other eye-switch rooms were not walked.
+- **Enemy randomizer v3** (new setting 138). Also swaps enemies that carry `Presence` or `IsPhysicsStable`. v2 maps loaded in the game; **v3 was not loaded or played.** Still to load: Bottom of the Well, Dodongo's Cavern, Ice Cavern, the child Spirit Temple. How enemies move and whether they stay inside walls is not judged.
+
+**Not in this rc:** faster blocks (own upstream pull request, setting 141), skip first pickup text (#53).
+
+**Build notes:** tests pass (difficulty 259, settings 110, whole workspace 2,140 with the game files). The branches were merged onto rc 16 and upstream 0.8.1 by hand: the old playtest branch had been left behind at rc 15 work. The test lists now also count Volvagia, mega Like Likes, fuses and the randomizer.
+
 ## rc 16
 
 On top of upstream 0.8.0 (06cc58f). Adds the features that were tested since rc 15. Branch `release/rc16`.

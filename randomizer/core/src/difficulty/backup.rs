@@ -37,7 +37,7 @@ pub const USED: &str = "OotrrBackupUsed";
 pub const TABLE: &str = "Component/Blackboard/BlackboardParamTable/EnemyCommon.engine__component__BlackboardParamTable.bgyml";
 pub const BOOLS: &str = "BlackboardParamBoolArray";
 pub const CALLERS: &str = "Enemy_";
-pub const HELPERS: [(&str, &str, i32); 15] = [
+pub const HELPERS: [(&str, &str, i32); 19] = [
     ("Enemy_Keese", "Component/ActorHolderParam/OotrrBackup.game__component__ActorHolderParam.bgyml", 1),
     ("Enemy_Keese", "Component/ActorHolderParam/OotrrBackupKeese2.game__component__ActorHolderParam.bgyml", 2),
     ("Enemy_Stalfos_Weak", "Component/ActorHolderParam/OotrrBackupStalfosWeak.game__component__ActorHolderParam.bgyml", 1),
@@ -53,6 +53,10 @@ pub const HELPERS: [(&str, &str, i32); 15] = [
     ("Enemy_Floormaster_Little", "Component/ActorHolderParam/OotrrBackupFloormasterLittle.game__component__ActorHolderParam.bgyml", 1),
     ("Enemy_Biri", "Component/ActorHolderParam/OotrrBackupBiri2.game__component__ActorHolderParam.bgyml", 2),
     ("Enemy_Biri", "Component/ActorHolderParam/OotrrBackupBiri.game__component__ActorHolderParam.bgyml", 1),
+    ("Enemy_Gohma_Larva", "Component/ActorHolderParam/OotrrBackupGohmaLarva.game__component__ActorHolderParam.bgyml", 1),
+    ("Enemy_Stalfos", "Component/ActorHolderParam/OotrrBackupStalfos.game__component__ActorHolderParam.bgyml", 1),
+    ("Enemy_Wolfos_White", "Component/ActorHolderParam/OotrrBackupWolfosWhite.game__component__ActorHolderParam.bgyml", 1),
+    ("Enemy_Dinolfos", "Component/ActorHolderParam/OotrrBackupDinolfos.game__component__ActorHolderParam.bgyml", 1),
 ];
 pub const HELPER: &str = HELPERS[0].0;
 pub const OUT_OF_BOUNDS: &[&str] = &[
@@ -77,14 +81,15 @@ pub const OUT_OF_BOUNDS: &[&str] = &[
 pub const CALLS_NOBODY: &[&str] = &["Enemy_Skulltula_Gold", "Enemy_Poe_Amy", "Enemy_Poe_Beth", "Enemy_Poe_Joelle", "Enemy_Poe_SistersBase", "Enemy_Poe_Flat", "Enemy_Poe_Sharp", "Enemy_Scrub_Business", "Enemy_Scrub_ForestStage", "Enemy_Scrub_Mad_Leaf", "Enemy_Scrub_Deku_Leaf", "Enemy_Scrub_Deku_Brothers"];
 pub const WHO_CALLS_WHOM: &[(&str, usize)] = &[
     ("Enemy_Stalfos_Weak", 3),
-    ("Enemy_Stalfos", 2),
+    ("Enemy_Stalfos_ForChild", 2),
+    ("Enemy_Stalfos", 5),
     ("Enemy_Stalchild", 0),
     ("Enemy_Gibdo", 4),
-    ("Enemy_Wolfos_White", 5),
-    ("Enemy_Wolfos", 1),
+    ("Enemy_Wolfos_White", 16),
+    ("Enemy_Wolfos", 7),
     ("Enemy_Freezard", 6),
-    ("Enemy_Lizalfos", 0),
-    ("Enemy_Dinolfos", 7),
+    ("Enemy_Lizalfos", 15),
+    ("Enemy_Dinolfos", 17),
     ("Enemy_Dodongo", 0),
     ("Enemy_Moblin_Club", 8),
     ("Enemy_Moblin", 9),
@@ -94,7 +99,7 @@ pub const WHO_CALLS_WHOM: &[(&str, usize)] = &[
     ("Enemy_Scrub_Deku", 10),
     ("Enemy_SkullKid", 3),
     ("Enemy_Skulltula", 10),
-    ("Enemy_Gohma_Larva", 10),
+    ("Enemy_Gohma_Larva", 0),
     ("Enemy_Floormaster", 12),
     ("Enemy_Wallmaster", 12),
     ("Enemy_LikeLike", 12),
@@ -625,18 +630,18 @@ mod tests {
             assert!(!excluded(a), "{a} fights and may call");
         }
         let option_3: [(&str, &str, i32); 43] = [
-            ("Enemy_Stalfos", "Enemy_Stalfos_Weak", 1),
+            ("Enemy_Stalfos", "Enemy_Wolfos", 1),
             ("Enemy_Stalfos_ForChild", "Enemy_Stalfos_Weak", 1),
             ("Enemy_Stalfos_Weak", "Enemy_Stalchild", 1),
             ("Enemy_Stalchild", "Enemy_Keese", 1),
             ("Enemy_Stalchild_Big", "Enemy_Keese", 1),
             ("Enemy_Gibdo", "Enemy_ReDead", 1),
-            ("Enemy_Wolfos", "Enemy_Keese", 2),
-            ("Enemy_Wolfos_White", "Enemy_Wolfos", 1),
+            ("Enemy_Wolfos", "Enemy_Lizalfos", 1),
+            ("Enemy_Wolfos_White", "Enemy_Stalfos", 1),
             ("Enemy_Freezard", "Enemy_Keese_Ice", 1),
             ("Enemy_Freezard_Fixed", "Enemy_Keese_Ice", 1),
-            ("Enemy_Lizalfos", "Enemy_Keese", 1),
-            ("Enemy_Dinolfos", "Enemy_Lizalfos", 1),
+            ("Enemy_Lizalfos", "Enemy_Gohma_Larva", 1),
+            ("Enemy_Dinolfos", "Enemy_Wolfos_White", 1),
             ("Enemy_Dodongo", "Enemy_Keese", 1),
             ("Enemy_Moblin_Club", "Enemy_Guay", 1),
             ("Enemy_Moblin", "Enemy_Guay", 2),
@@ -648,7 +653,7 @@ mod tests {
             ("Enemy_Scrub_Deku", "Enemy_Skullwalltula", 1),
             ("Enemy_SkullKid", "Enemy_Stalchild", 1),
             ("Enemy_Skulltula", "Enemy_Skullwalltula", 1),
-            ("Enemy_Gohma_Larva", "Enemy_Skullwalltula", 1),
+            ("Enemy_Gohma_Larva", "Enemy_Keese", 1),
             ("Enemy_Floormaster", "Enemy_Floormaster_Little", 1),
             ("Enemy_Wallmaster", "Enemy_Floormaster_Little", 1),
             ("Enemy_LikeLike", "Enemy_Floormaster_Little", 1),

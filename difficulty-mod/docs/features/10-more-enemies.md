@@ -182,3 +182,32 @@ In rc 16: the Jabu-Jabu water rule above (water spots need a shore within reach 
 
 - **By script** (checks-1120, 10x): 19 Octoroks added in Jabu-Jabu, 10 of them at water level in the business scrub room pool; screenshots show none sunk in a wall.
 - **Not checked by eye:** whether any sits under a ceiling (still in the capture playbook).
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 10):** More enemies (slider 1x to 10x)
+- **State:** Played by hand at 10x in rc 14 and in the rc 15 build (19 Nov: "the extra enemies are great"); rc 15 placement rules not checked one by one
+- **What was seen in the game:** Old 2x maps loaded (rc 4). New 19 Nov (`feature/horde` a6e2ce3, exe `<playtest folder>\horde\ootrr.exe`): slider 1x to 10x; 1.5x and 2x unchanged; above 2x enemies are placed on the game's own navigation mesh by ground class (flat, gentle slope, any, flier, water, ceiling, sand, miniboss), new kinds, groups and minibosses from 5x; caps 240 per map and 120 within 60 units, 12 within 15 units; safe zones around every arrival point (none within 15, at most 2 slow kinds within 30, a 120 degree way out); the multiplier is a ceiling per room or ground patch, limited by usable floor. 1,802 added at 10x over 39 maps (copies included). Second game test: all added enemies present with a wide scan, 59 to 60 fps at 10x with one game copy. Game test 19 Nov: 37 of 38 maps load at 10x; fix round done (Freezard and Guay dropped, child Wasteland dropped, caps lowered); Second test 19 Nov (exe 66bb967 build): 10x frame rate 59 to 60 at every spot tried (control 60); the "missing" enemies were mostly the `enemies` scan window (wider scan: Gerudo Valley adult 35 live instead of 6 to 8, 10x minus 1x live counts match planned); Hyrule Field child death reload with no damage; room-clear doors and Kokiri reload not tested. Played 19 Nov (`<playtest folder>\horde\RESULTS.md`): 37 of 38 edited maps load at 10x, Dodongo included; nothing crashed; slider rises 5x to 10x where enemies appear; frame rate 28 at the busiest spots (child Field, Dodongo; control 60); planned enemies missing in Gerudo Valley (0 of 106), Water Temple, Field adult, Lost Woods adult, Fire Temple; some Freezards fall; Try Again test passed at the Dodongo entrance only; door logic and fights not tested; Third test 19 Nov (rc 14 exe, `<playtest folder>\horde\RESULTS.md`): 10x loads in child Kokiri, child and adult Field, Dodongo, Fire Temple, 58.5 to 60.2 fps at every spot (1x control 60), live added enemies +18 to +127 near the spots, nothing vanished or fell except 1 Tektite and 2 Guays at one Field spot each; all difficulty settings on (5x): Kokiri, Field, Dodongo, Deku Tree load and Link moves, 3 minutes in Field with enemies: up 180 s, 46 to 56 fps (average 49.7)
+- **Next step:** Scripted load test by risk: `<playtest folder>\horde\PLAN.md` (Dodongo's Cavern first, then Hyrule Field at the cap)
+
+
+## Moved from STATUS.md (20 Nov): checks of rc 15 and rc 18 (agent 6)
+
+| **rc 15 and rc 18 checks (agent 6, done)** | `<playtest folder>\checks-1120\RESULTS.md`: 30 pass, 10 fail, 7 not tested.
+  **Seen working:**
+  - 36 edited maps load at 10x.
+  - Peaceful places get nothing added (Kokiri 7 = 7, Kakariko 6 = 6).
+  - Dodongo's Cavern: no enemy loses health in lava, no added Dodongos.
+  - About 95 % of Keese sit on perches.
+  - Iron Knuckles within the cap.
+  - Gates under dungeon shuffle: gate 9's guard is there and blocks; gate 2 has none.
+  - Backup: 17 callers bring the expected lesser helper in 14 to 31 s; business scrub calls nobody.
+  - Regen: a second hit restarts the wait.
+  - Jabu-Jabu: 19 added Octoroks, none in a wall in the shots (the ceiling cannot be judged from a still).
+  **Fails:**
+  - Frame rate at 10x: 27 to 45 fps at busy spots in Dodongo's Cavern, Hyrule Field and the Market (1x: 60). The other game copy ran at the same time, so this is to remeasure alone.
+  - Backup: Wolfos and Bari bring 1 helper, not 2; spear Moblin called nobody in 40 s; Stalchild, Skulltula, Wallmaster, Armos and Biri still call nobody in their home maps (45 s).
+  **Found on the way:**
+  - The `enemies` full scan stalls the game (49 fps idle, 17 fps with a scan every second). It does not grow memory: about 30 GB is normal for a test copy.
+  - The window size comes from `HOS_WINDOW_SIZE` in 96-dpi pixels. The screen is 3840x2160 at 200 %, hence "2560x1440" (RECIPE.md) |

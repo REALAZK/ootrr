@@ -72,3 +72,23 @@ Request: "I also want those creepy small hands that crawl around and attack you 
 - Grass that normally spawns bugs: the clump in east Hyrule Field around the Dead Hand hole is 13 placed actors `Land_kokiri_Plant_A_02_DropFixed_03` (in `HyruleField_Child_Dynamic` and `_Adult_Dynamic`, nowhere else), each with a placement key `Drop__DropActor` = `Animal_Insect`, over a pack with its own table `Land_kokiri_Plant_A_02_DropFixed_03` (one entry: the bug type, 100). Neither `DropTable_Foliage_00` nor `DropTable_ResourceSupply_00`. That table now gets the grass surprises (wall Skulltula, little hands) like the others, and the placement key is removed from those actors in the two map files (the table already gives the same bug at 100, so nothing else changes; a placement key probably overrides the table, so without removing it the surprise could never roll). Composes with the cuts, idempotent. Tables now covered: pots and placed grass (`DropTable_ResourceSupply_00`), foliage grass (`DropTable_Foliage_00`), this bug grass.
 - Guard house pots in the Market: all `Obj_Pot_A_01` with a placement key `Drop__DropActor` = `Obj_Rupee_Green` or `Drop__DropTable` = `None`. These are deliberately fixed (rupees or nothing), so they are left alone, as the pot rules above say.
 - Not played.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 23):** Grass and pot surprises (part of special encounters): 1 in 100 that cut grass or a broken pot spawns a Skulltula (grass) or Poe (pot), or a small crawling hand (both; branch `feature/surprise-hands`, exe `<playtest folder>\hands\ootrr.exe`, test hook env `OOTRR_SURPRISE_CHANCE` 1 to 20), and 1 in 10 plain pots are flying pots
+- **State:** Built, untested (code only)
+- **What was seen in the game:** Nothing. Commit `163112b` on `feature/surprises`; 138 difficulty and 107 settings tests pass
+- **Next step:** Play it: cut about 300 blades and break about 200 pots; look for fake pots in Zora's Domain and Kakariko. Riskiest: whether a drop can create an enemy. Steps in `<playtest folder>\surprises\TESTS.md`. Round 2 (`feature/enc-r2`): rate now 2 percent per surprise (1 in 50), the bug grass round the hole 9 Dead Hand (`Land_kokiri_Plant_A_02_DropFixed_03`) now gets the grass surprises; Market guard house pots are fixed rupee pots and stay as they are
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 26):** Small hands and floor Skulltulas from grass and pots (new request, saved for later)
+- **State:** Built in code, untested (see 23)
+- **What was seen in the game:** Requested 18 Nov: the small crawling hands (the Floormaster's little ones) and the floor Skulltulas sometimes appear instead of bugs or rupees when grass is cut or a pot is broken. Extends the grass and pot surprises (23)
+- **Next step:** After the current build is polished and out
+
+
+## Rate tripled (21 Nov, `fix/playtest-misc`, on `playtest/next` only)
+Hands-on: 91 pots and grass gave one small crawling hand and no rupees. `CHANCE` in `surprises.rs` is now 6 (was 2) per surprise, about one in eight per source; the setting tip says so. The missing rupees were handed to the same fix to check against the limited ammo drop-table edit; the outcome is not recorded here and nothing was played after. Fake pots still never seen. Not played again after the change.

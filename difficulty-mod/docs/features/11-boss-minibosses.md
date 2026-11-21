@@ -104,3 +104,28 @@ In rc 16 (branch `release/rc16`, on top of upstream 0.8.0). Menu text: "A Stalfo
 - **Played by hand** (hands-on sessions 3 and later, 20 Nov): Phantom Ganon and Gohma, the adds appearing with the fight.
 - **Played by script** (round 3, 20 Nov): Phantom Ganon and Twinrova; the adds stand still through the intro and attack within 1 s of the fight starting. Try Again reloads the dungeon entrance; walking in replays the intro and the adds come back once, with no doubling.
 - **Not played:** Barinade (a warp does not start his intro).
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 11):** Bosses spawn minibosses
+- **State:** Built, in the game once
+- **What was seen in the game:** Stalfos seen in Gohma's room standing there before the introduction (19 Nov); now created as the door-shut scene ends in Gohma's room, the other three rooms unchanged rc13 (19 Nov): Deku Tree loads (not black). Stalfos listed at (16.5, 47.2, 74.0) right after the map loads, before any door scene; whether it is visible or active then is not seen. Door walk NOT TESTED (capture playbook).
+- **Next step:** Walk through the Gohma door on feature/boss-adds (build in <playtest folder>\boss-adds); Dodongo stays out
+
+
+## Moved from STATUS.md (20 Nov): session results (round 3, rc 16 scripted checks)
+
+| **Round 3 (agent 14, done)** | `<playtest folder>\round3-1120\RESULTS.md`, 15 pass, 1 fail.
+  **Boss adds at fight start (`feature/boss-adds-start`), seen:** Phantom Ganon and Twinrova. The adds stand still through the intro and attack within 1 s of the fight starting (video).
+  **Try Again** reloads the last autosave, the dungeon entrance, never the boss room. Walking in replays the intro, and the adds come back once, with no doubling.
+  **FAIL: the Shadow Temple does not load with `boss_minions`** (black screen, game frozen; it loads without mods). The cause is the Keese moved into the static map, the same as the King Dodongo case. Move that room back to the dynamic map before merging.
+  **Not tested:** Barinade (a warp does not start the intro); skipping an intro by button (no bridge button skips it: needs a controller, in the playbook); Volvagia, Morpha, Bongo Bongo.
+  **Gates only with a sword, seen:**
+  - gates 9 and 2 absent without the sword, present after;
+  - a Kokiri Sword from Starting items works;
+  - the gate appears at once when the sword is given, without a reload.
+  **Gate kill sequence:** inconclusive; a hit that knocks Link out of the trigger box takes the gate away.
+  **Volvagia stage 1, seen:** the Market loads; she rises at 18 units, circles and breathes fire, with normal battle music and no event. The user says the Market is a bad spot: redesign stage 1 elsewhere |
+
+- **rc 16 scripted checks (20 Nov evening): no FAILs, safe to merge** (`<playtest folder>\rc16-tests\RESULTS.md`). Shadow Temple loads 3 of 3 with boss adds on; every other temple loads, also at 10x with gates and entrance shuffle. Boss adds start with the fight for Volvagia, Bongo Bongo and Twinrova (video). Barinade inconclusive (a warp can't start his intro). Morpha not tested: a warp into the arena hangs on the door camera, also without our mod, so it needs a door walk with the boss key. Fireball storms: the other two spots work, child and adult, first hit 4.6 to 5.5 s. Gates under dungeon shuffle: 3, 4, 5, 9 present, 1 and 2 absent; gate 6 needs a closed-forest seed to tell. Jabu: 12 Octoroks in open water in the shots seen.

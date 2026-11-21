@@ -72,6 +72,7 @@ pub mod settings;
 pub mod shelf;
 pub mod shops;
 pub mod first_pickups;
+pub mod area_intros;
 pub mod short_get;
 pub mod slice;
 pub mod song_lessons;

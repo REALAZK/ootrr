@@ -35,3 +35,11 @@ Never played. To test:
 - Some bosses request a scripted camera focus on themselves (Dead Hand, Ganon, Twinrova); that is separate and may remain.
 - A few enemies ask "am I locked on?" in their AI and will always get "no", which may change how they behave.
 - Fights that could become much harder or stall are listed above. None is confirmed beatable without lock-on.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 15):** No Z-targeting
+- **State:** Done
+- **What was seen in the game:** Confirmed by the user at the controls (18 Nov): enemies cannot be locked on to
+- **Next step:** None

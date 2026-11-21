@@ -206,3 +206,27 @@ c13\RESULTS.md`.
 
 ## Folded into More enemies (19 Nov, `feature/horde-r2`)
 The separate checkbox is gone (setting 130 retired). Every More enemies value above 1x now brings all of these encounters. The horde counts the Hyrule Field knight toward its Iron Knuckle limit (2 per Hyrule Field map).
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 22):** Special encounters (rc 15: no longer a setting; part of more enemies above 1x; setting 130 retired): Dead Hand in hole 9 (Hyrule Field) and hole 23 (Death Mountain Trail), Iron Knuckle in the open part of Hyrule Field
+- **State:** Done, two tweaks wanted
+- **What was seen in the game:** Lake Hylia Like Likes confirmed in the game (19 Nov); the one by the lab removed because of the steep slope, nine remain. Dead Hand and Iron Knuckle confirmed earlier. Build in <playtest folder>\tweaks-r4 Guays (24, child Hyrule Field only) added on `feature/guays`, build in <playtest folder>\guays, not seen in the game. rc13 (19 Nov): Guays over the field: 8 in load range, flying, none vanished or fell, but equally active by day as by night (night-only not seen).
+- **Next step:** Tweaks as before
+
+## Temple of Time Beamos reach (21 Nov, `feature/beamos-range`)
+Result of the rc 17 test: running down the aisle centre (9.5 units from either row) cost 0 health; only hugging a row (5 to 6 units) did.
+- Cause, from the game files: the Beamos sight (`SightParam.DiscoverHorizontalRange`) is 5.95 and the beam itself only reaches about 6 to 7 units. The beam length is not a data field we could find (no length in the actor, beam or shooter files; it is in the beam device code), so it cannot be raised directly.
+- Fix 1, a new kind `Enemy_Beamos_Temple`: a copy of the ordinary Beamos pack (`Pack/Actor/Enemy_Beamos_Temple.pack.zs`, own actor file with `$parent` the ordinary one, own perception receiver file, actor and tag rows copied from `Enemy_Beamos`, size table entries). Only the sight differs: discover range 24 and discover angle 90 (was 5.95 and 20). Death table, life, AI and everything else are the ordinary Beamos' own. The ordinary `Enemy_Beamos` pack and its files are never written (a test checks this); Beamos elsewhere stay vanilla. Code: `difficulty/beamos.rs`, written from `slice/edit.rs` when special encounters are on.
+- Fix 2, size: the ten placements carry `Scale` 1.6 (`BEAMOS_SCALE`). In the game this lengthens the beam: a vanilla-size Beamos' beams fell 2 to 3 units short of Link at 8 units (beams hit the floor beside him, clip frames), a 1.6 one reaches the whole aisle. Each Beamos still stands in its gap between the pillars, on the row; the aisle is not narrowed.
+- Played (21 Nov, Longshot source build, adult, `HavePlayedEvent.Dm_TimeTemple_0065` set before the Market reload, `more_enemies` 200): ten listed; the picture shows several beams on Link along the whole aisle, and Link was lasered (red) mid-aisle. Standing at the centre for 12 s lost 16 quarter hearts (4 hearts) at z -34 and z -37. Six walks down the exact centre (z -34, x 84 to 112 and back, `walk`, about 7 s each): 2, 6, 2, 0, 4 and 0 quarter hearts. Before the fix, scale 1 with ordinary sight: 0. With sight 14 and angle 45 the same six walks gave 6, 0, 2, 2, 6 and 0, so the sight values matter little; the size does. A runner is hit now and then, not every pass: the beam aims, holds, and a moving Link slips out of it. Not tuned further.
+- Open: the ten Beamos together deal modest damage to a runner; if more is wanted, a larger scale or more Beamos. The Light Arrows scene is still untested. The vanilla Beamos elsewhere were not touched and not tested again.
+- Flag note for tests: set `HavePlayedEvent.Dm_TimeTemple_0065` after every game start (it is not saved by the script) and reload the Market (`teleport 3`) so the Beamos exist.
+
+
+## Seen by hand (21 Nov, hands-on 9)
+- Temple of Time Beamos: absent at first because the fresh save lacked `HavePlayedEvent.Dm_TimeTemple_0065` (by design: they come after Sheik's first talk as an adult). With the flag set and the temple re-entered: they appear and killed Link (life 0). Light Arrows scene not looked at.
+- Mad Scrub kill: seen by hand, they die and stay dead until the map reloads.
+- Octoroks at the Lake Hylia bridges: scripted only; 3 to 4 at once took 15 hearts while swimming and the frame rate dipped to 22 to 29; not judged by hand.
+- Guay (crows) over child Hyrule Field were invisible near (97.7, 148, 66). Suspected the size-clone swap or randomizer; fix is on `playtest/next` (`f0297d2`, Guay flocks). Not seen again by hand.

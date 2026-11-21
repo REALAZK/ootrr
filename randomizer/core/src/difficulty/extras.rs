@@ -96,7 +96,7 @@ pub fn own_body(a: &Node, h: u64) -> bool {
     a.get("Phive") == Some(&want)
 }
 
-fn tied(a: &Node) -> bool {
+pub fn tied(a: &Node) -> bool {
     match a.get("Dynamic") {
         Some(Node::Map(m)) => m.iter().any(|e| TIED.iter().any(|t| e.0.contains(t))),
         Some(_) => true,

@@ -393,7 +393,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     }
     let mut late: Vec<crate::staging::Out> = if p.qol.any() { crate::qol::worked(&mut rf, &pk, &p.qol)? } else { Vec::new() };
     late.extend(crate::open_world::worked(&mut rf, &pk, &p.open)?);
-    crate::difficulty::worked(&mut rf, &pk, &p.difficulty, &seed.seed, &mut late)?;
+    let difficulty_notes: Vec<String> = crate::difficulty::worked(&mut rf, &pk, &p.difficulty, &seed.seed, &mut late)?;
     crate::merchant_prices::stage_bean(&mut rf, seed, p.rewards.merchant_prices, p.rewards.bean_sale, &mut late)?;
     // Scenes that are dropped: Link runs the item get with what their check holds.
     let give_for = |loc: &str| -> crate::story_skip::SceneGive {
@@ -488,6 +488,32 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     extra += crate::slice::skull_kit::write(&mut rf, &pk, &mut rst, &skull_drops, kit_pool)?;
     let (cow_files, cow_lines): (usize, Vec<String>) = crate::cow_clone::write(&mut rf, &pk, &mut rst)?;
     extra += cow_files;
+    let leever_classes: Vec<&str> = if p.difficulty.gate_list().iter().any(|g| g.new_kind == crate::difficulty::gates::LEEVER_GIANT) { vec![crate::difficulty::leevers::SMALL_CLASS, crate::difficulty::leevers::GIANT_CLASS] } else { Vec::new() };
+    extra += crate::difficulty::leevers::write(&mut rf, &pk, &mut rst, &leever_classes)?;
+    if p.difficulty.encounters {
+        extra += crate::difficulty::beamos::write(&mut rf, &pk, &mut rst)?;
+    }
+    let volvagia_lines: Vec<String> = if p.difficulty.volvagia {
+        let (n, l): (usize, Vec<String>) = crate::difficulty::volvagia::write(&mut rf, &pk, &mut rst)?;
+        extra += n;
+        l
+    } else {
+        Vec::new()
+    };
+    let mega_lines: Vec<String> = if p.difficulty.mega_like {
+        let (n, l): (usize, Vec<String>) = crate::difficulty::mega_like::write(&mut rf, &pk, &mut rst)?;
+        extra += n;
+        l
+    } else {
+        Vec::new()
+    };
+    let size_lines: Vec<String> = if p.difficulty.sizes.on() && p.difficulty.sized_health {
+        let (n, l): (usize, Vec<String>) = crate::difficulty::sizes::write(&mut rf, &pk, &mut rst)?;
+        extra += n;
+        l
+    } else {
+        Vec::new()
+    };
     if p.open.epona {
         extra += crate::open_world::write_epona_event(&mut rf, &pk, &mut rst)?;
     }
@@ -554,6 +580,7 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
         flows: flows.len() + placed.len(),
     };
     let mut notes: Vec<String> = p.notes.clone();
+    notes.extend(difficulty_notes);
     if !debug_missed.is_empty() {
         notes.push(format!("Debug location names could not hook: {}", debug_missed.join(", ")));
     }
@@ -607,6 +634,18 @@ pub fn build_with(seed: &SeedFile, romfs: &P, load: &P, mod_name: &str, host: Ho
     if !cow_lines.is_empty() {
         notes.push("Cows made into actor classes of their own, untested in the game:".to_string());
         notes.extend(cow_lines.iter().map(|l| format!("  {l}")));
+    }
+    if !volvagia_lines.is_empty() {
+        notes.push("Volvagia roams, files made:".to_string());
+        notes.extend(volvagia_lines.iter().map(|l| format!("  {l}")));
+    }
+    if !mega_lines.is_empty() {
+        notes.push("Mega Like Likes, files made:".to_string());
+        notes.extend(mega_lines.iter().map(|l| format!("  {l}")));
+    }
+    if !size_lines.is_empty() {
+        notes.push("Random enemy sizes, files made:".to_string());
+        notes.extend(size_lines.iter().map(|l| format!("  {l}")));
     }
     if let Some((_, a)) = &loads {
         notes.push(format!("{} events now load the flows their edited events call:", a.len()));

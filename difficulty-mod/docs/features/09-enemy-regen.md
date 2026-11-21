@@ -97,3 +97,16 @@ In rc 16: `fx.rs` and `elink.rs` with the full Farore's Wind sequence (commit 17
 
 - **Played by hand** (session 6, 20 Nov): the game's ordinary effects still work after the shared effect-link edit; the full green heal shows on enemies.
 - **By script:** the effect-link round trip and per-user tests (`cargo test -p ootrr-core difficulty`).
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 09):** Enemies regen health
+- **State:** Built, waiting for a playtest
+- **What was seen in the game:** Old timer seen (19 Nov): +1 hp every 2 s, too fast. Now 10 s without a hit, then +1 hp every 5 s (branch feature/regen-wait, playtest/regen-wait) rc13 (19 Nov, merged build, script): hit a Stalfos; +1 hp came 15.2 s and 15.0 s after the hit, then every 4.9 to 5.4 s. Matches 15 s then 5 s. Hit source unidentified (sword swings did no damage).
+- **Next step:** Not seen yet: the hit flag resetting the wait fx-r1 (19 Nov): effect for regen ticks investigated, not built (`OneShotXLinkSearchAndEmit` found; no shared heal key yet).
+
+
+## Moved from STATUS.md (20 Nov): round 2 results (effects, spawn combo, Zora ambush, fake pots)
+
+| **Round 2 (agent 9, done)** | `<playtest folder>\round2-1120\RESULTS.md`. **Effects, seen:** 10 maps load. A hurt Stalfos flashes at its first regen tick (a blue-white burst on the head, about 0.17 s, clear when in frame, easy to miss in a fight; reads as "stunned"); an unhurt one never flashes. Regen 16 s after the hit, then every 5 to 6 s. Merged into `playtest/next` (e486cc5). Backup flash inconclusive (no helper came in 3 fights); fairy flash and Keese not tested. **Spawn combo, seen:** both stick clicks + D-Down, 12 slots, and a kill frees its slot (the slots are taken in turn, so the next press may hit a slot that is still full). **Cucco revenge off:** no swarm (control passed). **Zora ambush:** cave B passed; **cave C FAIL**: nothing dropped with Link 0.6 to 2.5 units from its wall Skulltula (11.3, 63.0, -3.8). **Fake pots:** one flying pot found in child Zora's Domain (36.2, 114.4, 8.6); it did not fly in 8 s, even after a sword swing (inconclusive). **Not tested:** limited ammo drops and grass and pot surprises (a script cannot find map-placed grass and pots), respawn sooner (Din's Fire kills did not register), room-clear door |

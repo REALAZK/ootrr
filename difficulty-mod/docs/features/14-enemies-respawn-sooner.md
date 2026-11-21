@@ -34,3 +34,11 @@ Never played. To test:
 - Room clears go through a separate counter object that stays permanent, and vanilla already links always-respawning Shaboms to such counters in Jabu-Jabu. That is the evidence it is safe; it is not proof.
 - A half-cleared room probably starts over if you leave.
 - The "diff a special variant against its normal twin" trick is the fastest way to find which field controls a behaviour.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 14):** Enemies respawn sooner
+- **State:** Built, untested
+- **What was seen in the game:** Nothing
+- **Next step:** Batch 2

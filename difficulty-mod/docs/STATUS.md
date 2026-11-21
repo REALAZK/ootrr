@@ -1,233 +1,74 @@
-# Difficulty features: status board
+# Difficulty features: status
 
-Last updated: 20 Nov, session start. Automated session running. Start here, then CLAUDE.md.
+What is going on and what needs the user. Decisions: `DECISIONS.md`. Feature detail and results: `features\`. History: `CHANGELOG.md`, `HISTORY.md`.
 
-Goal set by the user: every requested feature is either **Done** (seen working in the game, polished) or **Blocked** (investigated, with a written reason and the question for the user). Nothing stays at "built, never played".
+## Needs your attention
 
-## Questions for the user (20 Nov session; none blocks the work, I take the default shown)
+- **Review and push rc 17 and rc 18:** `difficulty` is at `bd9da63` (rc 18) on top of `2a2fc47` (rc 17), both local only. Builds `builds_2026-11-21_rc17` and `builds_2026-11-21_rc18`. Include upstream 0.8.1.
+- **Post rc 18 fixes:** `playtest/next` (`4aad32f`) holds the playtest fixes and the Mirror sparkle; they come as one more commit on `difficulty` once they are played.
+- **Pull request #52:** the description `pr-drafts\difficulty-final.md` covers rc 16 to 18 plus today's results. Paste it after the next release candidate.
+- **Screenshot wanted:** where on the Death Mountain Trail gates 15 and 16 should stand (above Goron City).
+- **Question Q17:** is Volvagia in the field too harsh (about 3 hearts a hit every 6 s, only the hammer hurts her)? *Default: leave her deadly.*
+- **Branches to delete (yours):** merged into `difficulty` or `playtest/next`: `feature/beamos-range`, `feature/boss-adds-start`, `feature/bowling-grass`, `feature/damage-options`, `feature/enemy-sizes`, `feature/fireball-storms`, `feature/fx-farore`, `feature/gate-sword`, `feature/mirror-return`, `feature/timed-switches`, `feature/zora-bottle-fixes`, `fix/playtest-gates`, `fix/playtest-misc`, `test/gates-all`, `test/handson`, `test/handson2`, tag `backup/next-pre-rc17`, and their worktrees in `wt\`. Keep `test/size-gallery` until sizes are fixed.
 
-| # | Question | Default I am taking |
+## Right now
+
+| Running | Branch | State |
 |---|---|---|
-| Q13 | Enemy randomizer v2: Keese only ever replace Keese (they hang from surfaces), and child-map Deku Babas are kept (the child's source of sticks and nuts). Keep both locks? | Keep |
-| Q14 | Enemy randomizer v2: also allow enemies whose placement carries Presence or IsPhysicsStable (about 30 more that nothing refers to)? | Not yet, until v2 is seen working |
-| Q15 | Unequipping sword and shield from the menu isn't possible with data edits. Want either alternative: (a) a Longshot test-only unequip button on the playtest panel, (b) an in-game way that ships in the mod (e.g. a prompt that takes your gear off)? | (a) for testing, nothing for the mod yet |
-| Q5 | Limited ammo: the game's low-ammo help in Ganon's fights and from Bongo-Bongo's hands was lost in the first build. Your rule ("not about soft-locking you in an unbeatable battle") says it should stay | Restoring it for boss fights is queued (limited ammo, round 2) |
+| Nothing | | |
 
-Answered 20 Nov: Q12 withdrawn (a cleared gate cannot be remembered: we can read the game's own saved flags but not add new ones, which is why the gates are stateless), Q9 to Q11 (gate editor: marker preview, health kept full, guards of every kind must die), Q8 (Try Again in a boss room: find out by script with screenshots or video, not a question for the user), Q1 and Q6 (gates do not exist until you have a sword), Q2 (libfpv left alone), Q3 (try a few things for Volvagia), Q4 (boss-door pots stay; new definition of limited ammo), Q7 (try all the particle effects). See the decisions below.
-## Decisions and feedback from the user, 20 Nov
+## On `playtest/next`, not yet played by hand
 
-- **Thread switched from Fable to Opus (user, 20 Nov)** because the weekly Fable limit was close. The queue below continues in this thread on Opus. Sub-agents stay on Sonnet, with Opus for hard tasks one at a time.
+- Storm fixes (own ring, doubled areas, Torch Slugs, desert off), Deku Stick burn-up, backup ladder, surprises 6%, night Stalchildren, Guay flocks, Dodongo swaps.
+- Gates 9 (Stalfos), 14 (adult only), 20 (3 Stalfos), 21 and 22 (bridge only); gates 15 and 16 still to move.
 
-- **Upstream release is coming** (maintainer, 20 Nov): the next patch includes the Difficulty mod. The user reviewed the settings page in rc 19 (upstream main 0ae9ee8, which needed a one-line fix to compile). The user asked for:
-  - plainer, human-sounding text that is correct and current, with the "untested" notes removed where things were tested;
-  - Zora's Domain ambush removed as a setting and made part of more enemies, only with the sword;
-  - Bean Seller's pitch removed from the menu and left off ("I don't want to sneak anything in").
-- **New request (20 Nov, evening): enemy randomizer**, modelled on Ship of Harkinian's. Also look for other SoH difficulty options worth adding. Research done (`docs\research-soh.md`). Building v1 (Opus, `feature/enemy-randomizer` in `wt\enemyrando`): swaps placed plain enemies for kinds of the same ground class already in that map, seeded; leaves anything a counter, group, link or event uses alone; child maps only get sword-killable kinds. Next candidates from SoH: random enemy sizes, a timed-switch multiplier, damage options up to one-hit KO.
-- **Skip area intros** (setting 137, `feature/skip-area-intros` ce2822f): built, not played. It adds the dungeon-entrance intros; most area intros were already covered by skip_intro.
-- **Queued (user, 20 Nov):** after the enemy randomizer, in this order: random enemy sizes (optionally with health scaled to size); timed switches and torches with less time; damage options up to a one-hit-KO preset.
-- **Rule from another modder (user endorsed):** Deku Sticks break after one hit in the remake. Never assume a child can stick-fight. "Killable as a child" means killable with the Kokiri Sword alone. Rooms that need kills keep their original enemies.
-- **Hands-on playtests the user plays:** run them from the main thread, not a sub-agent, with sound ON, so the user can give live feedback and the game can be driven in real time.
-- **Saria's greeting and the Z-target Kokiri** are skipped only with open forest or the open Kakariko gate: they are tied to quest status. Upstream's time-saver dev (Ruiz) said they will change that later (20 Nov). Not ours to fix.
-- **Playtest panel** for hands-on sessions: `<playtest folder>\panel\` (buttons, steps, notes with position and screenshot), watched live by the main thread.
-- **Hands-on session 3 (20 Nov afternoon), seen by the user:** first pickups and chest boxes (#53); hints; no area intro on entering Kakariko; boss adds at fight start (Phantom Ganon); regen heal flash. Found: gates and Zora ambush vanished when walking up close, my regression in #52. Fixed in `cc3572a` (trigger held once entered); on local `difficulty`, to push. Zora ambush and the gate kill still to re-check.
-- **Heal effect (user, 20 Nov):** use Farore's Wind's green effect on enemies when they heal, not the white flash. Being built (Opus, `feature/fx-farore`).
-- **Next playtest preset:** add small keys removed, boss key at start, lose heart on death and the spawn combo (all left out of session 3).
-- **Hands-on session 4 (20 Nov late afternoon), seen by the user:** gates without the sword (absent), with the sword (stay when walked up to: the fix works), the guard kill drops the barrier; the Zora ambush works with the fix; the spawn combo; lose heart on death. Enemy randomizer v1: works but is too subtle ("boring"). v2 built (``b461862``, not played): 91 swaps in 16 maps, into 15 kinds; 78% of the 117 enemies the safety rules allow; the Fire Temple's 18 go to 9 kinds. The count is limited by the safety rules, not the pool.
-- **Gate editor, user feedback:** keys 1 to 4 accepted. Wanted: existing gates and guards visible in edit mode; guards locked in place (re-put every 1 s); a real barrier rendered while placing; raise/lower keys. Being built.
-- **Push needed:** `difficulty` has the gate trigger fix `cc3572a` (confirmed by hand) for #52.
-- **Next playtest:** the newest test build with the Farore's Wind heal effect, enemy randomizer v2, more enemies at 5x, and the new gate editor build.
-- **Credit:** the unbreakable Bombchu Bowling grass was inspired by Sabriel. Thank them in the feature doc, the changelog and any pull request description that includes it.
-- **New request (20 Nov): unbreakable Bombchu Bowling grass**, a new difficulty setting so the lane grass can't be cut or blown away. Being built on `feature/bowling-grass`.
-- **Gate editor update built** (Longshot `ootrr-tools` c93b215, not run): existing gates visible, guards re-put every 1 s, a real barrier while placing (markers if it fails), 5/6 to lower or raise.
-- **New request (20 Nov): unequip sword and shield** by selecting them again in the pause menu. Feasibility study and build if possible (`feature/unequip-gear`).
-- **Gate editor bugs (user, 20 Nov):** guards duplicated every second (5 of them); Business Scrubs used as barrier markers; the gate not visible. Wanted: only the guard as an enemy in edit mode, locked and frozen if possible. Fix being built.
-- **New request (20 Nov): random fireball storms.** The Death Mountain eruption's falling fireballs at other places: the child Hyrule Castle courtyard sneak, quiet parts of Hyrule Field. Being built (`feature/fireball-storms`).
-- **Session 5 (20 Nov evening), seen by the user:** the green heal works ("pretty good") but shows only part of Farore's animation. Recorded the full cast (about 4 s: a ring at the feet, a spiral column, an orb rising) in `<playtest folder>\handson-5\notes\clip-172926.mp4`. Fix built (``17134e6``): each heal emits the ring at the feet, the column at the chest and the orb at the head, for 240 frames, scaled by enemy (1.5 normal, 2.0 Lizalfos, 2.5 Wolfos and Moblins, 3.0 big ones). Not seen yet. The same clip shows randomizer v2 Shaboms in Jabu-Jabu.
-- **Session 6 (20 Nov evening), seen by the user:** ordinary effects still work after the shared effect edit; the full green heal works. **Fireball storm, middle road: works** in the user's clip (`<playtest folder>\handson-6\notes\clip-181440.mp4`): rocks arc in and burn on the ground. It was slow to start, so the user first reported nothing. Frame rate about 30 to 37 in child Hyrule Field at 5x more enemies plus the storm (60 before). Bottle gives in this build stopped being taken by the game (bridge says sent; to look into). Castle garden storm: works, and the guards behave. Bowling grass: passed by the user. Gate editor v5 (fairy markers, minimal text, delete fixed, key 0) built, not yet swapped in.
-- **New request (20 Nov): Faster sliding blocks** (push and pull 2x), a time saver. Built as its own upstream pull request off main (`feature/faster-blocks`).
-- **Game hang, 20 Nov 18:3x (session 7):** child Link in the Fire Temple with gate mode on. A Skulltula on the stairs exploded, then the game froze (stalled, no exception). Likely cause: the gate editor's enemy sweep (it set life 0 on every enemy within 40 m, in any map). The fix is being built: sweep off by default, never life 0, gate mode turns itself off on a map change. The randomizer v2 and 5x swaps in the Fire Temple are a second suspect if it happens again with gate mode off. Skip area intros at the Fire Temple entrance: seen working.
-- **Random fuses** (user request, 20 Nov): built (`82d4176` on `feature/random-fuses`, setting 142, Hazards section, not played). A fuse is rolled once per item through the game's own frame counter with a random add. Bombs 1 to 4 s, bombchus 1 to 3.5 s, lit sticks 5 to 24 s (a 5 s floor so torch puzzles stay possible). Bombchu Bowling shares the chu actor, so its chus get short fuses too. Risk: the death reason copied from the bomb might delete a chu without an explosion.
-- **Release in progress:** `release/rc16` (worktree `wt\rc16`) adds the tested features to `difficulty` for #52: boss adds, the green heal, fireball storms (140), bowling grass (139, credit Sabriel), scrubs not calling, gates under entrance shuffle, the Jabu fix.
-- **Gate editor session (near the top of the list):** the user will walk around placing many more gates by hand: position the barrier visually, pick the guard kind(s), position the guards, with Longshot keybinds. Must be ready when the user says they are; they will say when. Being built now (`docs\gate-editor.md`).
-- **Gates do not spawn until the player has a sword** (answers Q1 and Q6). The logic requirement merged this morning (4194f62) is to be replaced by this. Being built on `feature/gate-sword`.
-- **Limited ammo, defined:** remove ammo drops from enemies, pots, grass, trees and crates. Anything near a boss or in a shop stays; anything an enemy drops during a boss fight stays. The aim is scarcity (think about stocking up at a shop), never an unbeatable fight. The pots before boss doors stay.
-- **Effects (Q7):** try all the particle effects and see which works best (so the shared effect file edit is allowed, tested carefully).
-- **Volvagia over Hyrule Field (Q3):** try a few things; make our own logic for it if needed. Queued for the Opus slot after the boss adds.
-- **Separate upstream pull request: skip the first-time pickup box** (rupees, hearts, ammo and similar; real item gets keep theirs), if upstream does not have it already. Own branch off upstream main, `feature/skip-first-pickup-text` in `wt\firstget`; PR text drafted in `docs\pr-drafts`; the user pushes and opens it. Being built.
-- **libfpv (Q2):** leave it alone; another agent if the user picks it up again.
-- **Boss adds spawn when the fight starts** (Gohma: after Link looks up at her and her introduction plays), not when the door shuts (features 11, 12). Being built on `feature/boss-adds-start`.
-- **Earlier bean-seed feedback, confirmed still wanted:** refusal notice when a bottle is refused in combat (probe of the notice numbers queued for a game slot).
-- Scripted tests: quiet spots (Kakariko entrance, outside Link's house), full spin attack (hold about 3 s; uses magic, refill after it and after Din's Fire), press A on every dialog with a yellow arrow, close a menu that opened by itself, video with ffmpeg, window 1024x576 with no sound, never warp outside a shut boss door or into puzzle rooms. In `<playtest folder>\RECIPE.md`.
-## Release (20 Nov, afternoon)
+## Queue
 
-Upstream moved to `ootrando/ootrr`. The user opened two pull requests, both merging cleanly into main and with each other:
-- **#52, Difficulty** (`the fork's difficulty branch`, 3 commits): plainer settings text, child gates need the Kokiri Sword, Bean Seller pitch (128) and Zora ambush (127) retired, the ambush folded into more enemies with the sword. Full tests pass (core 1420). In the game:
-  - seeds generate;
-  - old settings strings with 127 and 128 load with a warning;
-  - 7 maps load with everything on;
-  - without the sword the gate guards and ambush Skulltulas stay dormant (no attack, no drop); with the sword they act and the cave A dropper drops (`<playtest folder>\release-1120\RESULTS.md`, `A4-recheck.md`);
-  - not seen: the Din's Fire kill dropping a barrier on this build (magic read 0 after `give Magic full`).
-  - Minor follow-up: a settings FILE naming `zora_ambush` is an error, not a warning.
-- **#53, skip first pickup text** (setting 136): in the game, no box for the first rupees and heart with the setting on, the usual box with it off. Not seen: a chest with it on.
-- PR texts: `docs\pr-drafts\`. The VS Code workspace with every worktree: `<workspace>\OOTRR.code-workspace`.
-## Right now (20 Nov)
-
-| What | State |
-|---|---|
-| **Upstream** | **Upstream merged our pull request (#36): rc 15 is in `REALAZK/ootrr` main.** `difficulty` in `ootrr\` fast-forwarded to upstream main 5d6cd5f (one merge commit ahead of the fork; no commit of ours). Upstream also added fast Gerudo Fortress, shorter cutscenes and logic fixes |
-| **Running** | Agent 15 (Opus, code only, release-critical): Difficulty page text rewritten in a plain human voice and checked for facts and test status; Bean Seller's pitch removed from the menu and kept off; Zora ambush folded into more enemies, only once the Kokiri Sword is owned. Branch `fix/difficulty-ui` off upstream main 0ae9ee8 (`wt\uitext`), first commit is upstream's own compile fix (STAGES length 23 to 25). Build to `builds\020_2026-11-20_ui-text` with a before/after text review.|
-| **Round 3 (agent 14, done)** | `<playtest folder>\round3-1120\RESULTS.md`, 15 pass, 1 fail.
-  **Boss adds at fight start (`feature/boss-adds-start`), seen:** Phantom Ganon and Twinrova. The adds stand still through the intro and attack within 1 s of the fight starting (video).
-  **Try Again** reloads the last autosave, the dungeon entrance, never the boss room. Walking in replays the intro, and the adds come back once, with no doubling.
-  **FAIL: the Shadow Temple does not load with `boss_minions`** (black screen, game frozen; it loads without mods). The cause is the Keese moved into the static map, the same as the King Dodongo case. Move that room back to the dynamic map before merging.
-  **Not tested:** Barinade (a warp does not start the intro); skipping an intro by button (no bridge button skips it: needs a controller, in the playbook); Volvagia, Morpha, Bongo Bongo.
-  **Gates only with a sword, seen:**
-  - gates 9 and 2 absent without the sword, present after;
-  - a Kokiri Sword from Starting items works;
-  - the gate appears at once when the sword is given, without a reload.
-  **Gate kill sequence:** inconclusive; a hit that knocks Link out of the trigger box takes the gate away.
-  **Volvagia stage 1, seen:** the Market loads; she rises at 18 units, circles and breathes fire, with normal battle music and no event. The user says the Market is a bad spot: redesign stage 1 elsewhere |
-| **rc 15 and rc 18 checks (agent 6, done)** | `<playtest folder>\checks-1120\RESULTS.md`: 30 pass, 10 fail, 7 not tested.
-  **Seen working:**
-  - 36 edited maps load at 10x.
-  - Peaceful places get nothing added (Kokiri 7 = 7, Kakariko 6 = 6).
-  - Dodongo's Cavern: no enemy loses health in lava, no added Dodongos.
-  - About 95 % of Keese sit on perches.
-  - Iron Knuckles within the cap.
-  - Gates under dungeon shuffle: gate 9's guard is there and blocks; gate 2 has none.
-  - Backup: 17 callers bring the expected lesser helper in 14 to 31 s; business scrub calls nobody.
-  - Regen: a second hit restarts the wait.
-  - Jabu-Jabu: 19 added Octoroks, none in a wall in the shots (the ceiling cannot be judged from a still).
-  **Fails:**
-  - Frame rate at 10x: 27 to 45 fps at busy spots in Dodongo's Cavern, Hyrule Field and the Market (1x: 60). The other game copy ran at the same time, so this is to remeasure alone.
-  - Backup: Wolfos and Bari bring 1 helper, not 2; spear Moblin called nobody in 40 s; Stalchild, Skulltula, Wallmaster, Armos and Biri still call nobody in their home maps (45 s).
-  **Found on the way:**
-  - The `enemies` full scan stalls the game (49 fps idle, 17 fps with a scan every second). It does not grow memory: about 30 GB is normal for a test copy.
-  - The window size comes from `HOS_WINDOW_SIZE` in 96-dpi pixels. The screen is 3840x2160 at 200 %, hence "2560x1440" (RECIPE.md) |
-| **Round 2 (agent 9, done)** | `<playtest folder>\round2-1120\RESULTS.md`. **Effects, seen:** 10 maps load. A hurt Stalfos flashes at its first regen tick (a blue-white burst on the head, about 0.17 s, clear when in frame, easy to miss in a fight; reads as "stunned"); an unhurt one never flashes. Regen 16 s after the hit, then every 5 to 6 s. Merged into `playtest/next` (e486cc5). Backup flash inconclusive (no helper came in 3 fights); fairy flash and Keese not tested. **Spawn combo, seen:** both stick clicks + D-Down, 12 slots, and a kill frees its slot (the slots are taken in turn, so the next press may hit a slot that is still full). **Cucco revenge off:** no swarm (control passed). **Zora ambush:** cave B passed; **cave C FAIL**: nothing dropped with Link 0.6 to 2.5 units from its wall Skulltula (11.3, 63.0, -3.8). **Fake pots:** one flying pot found in child Zora's Domain (36.2, 114.4, 8.6); it did not fly in 8 s, even after a sword swing (inconclusive). **Not tested:** limited ammo drops and grass and pot surprises (a script cannot find map-placed grass and pots), respawn sooner (Din's Fire kills did not register), room-clear door |
-| **Never-played round 1 (agent 7, done)** | `<playtest folder>\never-played-1120\RESULTS.md`. **Seen:** Cucco revenge: one sword hit, about 6 Cuccos attack, life 80 to 74 in 1.5 s (spawned Cucco; control with the setting off not run). Zora ambush cave A: the Skulltula drops when Link reaches the back (x 24.06), not when he is underneath. **Fails the new requirement:** Gohma's Stalfos and 3 Keese are in the actor list from map load, and still listed, unmoving and not visible in shots 15 s after the user started the fight by hand. **Inconclusive:** 24 spawned pots gave only rupees (spawned pots have a fixed drop; map-placed ones needed). **Not tested:** Zora caves B and C, grass, fake pots, respawn, room-clear door, gate 7 (its exe predates rc 15), spawn slots. A script cannot look up at Gohma. Real window is about 1293x756 (status misreports 2560x1440) |
-| **Longshot** | `ootrr-tools` rebased onto upstream 0de25c3 (head 4c248d1, old head tagged `ootrr-tools-before-2026-11-20`), rebuilt, exe in `<Longshot game folder>` and `<playtest folder>\warp\game`. Upstream still has none of our tools. Bridge smoke test passed (status, warp, spawn, enemies, shot). Not looked at: whether the caption draws; status said "window 2560x1440" (agent 6 checks the real window size) |
-| **Done today** | Upstream main merged into `playtest/next` (2e5c752, then 6b24fc2 README spawn line): 9 conflicts, ours kept plus upstream's test-import move. Tests: difficulty 188, settings 106, workspace all pass (core 1376). Release build made. No clash found with fast Gerudo Fortress or shorter cutscenes (gate 12 on the fortress path untested with fortress Fast/Open) |
-| **Queue** | Limited ammo round 2 (boss-fight help back; trees and crates checked) after its game test. Effects: every candidate particle after the flash is tested. Bottle refusal notice probe. Volvagia (Opus, after boss adds). Enemy speed timing (one game copy only). Gate 7. | 
-| **Waiting for a game slot** | Separate upstream PR `feature/skip-first-pickup-text` 8d55e3b (off upstream main, not pushed): upstream has nothing like it. At new game it sets the game's own `HavePlayedGetEvent.<actor>` flags for 11 pickups: rupees green to purple, recovery heart, magic jars, arrow bundles, Deku seeds. Real items keep their box. Setting number 200 is a placeholder for the maintainer to assign; open upstream PR #45 makes setting 106 always on and adds 107 and 108. Workspace tests all pass. Plan `<playtest folder>\firstget\PLAN.md`; PR text `docs\pr-drafts\skip-first-pickup-text.md`. Whether the game really skips the box once its flag is set is only confirmed by playing. `feature/volvagia-field2` b3c56ff: Volvagia as our own actor `Enemy_Volvagia_Roam` (her pack plus four files of ours: normal battle music, no intro event, a death event that cannot fire), placed with her eight hole anchors and room centre. Setting `volvagia_roams` (133, off). Stage 1 in the ruined Market (`OOTRR_VOLVAGIA_STAGE=1`), then adult Hyrule Field. Difficulty tests 205. Unknown until played: whether she appears without her room, how she flies outside it, and whether a kill touches story flags (the plan reads them). Killing her may count in the enemy dictionary. Plan `<playtest folder>\volvagia\PLAN.md`. `feature/gate-sword` c50606f: child gates (1 to 6, 9) exist only once the saved flag `IsGet.Weapon_Sword_Kokiri` is set (owned, not equipped); adult gates unchanged; this morning's logic requirement is reverted. Difficulty tests 190; workspace 1377 pass, 1 failed once under load (deku_bridge, passes alone: to recheck). Plan `<playtest folder>\gate-sword\PLAN.md` (also checks a Kokiri Sword from Starting items sets the flag). `feature/boss-adds-start` 0b306a6: adds in all seven boss rooms (not King Dodongo) are created when the boss intro has played (the game's own `HavePlayedEvent.Dm_..._BossIn` flag) and removed when the boss dies; minions of six rooms moved into the static map (new load risk: Fire, Water, Shadow Temples). Difficulty tests 200. Finding: the bridge's enemy list also shows actors the map holds but has not created, so "listed" proves nothing; judge by moving and attacking. The other six bosses start on walking in, so a script can test those; Gohma's look-up needs hands. Plan `<playtest folder>\boss-adds-start\PLAN.md`; the test also records on video what Try Again does in a boss room (intro replayed or fight at once) and whether the adds come back at the right moment. `feature/fx` 7237a05 (effects: flash only when a hurt enemy heals, one flash when backup is called; difficulty tests 191; plan `<playtest folder>\fx\PLAN-r2.md`, exe `<playtest folder>\fx\ootrr.exe`). `feature/limited-ammo` 3c2c674 (plan in `docs\features\05-no-ammo-drops.md`). Boss adds at fight start (user, 20 Nov): to build after the Gohma reading |
-| **Gate editor (built, never run)** | Longshot `ootrr-tools` 5100991 (local), built into `<Longshot game folder>`; not copied into the playtest folders. How-to and keys in `docs\gate-editor.md`: F8 editor on/off, B barrier at Link, G guard, T/Y guard kind, numpad nudges, U undo, End save; on the pad, hold L+R plus buttons. Each change is written to `gates.json` at once; `<playtest folder>\gate-editor\json_to_gates.py` turns it into gate table rows. Self-test NOT TESTED: the first launch of a new build was still preparing its shaders (about 69 min). Before the user's session, run `<playtest folder>\gate-editor\selftest.py` (put its window at x 1344, y 688, 576x344). Found on the way: Longshot's own L+R+D-pad spawn shortcut (a test tool, not the mod's combo) has been dead since today's rebase |
-| **Machine load (20 Nov, 11:15)** | Three game copies ran at once: the gate editor's self-test came up as a third. CPU 69 %, but only 5.8 GB of 64 GB memory free. The two playtest copies hold 28 to 31 GB each against 7 GB for a fresh one; suspect our local Longshot `enemies` whole-heap scan (being measured). That fits the 1 fps drops. The third copy is told to quit within 10 minutes |
-| **Has the game** | Agents 6 and 7 (two copies, the limit). Enemy speed timing waits for a single-copy slot |
-| **Next** | When Longshot is rebuilt: scripted checks of the rc 15 rules and the rc 18 fixes; the never-played features (speed, respawn, surprises, Cucco, fake pots); door walks by script if input replay allows |
-| **Branches** | `main`, `difficulty`, `playtest/next` (worktree `wt\next`), `test/gates-all` (`wt\gatetest`, for gate 7) |
-
-## Handover from 19 Nov (kept for reference)
-
-| What | State |
-|---|---|
-| **Requests from the bean seed (19 Nov evening, user)** | 1. Business scrubs never call for backup (built, rc 18). 2. Jabu-Jabu: added enemies underwater under a ceiling and one inside a wall (placement rule built, rc 18). 3. Gates with entrance shuffle (built, rc 18). 4. libfpv: separate Longshot mod, built, scripted test 6 of 6. 5. In-combat test via the scrub's check: not possible with data. 6. Refusal dialog for a bottle refused in combat: notice Type numbers to probe |
-### Next work, in the order I would take it
-
-1. **The user's playthrough notes** on rc 15.
-2. **Scripted checks nobody has done for the rc 15 rules:** maps load at 10x after the fix round (my attempt was void: I ran it while the user was playing), the lesser-kind backup table by script (`playtestackup-r3` has the script from the previous table), nothing standing in lava in Dodongo's Cavern, Keese at perches.
-3. **Effects for regen, fairy heal and backup call** (asked 19 Nov). The emitting node is `OneShotXLinkSearchAndEmit`; what is missing is an effect key every enemy has loaded. Notes from another modder: `reference\info from other moddersestiary-effects.md` and `bestiary-behavior.md` (reference only, never copied into the repo).
-4. **Gohma's adds through the door** (they did not appear when warped in), the Zora cave ambush, gate 7, a room-clear door at 5x: all in `capture-playbook.md`.
-5. **Asked "if you run out of work":** the Gerudo fighter as a placed enemy; Volvagia and other bosses outside their rooms (feature file 21 has the earlier notes).
-6. **Enemy speed:** most enemies ignore the setting (`enemy-speed.md`).
-
-### Decisions the user made on 19 Nov (do not reopen)
-
-- More enemies is a ceiling per area, not a target; safe zones at every arrival point; peaceful places get none; at most 2 Iron Knuckles per Hyrule Field and 1 elsewhere; big enemies apart; Keese at perches; walkers only on reachable ground; no added Dodongos where bombable or burnable obstacles are.
-- Special encounters is folded into more enemies (setting 130 retired).
-- Backup: never the caller's own kind; a slightly lesser kind; helper appears at the caller's spot.
-- Spawn combination: hold both stick clicks + D-pad Down / Up (confirmed by hand).
-- Regen: first heal 15 s after the last hit, then +1 every 5 s (accepted as built).
-- Two copies of the game may run for tests; timing measurements with one only. Never script the game while the user is playing.
-- The user reviews and pushes every commit, in both repos. Tidy branches and worktrees after each merge.
-- Models: no new Fable sub-agents until the weekly limit resets; Opus allowed, one at a time, for hard tasks; Sonnet otherwise; start fresh agents, do not resume long ones.
+1. Volvagia: red rupee, then flee.
+2. Enemy sizes: the real fix.
+3. Next playtest (hands-on 10): the panel steps in `<playtest folder>\panel\steps.json`.
+5. Enemy randomizer v3 load check (Bottom of the Well, Dodongo's Cavern, Ice Cavern, child Spirit Temple).
 
 ## Features
 
-States: **Done** = seen working in the game. **Works, finishing** = seen working, polish or follow-up checks under way. **Built, untested** = never seen in the game. **Half tested** = part seen. **Broken** = seen failing, being fixed. **Not possible** = judged not doable with data edits.
+States: not built, built (never seen), scripted (seen by script), seen by hand, released. "Released" means in a numbered rc or merged upstream. Setting numbers in brackets.
 
-| # | Feature | State | What was seen in the game | Next step |
-|---|---|---|---|---|
-| 01 | Enemy health | Done | Scaling seen (19 Nov): at enemy_health 200 the overlay shows Stalfos 36/36 and Lizalfos 18/18, exactly double vanilla 18 and 9 | Peahat larva not read |
-| 02 | Enemy damage | Done | 3x: a bite took 6 quarter hearts instead of 2 (script, rc 5) | Grabs (ReDead, Like Like) not covered; parked |
-| 03 | Enemy speed | Built, untested | Nothing (batch 1 aborted before this) | Batch 1 |
-| 04 | No heart drops | Done (small sample) | User (18 Nov): about 20 grass cut in the Lost Woods, only rupees and bugs dropped | Hearts the map places on the ground are left alone (user: fine unless they respawn; to check from the files) |
-| 05 | No ammo drops | Done (small sample) | Same run as 04: no ammo dropped | Pots and enemy kills not sampled yet. With Shopsanity on, the note now warns that a special deal can replace an ammo shelf (review finding 3) |
-| 06 | No gossip fairies | Done | User (18 Nov): none of the six songs produced a fairy at a gossip stone | None |
-| 07 | Lose heart on death | Done, with one limit | 6 → 5 → 4 → 3 hearts over three deaths; a 4th death stays at 3; no side effects. The final build was replayed: 6 → 5 → 4 (script, 18 Nov). Confirmed by hand too (user died without a fairy: back with 5 hearts). Merged into `playtest/difficulty-all` | Limit: the loss does not survive quitting and continuing (accepted as "simplest for now"). Fairy revival costs no heart: confirmed by the user (revived at 6 hearts max) |
-| 08 | No bottles in combat | Done | Confirmed by the user at the controls (18 Nov): a bottled fairy could NOT be used while the Iron Knuckle was aggro and COULD once far enough away; the refusal animation is right; a bottled fairy still revived Link automatically in the fight (6 hearts kept). Found and fixed on the way: the block ignored miniboss music (commit 630870b) | Not seen against a full boss; low risk |
-| 09 | Enemies regen health | Built, waiting for a playtest | Old timer seen (19 Nov): +1 hp every 2 s, too fast. Now 10 s without a hit, then +1 hp every 5 s (branch feature/regen-wait, playtest/regen-wait) rc13 (19 Nov, merged build, script): hit a Stalfos; +1 hp came 15.2 s and 15.0 s after the hit, then every 4.9 to 5.4 s. Matches 15 s then 5 s. Hit source unidentified (sword swings did no damage). | Not seen yet: the hit flag resetting the wait fx-r1 (19 Nov): effect for regen ticks investigated, not built (`OneShotXLinkSearchAndEmit` found; no shared heal key yet). |
-| 10 | More enemies (slider 1x to 10x) | Played by hand at 10x in rc 14 and in the rc 15 build (19 Nov: "the extra enemies are great"); rc 15 placement rules not checked one by one | Old 2x maps loaded (rc 4). New 19 Nov (`feature/horde` a6e2ce3, exe `<playtest folder>\horde\ootrr.exe`): slider 1x to 10x; 1.5x and 2x unchanged; above 2x enemies are placed on the game's own navigation mesh by ground class (flat, gentle slope, any, flier, water, ceiling, sand, miniboss), new kinds, groups and minibosses from 5x; caps 240 per map and 120 within 60 units, 12 within 15 units; safe zones around every arrival point (none within 15, at most 2 slow kinds within 30, a 120 degree way out); the multiplier is a ceiling per room or ground patch, limited by usable floor. 1,802 added at 10x over 39 maps (copies included). Second game test: all added enemies present with a wide scan, 59 to 60 fps at 10x with one game copy. Game test 19 Nov: 37 of 38 maps load at 10x; fix round done (Freezard and Guay dropped, child Wasteland dropped, caps lowered); Second test 19 Nov (exe 66bb967 build): 10x frame rate 59 to 60 at every spot tried (control 60); the "missing" enemies were mostly the `enemies` scan window (wider scan: Gerudo Valley adult 35 live instead of 6 to 8, 10x minus 1x live counts match planned); Hyrule Field child death reload with no damage; room-clear doors and Kokiri reload not tested. Played 19 Nov (`<playtest folder>\horde\RESULTS.md`): 37 of 38 edited maps load at 10x, Dodongo included; nothing crashed; slider rises 5x to 10x where enemies appear; frame rate 28 at the busiest spots (child Field, Dodongo; control 60); planned enemies missing in Gerudo Valley (0 of 106), Water Temple, Field adult, Lost Woods adult, Fire Temple; some Freezards fall; Try Again test passed at the Dodongo entrance only; door logic and fights not tested; Third test 19 Nov (rc 14 exe, `<playtest folder>\horde\RESULTS.md`): 10x loads in child Kokiri, child and adult Field, Dodongo, Fire Temple, 58.5 to 60.2 fps at every spot (1x control 60), live added enemies +18 to +127 near the spots, nothing vanished or fell except 1 Tektite and 2 Guays at one Field spot each; all difficulty settings on (5x): Kokiri, Field, Dodongo, Deku Tree load and Link moves, 3 minutes in Field with enemies: up 180 s, 46 to 56 fps (average 49.7) | Scripted load test by risk: `<playtest folder>\horde\PLAN.md` (Dodongo's Cavern first, then Hyrule Field at the cap) |
-| 11 | Bosses spawn minibosses | Built, in the game once | Stalfos seen in Gohma's room standing there before the introduction (19 Nov); now created as the door-shut scene ends in Gohma's room, the other three rooms unchanged rc13 (19 Nov): Deku Tree loads (not black). Stalfos listed at (16.5, 47.2, 74.0) right after the map loads, before any door scene; whether it is visible or active then is not seen. Door walk NOT TESTED (capture playbook). | Walk through the Gohma door on feature/boss-adds (build in <playtest folder>\boss-adds); Dodongo stays out |
-| 12 | Bosses spawn minions | Built, in the game once | Keese seen in Gohma's room before the introduction (19 Nov); Gohma's Keese now appear as the door-shut scene ends, the other rooms unchanged rc13 (19 Nov): the 3 Keese are listed at map load too (20.0/15.7/24.3, 50.5, 62.8/70.3/70.3); door walk NOT TESTED. | Walk through the Gohma door on feature/boss-adds; then Dodongo's babies and the other rooms |
-| 13 | No dupe items | Done (bottled fairy) | Confirmed by the user (18 Nov): a second fairy could not be bottled while holding one, and the refusal animation is right | Other duplicate cases (gifts, other bottle contents) not tried |
-| 14 | Enemies respawn sooner | Built, untested | Nothing | Batch 2 |
-| 15 | No Z-targeting | Done | Confirmed by the user at the controls (18 Nov): enemies cannot be locked on to | None |
-| 16 | Fairies help enemies | Seen working | Confirmed in the game: the fairy healed the enemy (19 Nov) | Circling-fairy visual on enemies not possible: no enemy-side effect node (see feature file) fx-r1 (19 Nov): heal effect investigated, not built (same reason). |
-eview-fixes, not yet seen in the game) |
-| 17 | Enemies call for backup | rc 15: calls a LESSER kind, at the caller's spot (built, not played). Earlier: Option 3 seen in the game by script (19 Nov): no crash on 32 callers; 19 pairs gave the expected helper once (15 to 30 s), 2 gave one helper where two were expected (spear Moblin, Bari), 9 callers called nobody in 75 s (Stalchild, Freezard, Skulltula, Wallmaster, Amos, Spike, Tailpasaran, Biri) , no helper called in turn | Results in `playtestackup-r3\RESULTS.md`; Gibdo, weak Stalfos and white Bubble not spawnable in the field fx-r1 (19 Nov, 91c3d0a, code only): never calls its own kind, a weaker one; helper appears at the caller, raised 0.5; no Dodongo kinds as helpers; flying pot and Shabom dropped (no backup keys).
-eview-fixes, not yet seen in the game) |
-| 18 | Zora's Domain ambush | Seen, fix built | Seen in game: wall Skulltulas great, droppers nearly right but triggered underneath. Fixed in polish-r5 (trigger box at the back, droppers 1.25 nearer the middle) rc13 (19 Nov): Zora's Domain loads. The three hanging Skulltulas are already listed at map load (before any trigger), so the trigger is not confirmed; cave walk NOT TESTED. | Retest: nothing drops until you reach the back of a side cave |
-| 19 | Bean Seller's pitch | Done | User (18 Nov): the dialogue works | None |
-| 20 | Enemies block the way | Round 4: gates 2, 9, 11, 12 ship; 7 held | Gates 2 and 9 seen working (gate 9: "lost woods 1 guard 2 gates confirmed"; gate 2 "worked perfect"). Gate 2 guard is now a created Enemy_Dodongo (not played yet). Only gate 7 stays held. Build in playtest	weaks-r4 rc13 (19 Nov): gate 2 guard seen: Death Mountain Trail loads, an Enemy_Dodongo (hp 6) stands at (-54.4, 106.4, 3.2) after warping to the guard's side. | Play the Dodongo guard at gate 2; try gate 7 (Lost Woods east passage); gate 11 from the south |
-| 21 | Volvagia over Hyrule Field | Not possible | Not built | Write-up in `features\21-volvagia-roams-hyrule-field.md` |
-| 22 | Special encounters (rc 15: no longer a setting; part of more enemies above 1x; setting 130 retired): Dead Hand in hole 9 (Hyrule Field) and hole 23 (Death Mountain Trail), Iron Knuckle in the open part of Hyrule Field | Done, two tweaks wanted | Lake Hylia Like Likes confirmed in the game (19 Nov); the one by the lab removed because of the steep slope, nine remain. Dead Hand and Iron Knuckle confirmed earlier. Build in playtest	weaks-r4 Guays (24, child Hyrule Field only) added on `feature/guays`, build in <playtest folder>\guays, not seen in the game. rc13 (19 Nov): Guays over the field: 8 in load range, flying, none vanished or fell, but equally active by day as by night (night-only not seen). | Tweaks as before |
-| 23 | Grass and pot surprises (part of special encounters): 1 in 100 that cut grass or a broken pot spawns a Skulltula (grass) or Poe (pot), or a small crawling hand (both; branch `feature/surprise-hands`, exe `<playtest folder>\hands\ootrr.exe`, test hook env `OOTRR_SURPRISE_CHANCE` 1 to 20), and 1 in 10 plain pots are flying pots | Built, untested (code only) | Nothing. Commit `163112b` on `feature/surprises`; 138 difficulty and 107 settings tests pass | Play it: cut about 300 blades and break about 200 pots; look for fake pots in Zora's Domain and Kakariko. Riskiest: whether a drop can create an enemy. Steps in `<playtest folder>\surprises\TESTS.md`. Round 2 (`feature/enc-r2`): rate now 2 percent per surprise (1 in 50), the bug grass round the hole 9 Dead Hand (`Land_kokiri_Plant_A_02_DropFixed_03`) now gets the grass surprises; Market guard house pots are fixed rupee pots and stay as they are |
-| 24 | Cucco revenge on the first hit (setting 131, `cucco_revenge`) | Built, untested (code only) | Nothing. Commit `f9b7c87` on `feature/surprises`. The hit threshold `StartSpecialAttackCount` goes 4 to 1 in the Cucco hit graphs; Anju's and the find-out Cuccos are left alone | Play it: one sword hit on an adult Kakariko Cucco; carry and throw one. If one hit is not enough, set `FIRST_HIT` to 0. Steps in `<playtest folder>\surprises\TESTS.md` |
-| 25 | Spawn enemies with BOTH STICK CLICKS + D-pad (rc 15; confirmed by hand 19 Nov: "glorious". The old L + R never worked by hand: both open the item wheel) (setting 132, `enemy_spawn_combo`): Down spawns a random ordinary enemy in front of Link, Up spawns the same again | Fixed, scripted test passed | Opus fix (19 Nov, `feature/opus-fixes` 4efaaaf): every create used holder slot 0, so only the first press worked; now a slot counter. Bridge L+R+Down: 12 presses, 12 different enemies 3 m ahead (Up repeated the kind), the 13th and 14th nothing (cap 12). The user probably saw nothing because Longshot's own L+R+D-pad tool shortcut takes the D-pad rc13 (19 Nov, merged build, script): 6 combo presses gave 5 to 10 new enemies with the combo alone, with every other setting group on, and with all other settings on; could not reproduce the failure. | User: real pad with the Longshot shortcut off; check that a kill frees a slot fx-r1 (19 Nov, 91c3d0a, code only): combo is now both stick clicks (L3 + R3) + D-pad, user decision. |
-| 26 | Small hands and floor Skulltulas from grass and pots (new request, saved for later) | Built in code, untested (see 23) | Requested 18 Nov: the small crawling hands (the Floormaster's little ones) and the floor Skulltulas sometimes appear instead of bugs or rupees when grass is cut or a pot is broken. Extends the grass and pot surprises (23) | After the current build is polished and out |
-| 27 | "No ammo drops" becomes "Limited ammo" (change request, saved for later) | Built, untested (20 Nov, `feature/limited-ammo` 3c2c674; difficulty tests 190 pass) | Design: ammo is cut everywhere except the game's own boss supply tables (Gohma's eggs and larvae, Poe Meg, final-battle rubble, the pots before each boss door, Gohma's two grass tufts). Setting keeps its id and string position; label is now "Limited ammo". Requested 18 Nov: ammo still drops in boss fights and anywhere else the player cannot flee and would otherwise have no option but to die (the user thinks that is only bosses). Also answers the review's finding that no ammo drops plus shuffled shops can leave no arrow source | After the current build is polished and out |
-
-## Queue for the game (one copy at a time)
-
-Batch 1 (18 Nov) was stopped early with nothing confirmed: scripts cannot sword-fight, aim, or work the pause menu reliably. So testing is split by what each side is good at.
-
-**Scripted (stand still, warp, read numbers, take pictures):**
-
-1. **S1, running:** forest gate v2 (20), Iron Knuckle awake build (22), enemy speed (03), call for backup (17).
-2. **S2:** boss minibosses and minions (11, 12) with the Dodongo variants, Zora ambush (18), more enemies pictures (10).
-3. **S3:** respawn sooner (14), fairies help enemies (16) if a stand-still check exists; else to hands-on.
-4. **S4, horde (10):** load test every edited map at 10x with `<playtest folder>\horde\ootrr.exe`, by risk, per `<playtest folder>\horde\PLAN.md`: Dodongo's Cavern, Hyrule Field (240 enemies), child Kokiri Forest, the dungeons, then the rest. Read `enemies` for 30 s per map; compare with `placements-10x.csv`.
-
-**Hands-on with the user (script sets up and logs, the user plays; advance by button press):** no heart drops (04), no ammo drops (05), no gossip fairies (06), no bottles in combat and the fairy revival (08), enemy regen (09), no dupe items (13), bean pitch (19), gate: kill the guards (20), Dead Hand in hole 9 (22). The list with setup and what to look for is `capture-playbook.md`.
-
-Then: fix what failed, replay only those, merge the passing branches and cut rc 9.
-
-## Done today besides features
-
-- **rc 12 cut (19 Nov):** commit `4d772af` on `difficulty`, build in `builds_2026-11-19_rc12`. Local only. Backup and the spawn combination fixed (Opus), regen and the health multiplier seen working by the numbers, Like Likes present, "red guards" shown to be the Deku Baba's normal colour.
-- **rc 11 cut (19 Nov):** `difficulty` now has upstream merged (commit `a3550be`, 32 upstream commits, new `randomizer/` layout) and rc 11 on top (`c8d4b34`); build in `builds_2026-11-19_rc11`. Local only: rc 10 is on the user's fork, rc 11 waits for review and push. All docs are in `difficulty-mod/docs` (34 files, scanned for personal details).
-- **Longshot debug panel shows enemy health** (`hp CUR / MAX`), seen working: a bomb took a Stalfos from 18 to 16.
-- **rc 10 cut (18 Nov late):** commit `ecbdb04` on `difficulty`, build in `builds
-_2026-11-18_rc10` with CHANGELOG.md and TODO.md. Local only: waiting for the user's review and push. Seven gates in, five held back; what does not work is in `docs\TODO.md`.
-- **rc 11 (18 Nov evening):** `builds	_2026-11-18_rc9-spawn-combo`: rc 9 plus the Longshot tools with enemy spawning on L+R+D-pad (Down = random, Up = same again), every press counted. Confirmed by the user. Local only.
-- **rc 10 (18 Nov evening):** `builds_2026-11-18_rc9-with-spawn-keys`: the rc 9 randomizer plus a launcher for the source-built Longshot with the spawn keys (F4 random enemy, F3 same again, F9 screenshot). The spawn keys are a Longshot tool, not part of the mod. The launcher itself is not tried yet.
-- **rc 9 cut (18 Nov evening):** commit `e303654` on `difficulty`, build in `builds 9_2026-11-18_rc9`. Local only, not pushed. From now on a release candidate is cut each time a major feature finishes testing.
-- Release branch `difficulty`: one commit per release candidate, rc 1 to rc 8, docs in `difficulty-mod/docs/`, nothing pushed. Builds 007 and 008 are in `builds\`.
-- Longshot test tools (local patch, `<local path>`): warp to coordinates, on-screen captions, give item, input recorder. Recording real input is not yet tried.
-- Hole catalogue: 28 of 30 holes pictured from inside, `<playtest folder>\holes\index.html`. Holes 27 and 29 (Gerudo) not reached.
-- Capture playbook for things that need the user's hands: `capture-playbook.md`.
-
-## Not yet merged
-
-These branches hold work that is not in `playtest/difficulty-all` or on `difficulty` yet. They are merged when their test passes.
-
-| Branch | What | Waiting for |
-|---|---|---|
-| `feature/heart-final` (from `heart-v5b`) | Lose heart on death, new design | The final test now running |
-| `feature/dead-hand-holes` | Special encounters (feature 22) | Its load test |
-| `feature/dodongo-fix` | Nothing yet (investigation only) | Batch 3 variants |
-
-## Open questions for the user (none blocks the work)
-
-- Holes 27 and 29 could not be photographed. Not needed unless you want them.
-- Volvagia over Hyrule Field: judged not possible. Read the write-up and say if you want a different take on the idea.
-
-## Running now (19 Nov evening)
-
-Merged into `playtest/next` (98724af), branches and worktrees removed; tests and release build running; nothing played yet:
-- Scrub backup (bb92343, 48897d0): business, stage and leaf scrubs and the Deku Scrub brothers never call.
-- Gates with entrance shuffle (1e336dc): Dungeons keeps 3, 4, 5, 9, 11, 12, 13; 1, 2, 6 off (dungeon door beyond the wall); overworld/everything none. Open: child gates 1 to 5 and 9 need a weapon the logic does not require; asked the user: add it to the logic (recommended) or skip those gates.
-- Jabu placement (4e8895e): water spawns need walkable shore within 4.5 (dungeon) / 9 (outdoors) units and no walkable floor within 10 units above. Jabu at 10x 34 to 16 added. Map loads (script); "none under a ceiling or in a wall" not confirmed by eye. No ground spawn in a wall was found offline: the user's wall enemy may be one of the water ones.
-- Combat check: NOT POSSIBLE with data. The scrub's combat refusal is decided in native code (`ExecutePlayerUseScrubBusinessSeed`, message `SimpleInfo_00` / `CannotUseScrubBusinessSeedBattle`); no event or AI query exposes it. Music check stays. A notice can be shown with `UISystemActor.EventTriggerRequestOpenSimpleInfo {Type=N}`, but N is a native enum; the scrub's notice says "Business Scrub". Option: probe the Type numbers in the game for a fitting existing notice. Findings in feature file 08.
-- libfpv (Navi flight): a separate Longshot mod, not OOTRR (user, 19 Nov). Built and committed locally on `feat/libfpv` in `<Longshot checkout>-fpv` (7be9ad0, 14f258b; not pushed). Scripted test passed 6 of 6 (combo starts flight, Link stays put, D-Down lands him where Navi was). Not flown with a real controller; Navi's model not shown.
-- rc 18 (`builds8_2026-11-19_bean-fixes`): scrub, gates and Jabu fixes; bean seed rebuilt as `rando-bean-2` (same placements) in `playtestean\game\mods`.
+| # | Feature | State | Left |
+|---|---|---|---|
+| 01 | [Enemy health](features/01-enemy-health.md) (110) | released | Peahat larva not read |
+| 02 | [Enemy damage](features/02-enemy-damage.md) (111) | released | Grabs not covered |
+| 03 | [Enemy speed](features/03-enemy-speed.md) (112) | built | Most enemies ignore it; no hand test |
+| 04 | [No heart drops](features/04-no-heart-drops.md) (113) | released | None |
+| 05 | [Limited ammo](features/05-no-ammo-drops.md) (115) | seen by hand (rc 17) | Boss help, Bongo Bongo's hands |
+| 06 | [No gossip fairies](features/06-no-gossip-fairies.md) (114) | released | None |
+| 07 | [Lose heart on death](features/07-lose-heart-on-death.md) (116) | released | Not kept across quit (accepted) |
+| 08 | [No bottles in combat](features/08-no-bottles-in-combat.md) (117) | released (rc 18) | Notice wording |
+| 09 | [Enemy regen](features/09-enemy-regen.md) (118) | released | None |
+| 10 | [More enemies](features/10-more-enemies.md) (119) | released | Night Stalchildren doubled (`playtest/next` only); frame rate at 10x alone |
+| 11 | [Boss minibosses](features/11-boss-minibosses.md) (120) | released (rc 16) | Barinade, Morpha, Bongo by hand |
+| 12 | [Boss minions](features/12-boss-minions.md) (121) | released (rc 16) | As 11 |
+| 13 | [No dupe items](features/13-no-dupe-items.md) (122) | released | Other duplicate cases |
+| 14 | [Respawn sooner](features/14-enemies-respawn-sooner.md) (123) | built | Never tested |
+| 15 | [No Z-targeting](features/15-no-z-targeting.md) (124) | released | None |
+| 16 | [Fairies help enemies](features/16-fairies-help-enemies.md) (125) | released | Green heal seen by hand |
+| 17 | [Enemy backup](features/17-enemies-call-for-backup.md) (126) | released; lesser-kind ladder on `playtest/next` only | Ladder not confirmed in the game |
+| 18 | [Zora ambush](features/18-zora-ambush.md) (127, retired) | released (in more enemies) | Cave C failed by script |
+| 19 | [Bean pitch](features/19-bean-sellers-pitch.md) (128, retired) | retired | None |
+| 20 | [Gates](features/20-enemies-block-the-way.md) (129) | released (rc 16, 14-23 in rc 17); gate 23 seen by hand | Changes to 9, 14, 20, 21, 22 on `playtest/next` only; 15/16 to move up the Trail |
+| 21 | [Volvagia in the field](features/21-volvagia-roams-hyrule-field.md) (143) | released (rc 17); Functional WIP | Freezes at death: red rupee then flee |
+| 22 | [Special encounters](features/22-special-encounters.md) (130) | released (rc 17, 18); Beamos and Mad Scrub kill seen by hand | Octoroks by hand, Light Arrows scene |
+| 23 | [Grass and pot surprises](features/23-grass-and-pot-surprises.md) (in 130) | released; 6% rate on `playtest/next` only | Fake pots never seen |
+| 24 | [Cucco revenge](features/24-cucco-revenge.md) (131) | scripted | Control run with setting off |
+| 25 | [Spawn combo](features/25-spawn-enemies-combo.md) (132) | released | None |
+| 26 | [Enemy randomizer](features/26-enemy-randomizer.md) (138) | released (rc 17); v3 not loaded by hand | Dodongo swap fix on `playtest/next` only; judge movement and walls |
+| 27 | [Bowling grass](features/27-unbreakable-bowling-grass.md) (139) | released (rc 16) | None |
+| 28 | [Unequip gear](features/28-unequip-gear.md) | dropped | Replaced by feature 32 |
+| 29 | [Fireball storms](features/29-fireball-storms.md) (140) | released (rc 16, 17); direction seen by hand | Doubled areas, slugs, desert off, wrong-spot fix: `playtest/next` only, unconfirmed |
+| 30 | [Faster blocks](features/30-faster-blocks.md) (141) | released (upstream #55) | None |
+| 31 | [Random fuses](features/31-random-fuses.md) (142) | released (rc 17); bombs and Bombchus seen by hand | Stick burn-up fix on `playtest/next` only; bomb flowers, Bowling |
+| 32 | [Shield-eating mega Like Likes](features/32-shield-eating-like-likes.md) (144) | released (rc 17); seen by hand with the Mirror sparkle (sparkle on `playtest/next` only) | None |
+| 33 | [Random enemy sizes](features/33-random-enemy-sizes.md) (145, 146) | released (rc 18); NOT WORKING | Real fix |
+| 34 | [Shorter timers](features/34-shorter-timers.md) (147) | released (rc 18); scripted | Dodongo torch room at 50% by hand |
+| 35 | [Damage taken](features/35-damage-options.md) (148) | released (rc 18); scripted | Pit and lava respawn, grabs |
+| - | Skip area intros (137) | released (rc 17); Fire Temple entrance seen by hand | Other areas by hand |
+| - | Skip first pickup text (136) | released (upstream #53) | None |

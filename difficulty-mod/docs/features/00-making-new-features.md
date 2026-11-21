@@ -85,3 +85,8 @@ Only enemy health scaling has been seen working in the game (rc 1). Bottles, dro
 - **Cloning an actor:** a new actor name works like the game's `Dm_` actors: an ActorParam whose parent is the original, plus `RSDB/ActorInfo`, `GameActorInfo` and `Tag` rows and size table entries, as in `cow_clone` and `difficulty/volvagia.rs`.
 - **Drops:** boss supply comes through named drop tables (`DropTable_Enemy_RangedWeapon_02`, `Drop_ResourceSupply_BeforeBoss*`, `DropTable_ResourceSupply_FinalBattle`). Spawned pots carry a fixed rupee drop, so test drop changes on pots the map places.
 - **Testing:** the bridge's `enemies` list includes actors a map holds but has not created, so "listed" is not "present".
+
+## Learned on 21 Nov
+- **A new loose file needs a realistic size-table entry.** The Volvagia clone's own death table got an entry of its length plus 1 KB. The game needs 5 to 9 KB more for such tables, so it silently failed to load and the actor was never created. Size new entries from the game's own entries for the same file type.
+- **Keep an actor's own death table when cloning.** Swapping a boss clone's DeathRef to a generic boss table dropped its death rules, and it could no longer be hurt. Copy its own table and change only the cells you need (destroy the body, respawn flags off).
+- **The bridge's kill may skip the normal death path** (drops, death table). To test drops or death-driven logic, bring the enemy to 0 hp with damage.

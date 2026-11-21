@@ -47,6 +47,9 @@ pub const START: &str = "EventTriggerPlayerEventStartWithDrawn";
 pub const PLAY_AS: &str = "EventPlayerPlayASForFlowchart";
 pub const PUT_AWAY: &str = "EventPlayerDrawnShieldAfterUseBottle";
 pub const REFUSE_AS: &str = "EvtTalkNo";
+pub const UI: &str = "UISystemActor";
+pub const NOTICE: &str = "EventTriggerRequestOpenSimpleInfo";
+pub const NOTICE_TYPE: i32 = 23;
 
 pub const DATA: &str = "GameDataActor";
 pub const SOUND: &str = "SoundSystemActor";
@@ -300,6 +303,10 @@ fn shake() -> Option<Cont> {
     ])
 }
 
+fn notice() -> Option<Cont> {
+    cont(vec![("Type", Val::Int(NOTICE_TYPE))])
+}
+
 pub fn no_bottles(raw: &[u8], name: &str) -> Res<Vec<u8>> {
     let mut b: Bf = Bf::parse(raw)?;
     let f: &mut Flow = flow(&mut b, name)?;
@@ -317,7 +324,7 @@ pub fn no_bottles(raw: &[u8], name: &str) -> Res<Vec<u8>> {
             continue;
         }
         let away: Option<Cont> = cont(vec![("IsWaitEnd", Val::Bool(TRUE)), ("IsImmediateDrawn", Val::Bool(FALSE))]);
-        let deny: u16 = refusal(f, BOTTLE_MARK, i, vec![(PLAYER, START, None)], vec![(PLAYER, PUT_AWAY, away)])?;
+        let deny: u16 = refusal(f, BOTTLE_MARK, i, vec![(PLAYER, START, None), (UI, NOTICE, notice())], vec![(PLAYER, PUT_AWAY, away)])?;
         let mut quiet: u16 = main;
         for (n, bgm) in FIGHT_BGMS.iter().enumerate().rev() {
             quiet = push(
@@ -588,8 +595,8 @@ mod tests {
         let out: Vec<u8> = no_bottles(&raw, "Dm_SY_OutBottle").unwrap();
         let b: Bf = Bf::parse(&out).unwrap();
         let f: &Flow = &b.flows[0];
-        assert_eq!(f.events.len(), 14);
-        assert_eq!(f.actors.iter().map(|a| a.name.as_str()).collect::<Vec<_>>(), vec!["PouchSystemActor", DATA, SOUND, PLAYER]);
+        assert_eq!(f.events.len(), 16);
+        assert_eq!(f.actors.iter().map(|a| a.name.as_str()).collect::<Vec<_>>(), vec!["PouchSystemActor", DATA, SOUND, PLAYER, UI]);
         let name = |e: u16| -> String {
             let Kind::Action { actor, act, .. } = &f.events[e as usize].kind else { panic!() };
             f.actors[*actor as usize].actions[*act as usize].clone()
@@ -611,8 +618,11 @@ mod tests {
                 at = cases[1].ev;
             }
             assert_eq!(at, i as u16, "calm music on both counts reaches the game's own start");
-            assert_eq!((name(deny), name(next(deny)), name(next(next(deny)))), (START.to_string(), PLAY_AS.to_string(), PUT_AWAY.to_string()));
-            assert_eq!(next(next(next(deny))), NONE, "a refused bottle still ends by putting the bottle away");
+            let chain: Vec<String> = vec![deny, next(deny), next(next(deny)), next(next(next(deny)))].into_iter().map(|e| name(e)).collect();
+            assert_eq!(chain, vec![START.to_string(), NOTICE.to_string(), PLAY_AS.to_string(), PUT_AWAY.to_string()], "the refusal shows the game's notice, shakes the head and puts the bottle away");
+            let Kind::Action { params, .. } = &f.events[next(deny) as usize].kind else { panic!() };
+            assert_eq!(params.as_ref().unwrap().get("Type"), Some(&Val::Int(NOTICE_TYPE)));
+            assert_eq!(next(next(next(next(deny)))), NONE, "a refused bottle still ends by putting the bottle away");
         }
         assert!(no_bottles(&out, "Dm_SY_OutBottle").is_err());
         assert!(no_bottles(&raw, "Other").is_err());

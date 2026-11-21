@@ -199,3 +199,178 @@ In rc 16: the entrance-shuffle rule above, on top of the sword condition (child 
 
 - **By script** (checks-1120, entrances Dungeons, closed forest): gate 9 in the Lost Woods is present and holds Link at its barrier; gate 2 on Death Mountain Trail is absent.
 - **Not tested:** that gates 1 and 6 are absent (vanilla enemies stand at both spots, so a script could not tell).
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 20):** Enemies block the way
+- **State:** Round 4: gates 2, 9, 11, 12 ship; 7 held
+- **What was seen in the game:** Gates 2 and 9 seen working (gate 9: "lost woods 1 guard 2 gates confirmed"; gate 2 "worked perfect"). Gate 2 guard is now a created Enemy_Dodongo (not played yet). Only gate 7 stays held. Build in <playtest folder>\tweaks-r4 rc13 (19 Nov): gate 2 guard seen: Death Mountain Trail loads, an Enemy_Dodongo (hp 6) stands at (-54.4, 106.4, 3.2) after warping to the guard's side.
+- **Next step:** Play the Dodongo guard at gate 2; try gate 7 (Lost Woods east passage); gate 11 from the south
+
+
+## Moved from STATUS.md (20 Nov): gates: moved notes
+
+- **New gate (user, 20 Nov): Death Mountain Crater (child), bottom-left ledge**, from a marked object-map screenshot: a Dodongo guard and a wall. Being built (`feature/gate-crater`), with the image mapped to world coordinates and a logic-safety check.
+
+- **Gates do not spawn until the player has a sword** (answers Q1 and Q6). The logic requirement merged this morning (4194f62) is to be replaced by this. Being built on `feature/gate-sword`.
+
+- **Hands-on session 3 (20 Nov afternoon), seen by the user:** first pickups and chest boxes (#53); hints; no area intro on entering Kakariko; boss adds at fight start (Phantom Ganon); regen heal flash. Found: gates and Zora ambush vanished when walking up close, my regression in #52. Fixed in `cc3572a` (trigger held once entered); on local `difficulty`, to push. Zora ambush and the gate kill still to re-check.
+
+- **Push needed:** `difficulty` has the gate trigger fix `cc3572a` (confirmed by hand) for #52.
+
+
+## Gates 14 to 22 (20 Nov, branch `feature/gate-crater`, not played)
+Your requests (20 Nov), each a line and dots drawn on an object-map screenshot:
+- Death Mountain Crater, child: "put a Dodongo guard and wall here".
+- Death Mountain Trail, child: "and here as child. 4x Dodongo as adult."
+- Graveyard (no age named): "put 3 Poes as a guard here".
+- Hyrule Field, child, the neck down to Lake Hylia: "put 3 Lizalfos guards here".
+- Lon Lon Ranch north gate, child: "put a giant peahat and 5 small peahats as guards here".
+- Lake Hylia, the lab bridge (no age named): "put a like like and 4 keeze as guards here".
+- Ganon's Castle entrance, adult: "add a dark link guard here". Not built, see below.
+
+### From screenshot to world coordinates
+The object map draws north up, x to the right, z downward, at one scale, so each screenshot is `px = s * x + cx`, `py = s * z + cz`. The scale and offset come from landmarks found both in the picture and in the map files; then the map's navmesh was drawn over the picture to check the whole outline.
+- Crater: Bolero warp pad (the hexagon), the two lava rings (their smoke emitters), the Fire Temple door and the Goron City passage. s = 13.41, 5 landmarks, residuals 0.05 to 0.78 units.
+- Trail: the Kakariko and Goron City loading zones. s = 6.95. The navmesh outline lies on the drawn trail within about 1 unit.
+- Graveyard: the Nocturne warp pad and the Kakariko gate. s = 12.87. The outline matches.
+- Hyrule Field: the lake laboratory and the castle drawbridge. s = 3.06. The outline matches. The ranch screenshot was read through the oval track (about 3.2), then the wall was put on the gate posts drawn in the field screenshot (the track reading was about 8 units off in z, so the posts and the navmesh decided). The lake screenshot: the laboratory and the owl island, s = 8.03 in both axes.
+
+Each barrier end was then moved to where the navmesh floor along the drawn line ends (the passage walls), at floor height, and each guard to open floor on the side the dots were drawn, at least 4.5 units from the wall so the trigger box fits. A connectivity check cut the navmesh with the barrier pieces and confirmed the two sides no longer join (trail, field neck, lake shore with the lake drained).
+
+### The gates
+| Id | Where | Map | Wall ends | Guards |
+|---|---|---|---|---|
+| 14 | Crater, west ledge by the Deku Scrub | DeathMountainCrater_Child | (-26.75, 119.34, 33.22) to (-25.12, 119.32, 32.05) | 1 Dodongo at (-19.5, 119.58, 35.5), trigger radius 5 |
+| 15 | Trail, the way up past the junction | DeathMountainTrail_Child | (-16.99, 122.43, -29.2) to (-8.78, 122.67, -29.2), plus (-6.0, 120.0, -29.2) to (3.8, 120.0, -29.2) across the lower terrace | 1 Dodongo at (-14.0, 123.61, -24.0) |
+| 16 | the same | DeathMountainTrail_Adult | (-16.82, 122.28, -29.2) to (-8.89, 122.7, -29.2), plus the terrace wall | 4 Dodongos: (-14.0, 123.13, -24.0), (-12.5, 123.05, -26.3), (-16.5, 121.79, -20.5), (-17.5, 123.69, -17.0) |
+| 17 | Graveyard, the way to the Shadow Temple | Graveyard_Child | (72.35, 108.56, 0.62) to (72.35, 108.46, 4.34) | 3 Poes (`Enemy_Poe`): (67.6, 108.64, 2.5), (69.0, 108.62, 0.9), (69.0, 108.54, 4.3) |
+| 18 | the same | Graveyard_Adult | the same | 3 Poes, same places at adult floor height |
+| 19 | Field, the way down to Lake Hylia | HyruleField_Child | (-104.13, 139.6, 371.34) to (-61.78, 139.6, 401.59) | 3 Lizalfos: (-80.6, 141.11, 374.0), (-88.8, 141.48, 371.7), (-75.1, 140.86, 379.9) |
+| 20 | Lon Lon Ranch, the north gate | HyruleField_Child | (-65.5, 150.0, 183.5) to (-56.5, 150.0, 184.5) | 6 `Enemy_Leever_Fixed`: a giant (scale 2.5) at (-60.5, 150.02, 168.0) and 5 small ones round it, at y 150.2 on the floor (your decision kept in round 3, see 'Round 3 (21 Nov, third pass)') |
+| 21 | Lake Hylia, the bridge by the laboratory | HyruleField_Child | (-166.92, 137.64, 421.84) to (-158.52, 137.32, 427.94) | 1 Like Like at (-153.5, 136.16, 423.0) and 4 `Enemy_Keese` at (-149.5, 138.2, 419.5), (-149.5, 138.2, 426.5), (-146.5, 139.0, 423.0), (-150.5, 140.0, 430.0) |
+| 22 | the same | HyruleField_Adult | the same | 1 Like Like at (-153.5, 135.93, 423.0) and the same 4 Keese |
+| 23 | Ganon's Castle, the north exit of the first round room | InsideGanonCastle | (-4.0, 110.3, 60.0) to (4.0, 110.3, 60.0) | `Enemy_MiddleBoss_DarkLink` at (0.0, 110.3, 76.0) |
+
+New in the table: `more_kind`, the kind of the extra guards when it differs from the first (only the ranch uses it). Every guard is created by the trigger, as in gates 1 to 5, and each guard has its own barrier stack, so all must die.
+
+Changes from the drawings:
+- Crater: the drawn guard dot stood on the Deku Scrub; the Dodongo is 3.6 units further along the ledge. The drawn line was 8 units; the floor there is about 2 units wide, between the hammer boulder and the ledge edge.
+- Field neck: the drawn line left a strip of floor open past its east end, beyond the rock cluster (the navmesh joins the lake road there), so the wall was extended to that strip (52 units, 14 pieces per guard).
+- Graveyard: the Poes are 1 to 5 units west of the dots, so the trigger box fits between the wall and the Nocturne pad.
+- Lake: Like Like only. The 4 Keese are left out: a Fire Keese did not appear when created in Hyrule Field (feature 10), and a guard that never appears keeps its barrier up. Question below.
+
+### What each gate blocks and why it is safe
+Child gates wait for the Kokiri Sword, as all child gates do; adult gates rely on the Master Sword.
+- 14, crater ledge: beyond the wall are only the hammer boulder (an adult item) and the path past it. In the logic the child never reaches this part of the crater (`DMC Lower Nearby` to `DMC Lower Local`, and on to the ladder area, needs the Goron Tunic, an adult item), and the Deku Scrub stays on the guard side. Child only: for the adult this passage is a logic route (hover boots or hammer), and you marked the child map.
+- 15 and 16, trail: beyond the wall are Dodongo's Cavern, the summit, the Great Fairy and the crater. The logic's enemy rules say the Kokiri Sword kills a Dodongo (gate 2 relies on the same); the adult has the Master Sword for four of them. The grotto beside the trail joins the trail north of the wall.
+- 17 and 18, graveyard: beyond the wall is only the Shadow Temple door. The Nocturne pad and the gossip stone are on the guard side. Arriving by Nocturne puts you inside the trigger box, so the Poes and the barrier come at once (the way back to the graveyard stays open). Coming out of the temple puts you 0.45 units east of the wall line, outside the box. Both ages: the passage is the same. `Enemy_Poe` is placed by the game in the adult graveyard only; in the child graveyard it is away from home (a big Poe did not appear away from home, feature 10). The child gets nothing behind this wall in the logic (the temple needs adult items).
+- 19, field neck: beyond it is Lake Hylia. `Hyrule Field` to `Lake Hylia` is free in the logic, so a child with the sword must beat three Lizalfos (the logic's rule text says the Kokiri Sword kills them, as at gates 3 to 5). Fire storm spot field_south_central (55, 163, 190) is 240 units away; the lake's warp pad, owl and arrival points are over 120 units away.
+- 20, ranch: beyond it are Malon, Epona's Song and the ranch checks. Both guard kinds are already placed in the child field, so they are at home. Risk: in the original game the Peahat burrows at night; if it does here, the gate cannot be opened at night (leave and come back by day).
+- 21 and 22, lake bridge: beyond it are the owl island, the warp pad island and the Water Temple door. The lake can be swum (both ages), so the gate is a fight, not a lock. The ground at the bridge end has the same height with the lake full or drained (137.4 to 137.7 on all three navmeshes).
+- Entrance shuffle: with dungeon entrances shuffled all nine are left out, because a dungeon door lies beyond each wall line (Fire Temple, Dodongo's Cavern, Shadow Temple, Water Temple). For the ranch that is only the test's straight-line rule (the Water Temple lies far beyond the line, not in the ranch); left as the rule says.
+
+### Dark Link: built and seen (21 Nov, gate 23)
+The user's sketch (object map, Inside Ganondorf's Castle, 3D view turned a few degrees) was mapped by landmarks: the dungeon room centre anchors, the entrance anchors (`StartPos` at z 90 to 91.6, the entrance loading volume at z 101.9), the candle stands that outline the round room (radius about 12.6 at z 76 to 84) and the narrowing corridor (candles at x +-4.7 at z 62 and +-3 at z 51). The barrier line is at z 60, the start of the corridor north of the round room (8 wide, 3 pieces); the guard stands at the middle of the room (0.0, 110.3, 76.0); the trigger box (half width about 10) lies between the arrival point (z 90.7, outside it) and the wall. Floor height 110.3. Adult only (the map has no age suffix). No dungeon entrance lies beyond the wall, so the gate stays on under dungeon entrance shuffle.
+
+What the files say (studied first):
+- Dark Link is a plain placed actor in both maps that hold him (the Water Temple and his dream stage `DarkLinkStage`): no `Links`, only `DefaultDungeonRoomIndex 22` in the temple. His room group (`AiGroups`) holds the shutters, an event request actor, enemy counters and a sound actor; his death opens the shutters through the counters, nothing in his own files.
+- His death table (`DarkLink_game__death__DeathReasonProcedures`) is a child of the ordinary enemy table with only the life-ran-out effect names changed; his `DungeonBossCommonParam` holds only chance time numbers, no event name. His start is perception (`BattleStartDistXZ` 4, 6 when attacked), not a room signal. So no clone was needed (no Volvagia style pack, no new death table): a created `Enemy_MiddleBoss_DarkLink`, exactly like the gate's Lizalfos, works. Not tried: a clone, other variants.
+- His hp follows Link's max hearts (`LifeSyncCurve`: 64 at 20 hearts, 38 at 3 hearts); berserk at 60 % of it. Enemy health scaling may therefore not touch him (not checked).
+
+In the game (new Longshot build with `walk` and `kill`; preset `enemy_gates`, 20 hearts; adult, Master Sword given):
+- `teleport InsideGanonCastle` loads (no black screen, music BGM_InsideGanonCastle). Nothing stands in the room on arrival. A `walk` to (0, 78) enters the box: Dark Link stands at (0, 110.2, 76.0), hp 64, the purple barrier stands across the corridor mouth (screenshot), music BGM_MiddleBoss.
+- He wakes as Link comes near, runs at Link, hits (80 to 68 quarter hearts), guards, goes berserk below 60 % and fights on. Real damage: Din's Fire took 64 to 40 in four casts; the Megaton Hammer (Z-target plus the item button) and the Master Sword took him down to 28 over about 25 minutes of scripted fighting. After the fourth cast the magic bar was empty every time (cause not found: `give Magic` filled it and it was empty again within a second), so in the game use the sword or hammer.
+- `kill Enemy_MiddleBoss_DarkLink` at full hp: the list shows hp 0 for about 6 s (his death fade), then he is gone, the battle music ends, and a `walk` to (0, 45) passes the barrier line (Link ended at z 46.2). Seen, clip `<playtest folder>\darklink\clips\gate23_dark_link_kill.mp4`.
+- Not seen: a death by fighting to the end (the script could not finish the fight; `kill` sets the life, it is not a hit), and what he drops.
+- Leaving the room and coming back brings him back at full hp with the barrier (same as every gate).
+- Do not `warp` Link south of z 94 in this room: the entrance loading zone is there (a warp to z 96 left the map once).
+- Hands-on step for the playbook: kill him with the sword and watch the barrier drop.
+
+### Questions
+1. Lake: answered by the user (whatever works); the 4 Keese are in (see below).
+2. Ganon's Castle entrance: answered, Dark Link works as a plain placed guard (see above).
+
+### How it was tested
+`cargo test -p ootrr-core difficulty` (210) and `settings` (109) with `OOTRR_ROMFS`. The game-file test stages every gate from the game files: each map takes its groups, barriers and areas, the old actors are untouched, every graph audits clean, child graphs read the sword flag. New test: each new gate makes the marked kinds and counts, and the child and adult copies share the wall. Every guard kind's actor pack exists. Not played.
+
+### In the game
+For each gate: warp to the approach point in `playtest/gate14/PLAN.md` (just outside the trigger, facing the wall), with the Kokiri Sword for the child ones. Check: the map loads; nothing appears until you walk in; then the guards and the barrier; the barrier spans the passage with no gap at the ends; it drops when all guards are dead. Then: whether a child can climb out of the crater ledge pocket, the ranch at night, the Like Like in the field, the Poes in the child graveyard.
+
+## 21 Nov follow-ups (branch `feature/gate-crater`)
+User changes: Lake lab bridge guards "whatever works" (Like Like plus 4 Keese); Lon Lon Ranch "a giant leever and 5 smaller leevers"; Lost Woods guard "a wolfos". New guard kinds in `gates.rs`: `LEEVER_BIG_GUARD`, `LEEVER_GUARD`, `KEESE_GUARD`, `DARKLINK_GUARD`; gate 9 uses `WOODS_GUARD` (`Enemy_Wolfos`). Tests updated (piece counts, kept-gate list under dungeon shuffle, one new test for the new kinds); `cargo test -p ootrr-core difficulty` and `settings` pass.
+
+Keese: the game places ordinary Keese only in dungeons and the Graveyard (with `IsCreateOnSurface` and a hover offset). A Fire Keese created in the field never appeared (earlier test), but the ordinary `Enemy_Keese` created with no parameters does: no ceiling needed.
+
+### Gates 21 and 22 (seen: child gate 21; the adult copy uses the same data, not played)
+`walk` to (-152, 423): the Like Like (hp 12) at (-153.5, 136.2, 423.0), 4 Keese (hp 1) flying round it, battle music, barrier across the lab bridge. `kill` on every guard: the Keese vanish, the Like Like drops a blue rupee, the music stops, and Link walked west through the old wall line to x -169. Clip `gate21_keese_kill.mp4`.
+
+### Gate 20 (seen in part)
+Child, `walk` to (-60.5, 166): the Giant Leever (`Enemy_Leever_Big`, hp 8) and the small Leevers (hp 2) are there; the Big one's summons stack five more at its own spot, so 11 Leevers are listed (only the 6 placed ones are guards). They surface, circle and hit Link (80 to 76 quarter hearts), by day and also at night (the world clock ran from day to night during one run; the new build's `time` does not work), and a sword hit takes 1 hp off. The barrier stands (pink fence across the ranch gate).
+- Not seen: all of them dying and the barrier dropping. The `kill` command (life set to 0) does NOT make a Leever die: it stays listed with hp 0 and the barrier stays up, because a burrowed Leever dies only from a real hit. One Leever set to 1 hp died to one real sword hit (about 90 s of scripted chasing); the script cannot catch the rest, as they burrow. Added to `capture-playbook.md`: a person kills the 6 placed Leevers with the sword, by day and by night, and watches the barrier.
+- Risk: a Leever that stays burrowed and never surfaces would keep the barrier up. In every run they surfaced within seconds of Link standing at the spot.
+
+### Gate 9 (seen)
+`LostWood_Child`, `warp -2 100.4 -0.5`: one Wolfos (hp 9) appears at the middle of the room with the barrier pieces and battle music. `kill` on it removes it (once the first reading showed hp 9 again, the second `kill` finished it); then a `walk` through the east door from (0.5, 0) reached x 8.2, past the barrier line. Clip `gate9_wolfos_kill.mp4`. The gate has no adult copy (the map is the child Lost Woods only).
+
+
+### Round 2 (21 Nov, commit after aa97399): gate 16 guard, guard floor test, gate 20 guards, gate 14 climb-out
+
+**Gate 16.** The Dodongo at (-16.5, 121.79, -20.5) was 1.8 units under the navmesh floor (123.59 there), so it fell through on creation. Moved to (-16.5, 123.6, -20.5). Played (adult, `walk` to the mark, `enemies`): all four Dodongos stay at y 122.9 to 123.9 (x -19 to -12, z -18 to -27.6) after 5 s and after a map reload. Clip `gate16_barrier_drop.mp4`. With live guards the walk stops at z -28.65 (the barrier); after `kill` on all four the walk passes to z -40.
+
+**Guard floor test** (`every_gate_guard_stands_on_the_navmesh_floor_with_clearance`, needs `OOTRR_ROMFS`): every guard of every gate (the mark plus `more`) must have a navmesh face within 0.6 units above or below it and at least 1.0 unit from a wall; flying kinds (Keese, Poe) need a floor within 10 below and are not checked for walls. It found two bad places besides gate 16: the two small guards at (-64.0, 151.08, 166.0) and (-62.5, 151.87, 162.0) of gate 20, now at y 150.2. The Keese (2 to 10 above the floor) and Poes (0.7 above) are fine.
+
+**Gate 20, round 2.** Real hits with the Kokiri Sword (child, sword shown gold in the pause menu's Equipment tab, so it was equipped; the earlier misses were not about the sword): Stalchildren that came at night died to Y hits and dropped rupees, but the Leevers never moved, never surfaced and never lost hp: a hit does nothing to them, `target` + Y for 6 swings at the Big one's spot left hp 8. A plain `spawn Enemy_Leever` and `spawn Enemy_Leever_Big` 5 units from Link in the field stayed buried the same way (by day, 40 s), so it is not the Big one's summons and not our placement: the game places Leevers only on the Haunted Wasteland's sand (`Enemy_Leever_Fixed`, and the horde table in `horde.rs` treats them as a sand kind), and its pack is not loaded in the field. The `Enemy_Leever` listed in the old runs were dormant, and the 80 to 76 hits seen then were most likely the night Stalchildren. So a Leever gate on the ranch grass cannot be won. Changed to what the first plan had and the field already loads: `Enemy_Peahat` (hp 6) at the mark and 5 `Enemy_Peahat_Larva` (hp 1). Played by day: alive, the walk to (-61, 192) stops at z 183.59 (barrier); the larvae died to Y hits within seconds, the Peahat took about 60 s of `target` + Y (6 to 0), the three larvae it carries vanished with it, and then the walk reached z 191.2: barrier dropped. Clip `gate20_peahat_barrier_drop.mp4`. Not tested: at night (the ranch's own gate is closed then, the Stalchildren come, the Peahat may not stay); `time` still does not work. One wasted detail: the Peahat gate depends on the Peahat's own larvae count being irrelevant (only the six placed guards count).
+
+**Gate 14 climb-out (child).** In the ledge pocket (x -26 to -16, z 32 to 41, floor y about 119.5) the way east and up is a 5 unit step (120 to 125 at x -16, z 38 to 41): `walk` stopped there (blocked) while the Dodongo hit him (71 to 67 quarter hearts). Stepping off the east edge drops 13 units to y 106 and the game puts him back on the ledge (earlier run). So a child who is in the pocket cannot climb out east and can only leave by the west neck past the rock pile (a hammer boulder, which the gate's barrier now also covers). That is how the pocket is in the game; the gate adds no new trap, but while the Dodongo lives he cannot leave west either; killing it is the only way on. Where a child can enter the pocket from (the drop at x -16 from the crater floor is one way) was not checked.
+
+**Found, not changed: a bypass at gates 15 and 16.** East of the barrier's east end (x -7.4) the navmesh at z -29.2 has a lower strip (y 119.8 to 120.3) from x -4.5 to 3; the adult walked from (-4, -24) to (-4, -35) and on to the trail south of the wall while one Dodongo still lived (live guards only blocked him when they stood in his way). The strip is open in the child map too. The fix would be one more wall (`also`) from about x -6 to 3.5 at y 119.8; not done because the barrier layout was not asked for.
+
+Tests: `cargo test -p ootrr-core difficulty` 212 passed, `settings` 109 passed (with `OOTRR_ROMFS`).
+
+
+## Round 3 (21 Nov, third pass, branch `feature/gate-crater`)
+
+### Gate 20 is Leevers again (your decision kept)
+You said "make it a giant leever and 5 smaller leevers"; the last pass had fallen back to Peahats. What keeps Leevers buried and what was done:
+- **Five sand tests.** The Leever graphs (the four `Leever.action.*` modules in the shared AI pack, and the Leever and Leever_Fixed LandBattle action sequence) each hold one `QueryPhysicsIsMaterialContactToSphere` (material 3 = sand, except-mode): "touching anything but sand" sends the Leever into its dive-away verb. The build cuts every reader of that query (`leevers.rs`, `unbury`), so a Leever acts as if it always stood on sand.
+- **The manager kinds never start.** `Enemy_Leever` and `Enemy_Leever_Big` are made by the game's auto placement manager, which hands out pop-up times; placed or spawned in the field they sit still (the Big and its 5 summons stayed at their spot, hp 8 and 2, in every run). `Enemy_Leever_Fixed`, the Wasteland's placed kind (its `PreparePopupTimeRand` is 0), starts by itself and surfaces on grass.
+- **A chase ends in a dive-away that deletes the Leever.** After about 4 s the Fixed ones dived and vanished. `stay` removes the last step of the LandBattle sequence (the disappear verb 96), so they keep coming until killed.
+- **The giant.** The real Big could not be made to act: tried the pop-up wait 0 in its pack, the fixed placement bool true in its root and blackboard, and the same sand edits. Not cloned: a new actor pack and rows would still lack the manager's start. Stand-in: one Fixed Leever placed at scale 2.5 (`Gate::scale`); it has the small ones' hp 2. With the Big gone nothing summons: exactly the 6 placed Leevers count.
+- **Seen (child, Kokiri Sword, real `target` + Y hits):** day: 6 of 6 died in 89 s and the walk through the gate line passed (blocked at z 183.6 before); night (`time night` plus a map reload): 6 of 6 in 35 s, walk passed; Stalchildren joined at night. Clips in `<playtest folder>\gate14\clips` (`g20G_fight`, `g20N_fight*`). The script topped up health when low. Caveat for the player: Leevers Link led far away wait where they stand; walking out of the box and back rebuilds all six.
+- **Side effect:** with the gates on, the Haunted Wasteland Leevers no longer sink at the edge of the sand nor dive away (the settings note says so). With the gates off nothing changes.
+
+### Gates 15 and 16: the lower terrace
+A terrace (y 120, x -5 to 3.5) east of the trail is reached by walking off the trail's east edge at z -21 (a 3 to 4 unit gap, 3.4 down) and leads north past the wall. Seen (child, Dodongo alive): walked round to z -36. A second row of barrier pieces across the terrace (`STRIP`, the gate's `also` wall) closes it: the same walk now ends blocked at z -28.8 (child) and -28.7 (adult, 4 Dodongos). The west side is rock (blocked at x -19.7). Test `the_barrier_cuts_the_floor_so_a_walker_on_the_guard_side_cannot_reach_the_far_side` floods the navmesh in 0.5 unit cells (step 0.8, drop 3.6, jump 4.1) with the barrier cutting cells; it fails without the added wall and passes with it. It cannot see rocks the navmesh lacks, so it carries the observed west rock as a constant.
+
+### Gate 14: the pocket
+The pocket is the guard's side (Dodongo and Scrub inside; the barrier is across its west neck). It is a dead end with or without the gate: west is a solid rock face (a `walk` ends blocked at x -26.4 to -27.1 even with the Dodongo gone), east is a 5 unit step; the only way in is the 4.7 drop from the crater ledge above. A child does not reach that ledge by walking from the crater's arrival (navmesh flood: 9210 cells, none on the ledge; the real walk ended blocked or fell). So the gate creates no trap and nothing was moved.
+
+### Tests
+`cargo test -p ootrr-core difficulty` (218) and `settings` (109) with `OOTRR_ROMFS`. New: `leevers.rs` (no reader of the sand test is left and nothing else in the graphs changes, only the Leever graphs change in their packs, the pop-up wait is 0 and nothing else in the file changes, same output every time, a graph without the sand test is refused), the giant scale and the terrace wall piece counts in `gates.rs`, the navmesh flood test.
+
+
+## Round 3b (21 Nov): clone packs, giant with more life, gate 16 kill
+
+Change: the Leever edits no longer touch the game's Leever packs or the shared AI pack. Two new actor kinds are written into the mod instead, copied from `Enemy_Leever_Fixed` (`leevers.rs`, the way the cow and Volvagia clones are made: new pack, actor rows, tag row, size table entries):
+- `Enemy_Leever_Gate` (the 5 small guards): the clone's pack holds the Fixed pack's files, its LandBattle graph with the sand test cut and the dive-away step removed, and the four edited `Leever.action.*` modules under their own names inside the pack (the actor reads its own pack first).
+- `Enemy_Leever_Gate_Giant` (the giant, placed at scale 2.5): the same plus its own life file (MaxLife 16 = 8 x the small ones' 2) and attack file (BaseAttackPower 3 instead of 2), reached through its own parameter table.
+- Test `the_vanilla_leever_packs_and_the_shared_ai_pack_are_never_written`: with the gates on, no output is the Leever, Leever_Big, Leever_Fixed or shared AI pack (so they stay byte-identical to the game's). Others check the clone graphs, rows, tags, life and attack numbers, determinism. 220 difficulty and 109 settings tests pass.
+
+Seen (child, Kokiri Sword, day, real `target` + Y hits): the giant showed hp 16/16, the small ones 2/2; all 6 dead in 119 s (the giant took about 15 hits; the script topped up health twice); walk through the gate line arrived at z 185 (blocked at 183.6 before); ranch music. Winnable for a child. Clip `clips\g20H_fight.mp4`. Night was not repeated with the clone.
+
+Gate 16 (adult): killed all 4 Dodongos (two needed a second `kill`), waited: the terrace walk went on to z -44 and the main trail to z -39.3; with two alive both were blocked.
+
+Wasteland: NOT TESTED in the game. Link could not get onto the sand within a 50 s walk and no Leever appeared. The clone approach leaves the game's packs unwritten (the test above), and the clone pack is only loaded where a gate places it.
+
+## Changes after the 21 Nov hands-on (branch fix/playtest-gates)
+- Gate 20 (Lon Lon north gate): three Stalfos replace the Leever guards. Gate 9 (Lost Woods): a Stalfos again.
+- Gates 21/22 (lake lab bridge): only the Like Like guards. The four Keese are plain extra enemies near it. The wall now runs across the landward end of the bridge strip only (z 428), not across the open area. Possible cause of the fall through the floor: the old wall started at the lab entrance sign and anchor, where Link arrives, and the guards stood on the ground beside it; not confirmed.
+- Gate 14 (Crater): adult only, with a wall across the full width of the ledge, checked against the navmesh by the gate walk test.
+- Gates 15/16 (Trail): left in place, but the east strip of wall that ran into the Goron City loading zone is gone and the wall ends 8 units short of it. Their walk test is no longer run, as the wall no longer closes the trail; a new position is coming.
+
+### Hands-on 9 results (21 Nov)
+- Gate 23 (Dark Link): seen by hand, passed.
+- Gates 21/22 (lake lab): the user fell through the floor next to the Like Like and Keese; the new wall (only across the bridge, z 428) is a guess at the cause, not confirmed. Gate 15 (child Trail): after the guard died Link was warped (a loading zone right behind the wall); the user wants gates 15 and 16 moved higher up the Death Mountain Trail, above Goron City; a screenshot from the user is awaited, so they have not moved.
+- Gate 20 and gate 9 changes are in the list above (3 Stalfos; Stalfos). Gate 14 is adult only. Not played again after the changes. Gate editor: near useless as built (fairy markers); a live gate with a real barrier tied to a dummy guard is wanted (`gate-editor.md`).

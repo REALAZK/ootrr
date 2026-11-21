@@ -434,6 +434,20 @@ mod tests {
         assert!(needs_sword("ZoraDomain_Child") && !needs_sword("ZoraDomain_Adult") && !needs_sword("ZoraDomain_Adult_Alternative"));
     }
 
+    #[test]
+    fn each_dropper_waits_on_the_way_out_from_its_trigger_box_and_is_found_by_walking_out() {
+        for k in &NOOKS {
+            let a: [f32; 3] = k.area();
+            let len: f32 = (a[0] * a[0] + a[2] * a[2]).sqrt();
+            let side: f32 = (k.hang[0] * a[2] - k.hang[2] * a[0]).abs() / len;
+            assert!(side < 1.5, "{} dropper lies {side} off the line from its box to the middle of the hole", k.name);
+            let along: f32 = (k.hang[0] * a[0] + k.hang[2] * a[2]) / len;
+            assert!(along > 0.0 && along < len - 3.0, "{} dropper is not between the box and the middle", k.name);
+            let apart: f32 = len - along;
+            assert!(apart > 3.0 && apart < 10.0, "{} dropper is {apart} from the box: a script that only stands in the box never sees it fall", k.name);
+        }
+    }
+
     fn dump() -> Option<std::path::PathBuf> {
         let p: std::path::PathBuf = std::env::var_os("OOTRR_ROMFS").map(std::path::PathBuf::from)?;
         if p.is_dir() { Some(p) } else { None }

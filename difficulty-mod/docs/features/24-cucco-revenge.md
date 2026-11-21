@@ -33,3 +33,16 @@ Never played. Steps in `<playtest folder>\surprises\TESTS.md`. Turn on this sett
 ## Notes
 - Unverified: whether the game's test is "count at least 4" or "count more than 4", which changes whether the first hit or the second hit is needed. If the first hit is not enough, set `FIRST_HIT` to 0 (and watch that this does not anger them without being hit).
 - The Cuccos Anju needs and the find-out Cuccos still need several hits to anger, as in vanilla.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 24):** Cucco revenge on the first hit (setting 131, `cucco_revenge`)
+- **State:** Built, untested (code only)
+- **What was seen in the game:** Nothing. Commit `f9b7c87` on `feature/surprises`. The hit threshold `StartSpecialAttackCount` goes 4 to 1 in the Cucco hit graphs; Anju's and the find-out Cuccos are left alone
+- **Next step:** Play it: one sword hit on an adult Kakariko Cucco; carry and throw one. If one hit is not enough, set `FIRST_HIT` to 0. Steps in `<playtest folder>\surprises\TESTS.md`
+
+
+## Moved from STATUS.md (20 Nov): never-played round 1
+
+| **Never-played round 1 (agent 7, done)** | `<playtest folder>\never-played-1120\RESULTS.md`. **Seen:** Cucco revenge: one sword hit, about 6 Cuccos attack, life 80 to 74 in 1.5 s (spawned Cucco; control with the setting off not run). Zora ambush cave A: the Skulltula drops when Link reaches the back (x 24.06), not when he is underneath. **Fails the new requirement:** Gohma's Stalfos and 3 Keese are in the actor list from map load, and still listed, unmoving and not visible in shots 15 s after the user started the fight by hand. **Inconclusive:** 24 spawned pots gave only rupees (spawned pots have a fixed drop; map-placed ones needed). **Not tested:** Zora caves B and C, grass, fake pots, respawn, room-clear door, gate 7 (its exe predates rc 15), spawn slots. A script cannot look up at Gohma. Real window is about 1293x756 (status misreports 2560x1440) |

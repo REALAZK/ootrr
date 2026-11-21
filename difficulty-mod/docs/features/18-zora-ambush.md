@@ -49,3 +49,21 @@ You: "the ambush is almost perfect. the ones on the walls are great, the positio
 ## rc 13 scripted check (19 Nov)
 - Zora's Domain loads with the mod. The three hanging `Enemy_Skulltula` are already in the actor list on arrival (13.3, 63.6, -22.7), (22.0, 63.6, -18.2), (15.6, 63.6, -13.2), next to the 3 wall ones, before Link goes near; the same six were listed with Link in the room at (19.0, 59.8, -18.3). The trigger is not confirmed (the list cannot tell created from waiting actors). Cave walk NOT TESTED. Details: `playtest
 c13\RESULTS.md`.
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 18):** Zora's Domain ambush
+- **State:** Seen, fix built
+- **What was seen in the game:** Seen in game: wall Skulltulas great, droppers nearly right but triggered underneath. Fixed in polish-r5 (trigger box at the back, droppers 1.25 nearer the middle) rc13 (19 Nov): Zora's Domain loads. The three hanging Skulltulas are already listed at map load (before any trigger), so the trigger is not confirmed; cave walk NOT TESTED.
+- **Next step:** Retest: nothing drops until you reach the back of a side cave
+
+## Cave C "never fires" (21 Nov, branch `feature/zora-bottle-fixes`)
+Not a code bug. The earlier scripted check stood at the back of cave C and waited; the dropper there never falls from that spot because it only drops when Link passes within about 3 units, and in cave C it is 8.8 units from the trigger box (4.3 to 4.7 in A and B).
+Seen in the game (child, sword, more enemies):
+- Warp straight under cave C's dropper without visiting its box: it stays up (the trigger gates it).
+- Warp to the box (11.8, -5.4), then warp or walk out past the dropper (15.6, -13.2): it drops (y 63.6 to 61.0), Link takes a bite (80 to 76 quarter hearts).
+- Same walk with no sword: nothing drops. Cave A: the same, drops when Link walks out past it.
+- The trigger box, wall spider and dropper positions are unchanged.
+Added a test: each dropper lies on the line from its box to the middle of the hole (within 1.5), between the two, and 3 to 10 units from the box, so a check that only stands in the box is known not to see it fall.
+To test by script: after the box, walk out past the dropper, do not wait at the back.

@@ -38,3 +38,11 @@ Never played. To test:
 
 ## Seen in the game
 Not tested (batch 1 stopped early; no song-playing routine exists).
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 06):** No gossip fairies
+- **State:** Done
+- **What was seen in the game:** User (18 Nov): none of the six songs produced a fairy at a gossip stone
+- **Next step:** None

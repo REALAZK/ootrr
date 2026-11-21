@@ -85,3 +85,19 @@ In rc 16: `fx.rs` and `elink.rs` with the full Farore's Wind sequence (commit 17
 
 - **Played by hand** (session 6, 20 Nov): the game's ordinary effects still work after the shared effect-link edit; the full green heal shows on enemies, including the full heal from a released fairy.
 - **By script:** the effect-link round trip and per-user tests (`cargo test -p ootrr-core difficulty`).
+
+
+## Moved from STATUS.md (20 Nov): feature table row
+
+- **Feature (old table row 16):** Fairies help enemies
+- **State:** Seen working
+- **What was seen in the game:** Confirmed in the game: the fairy healed the enemy (19 Nov)
+- **Next step:** Circling-fairy visual on enemies not possible: no enemy-side effect node (see feature file) fx-r1 (19 Nov): heal effect investigated, not built (same reason).
+(fragment kept from the old table) eview-fixes, not yet seen in the game) |
+(fragment kept from the old table) | 17 | Enemies call for backup | rc 15: calls a LESSER kind, at the caller's spot (built, not played). Earlier: Option 3 seen in the game by script (19 Nov): no crash on 32 callers; 19 pairs gave the expected helper once (15 to 30 s), 2 gave one helper where two were expected (spear Moblin, Bari), 9 callers called nobody in 75 s (Stalchild, Freezard, Skulltula, Wallmaster, Amos, Spike, Tailpasaran, Biri) , no helper called in turn | Results in `<playtest folder>\backup-r3\RESULTS.md`; Gibdo, weak Stalfos and white Bubble not spawnable in the field fx-r1 (19 Nov, 91c3d0a, code only): never calls its own kind, a weaker one; helper appears at the caller, raised 0.5; no Dodongo kinds as helpers; flying pot and Shabom dropped (no backup keys).
+(fragment kept from the old table) eview-fixes, not yet seen in the game) |
+
+
+## Moved from STATUS.md (20 Nov): session 5, green heal
+
+- **Session 5 (20 Nov evening), seen by the user:** the green heal works ("pretty good") but shows only part of Farore's animation. Recorded the full cast (about 4 s: a ring at the feet, a spiral column, an orb rising) in `<playtest folder>\handson-5\notes\clip-172926.mp4`. Fix built (``17134e6``): each heal emits the ring at the feet, the column at the chest and the orb at the head, for 240 frames, scaled by enemy (1.5 normal, 2.0 Lizalfos, 2.5 Wolfos and Moblins, 3.0 big ones). Not seen yet. The same clip shows randomizer v2 Shaboms in Jabu-Jabu.
