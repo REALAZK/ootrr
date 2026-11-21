@@ -13,21 +13,23 @@ pub struct State<'a> {
     pub marks: Marks,
     pub skulls: &'a [Drop],
     pub skull_hit: BS<u64>,
+    pub day: bool,
+    pub day_woke: usize,
 }
 
 impl<'a> State<'a> {
     pub fn new(silver: &'a BM<u64, &'static str>, grants: &'a Grants, skulls: &'a [Drop]) -> State<'a> {
-        State { silver, silver_used: BS::new(), silver_hit: BS::new(), grants, marks: Marks::default(), skulls, skull_hit: BS::new() }
+        State { silver, silver_used: BS::new(), silver_hit: BS::new(), grants, marks: Marks::default(), skulls, skull_hit: BS::new(), day: false, day_woke: 0 }
     }
 }
 
 pub type Pass = fn(&str, &[u8], Option<Edited>, &mut State) -> Res<Option<Edited>>;
 
-pub const PASSES: [(&str, Pass); 3] = [("silver rupees", silver), ("dungeon item grants", grants), ("skulltula drops", skulls)];
+pub const PASSES: [(&str, Pass); 4] = [("silver rupees", silver), ("dungeon item grants", grants), ("skulltula drops", skulls), ("skulltulas by day", day)];
 
 pub type Check = fn(&State) -> Res<()>;
 
-pub const CHECKS: [(&str, Check); 3] = [("every skulltula drop was placed", skulls_found), ("every dungeon item grant was marked", grants_marked), ("every silver rupee was placed", silver_found)];
+pub const CHECKS: [(&str, Check); 4] = [("every skulltula drop was placed", skulls_found), ("every dungeon item grant was marked", grants_marked), ("every silver rupee was placed", silver_found), ("night skulltulas were found", day_woke)];
 
 pub fn run(file: &str, raw: &[u8], e: Option<Edited>, st: &mut State) -> Res<Option<Edited>> {
     let mut e: Option<Edited> = e;
@@ -54,6 +56,14 @@ fn grants(file: &str, raw: &[u8], e: Option<Edited>, st: &mut State) -> Res<Opti
 
 fn skulls(file: &str, raw: &[u8], e: Option<Edited>, st: &mut State) -> Res<Option<Edited>> {
     crate::slice::skull_edit::apply(file, raw, e, st.skulls, &mut st.skull_hit)
+}
+
+fn day(file: &str, raw: &[u8], e: Option<Edited>, st: &mut State) -> Res<Option<Edited>> {
+    crate::slice::skull_day::apply(file, raw, e, st.day, &mut st.day_woke)
+}
+
+fn day_woke(st: &State) -> Res<()> {
+    crate::slice::skull_day::all_woke(st.day, st.day_woke)
 }
 
 fn skulls_found(st: &State) -> Res<()> {
