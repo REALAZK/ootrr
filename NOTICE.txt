@@ -1,0 +1,78 @@
+OOTRR is licensed under the GNU General Public License, version 3 or (at your option) any later version.
+The full text is in LICENSE. Versions of OOTRR released before this change, up to and including 0.4.0, were
+released under the MIT License. That text is kept in LICENSE-MIT and still applies to those versions.
+
+The notices below belong to third party work that OOTRR builds on. They stay in force and are compatible with the GPL.
+
+Thanks to OruizGl for pull request #3 (Open Areas Settings). Its findings and ideas are the base of the adult Master Sword pedestal that works before the Forest Sage,
+the child sword fix and Sheik's new spot in every seed, Navi's lesson flags for an open or closed Deku forest, the D-pad shortcut fix for items given at the start and the Hyrule Field first visit flag fix for the clock.
+
+Parts of the logic engine (randomizer/logic/src: rules.rs, world.rs, search.rs, fill.rs, spoiler.rs and their helper modules)
+are ported from the design of the OoT Randomizer.
+
+Credits to all of you for the amazing work on OoTR! 💗
+
+MIT LICENSE
+
+Copyright (c) 2025 OoTRandomizer
+
+Credit for contributions to that project to AmazingAmpharos, Testrunner, Zannick, Junglechief87, and others.
+Additional credit to LLCoolDave and KevinCathcart for their work on the Zelda Lttp Entrance Randomizer which
+was the original code base for that project.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+FONTS
+
+The web page embeds five typefaces under the SIL Open Font License, Version 1.1.
+The full license text sits next to the font files in web/assets/fonts.
+
+Cinzel, Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
+EB Garamond, Copyright 2017 The EB Garamond Project Authors (https://github.com/octaviopardo/EBGaramond12)
+Inter, Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)
+Space Grotesk, Copyright 2020 The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk)
+JetBrains Mono, Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
+
+GAME PACKAGE FORMATS
+
+The .nup and .nx readers (randomizer/core/src/container) are written from the format specifications below.
+No game files are part of them; they only read packages the user made.
+
+NUP (NX Package) format, SPEC.md v1, Copyright (c) 2026 a55uka (https://github.com/a55uka/nup)
+NX archive format (nxformat), docs/SPEC.md release 1.0.3, Copyright (c) 2026 fab918
+
+Both are released under the MIT License:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
